@@ -1,0 +1,27 @@
+name: Governance check
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-governance:
+    name: repository-governance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check mandatory governance files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s CONTRIBUTING.md
+          test -s .github/pull_request_template.md
+          test -s docs/README.md
+          test -s docs/architecture/monorepo.md
+          test -s docs/governance/migration-plan.md
+          echo "Governance documentation present."
