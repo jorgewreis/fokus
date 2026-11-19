@@ -29,6 +29,8 @@ The approved synthetic MVP flow is Pessoa → Processo. Gestão de Expedições 
 
 - [Canonical PRD](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a) — current product requirements and scope.
 - [ADR-0001](../../docs/adr/0001-fokus-law-greenfield-stack-and-boundaries.md) — approved stack and environment boundaries.
+- [Domain dictionary](../../docs/domain/dicionario-dominio.md) — conceptual Pessoa, Processo, Unidade, and relationship rules; not an implemented schema.
+- [Synthetic fixture lifecycle](../../docs/testing/ciclo-fixtures-sinteticas.md) — allowed targets, reset limits, and observed verification evidence.
 - [REI-194](https://linear.app/reis-developer/issue/REI-194/vara-implementar-o-percurso-minimo-do-mvp-institucional) — MVP parent issue.
 - [REI-198](https://linear.app/reis-developer/issue/REI-198/vara-inicializar-aplicacao-greenfield-e-ambiente-sintetico-isolado) — application bootstrap and synthetic environment.
 

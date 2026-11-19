@@ -7,6 +7,8 @@ Monorepo corporativo da Fokus. Este checkout contém o aplicativo Greenfield Fok
 - [Aplicação Fokus Law](apps/law/)
 - [Instalação e execução local](apps/law/README.md)
 - [ADR-0001: arquitetura e fronteiras de ambiente](docs/adr/0001-fokus-law-greenfield-stack-and-boundaries.md)
+- [Dicionário conceitual de Pessoas e Processos](docs/domain/dicionario-dominio.md)
+- [Ciclo de vida das fixtures sintéticas](docs/testing/ciclo-fixtures-sinteticas.md)
 - [Padrão de issues do projeto](docs/governance/linear-issue-standard.md)
 
 ## Fontes do produto
