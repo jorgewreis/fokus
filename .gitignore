@@ -155,3 +155,24 @@ vite.config.ts.timestamp-*
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs
+
+# Fokus Law / Laravel
+**/vendor/
+**/node_modules/
+**/.phpunit.cache/
+**/bootstrap/cache/*.php
+!**/bootstrap/cache/.gitignore
+**/storage/*.key
+!**/storage/logs/
+**/storage/logs/*
+!**/storage/logs/.gitkeep
+**/storage/framework/cache/data/*
+!**/storage/framework/cache/data/.gitkeep
+**/storage/framework/sessions/*
+!**/storage/framework/sessions/.gitkeep
+**/storage/framework/views/*
+!**/storage/framework/views/.gitkeep
+**/storage/app/private/*
+!**/storage/app/private/.gitkeep
+**/storage/app/public/*
+!**/storage/app/public/.gitkeep
