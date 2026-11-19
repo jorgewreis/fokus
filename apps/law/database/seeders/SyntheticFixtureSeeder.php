@@ -15,12 +15,16 @@ class SyntheticFixtureSeeder extends Seeder
         $driver = config("database.connections.{$connection}.driver");
         $database = config("database.connections.{$connection}.database");
 
-        self::assertAllowedTarget(
+        if (! self::isAllowedTarget(
             app()->environment(),
             $driver,
             config("database.connections.{$connection}.host"),
             $database,
-        );
+        )) {
+            throw new RuntimeException(
+                'Synthetic fixtures may only be seeded into the in-memory test database or the dedicated local fokus_law_synthetic database.'
+            );
+        }
 
         User::query()->firstOrCreate(
             ['email' => 'conta.teste.001@example.test'],
@@ -31,7 +35,7 @@ class SyntheticFixtureSeeder extends Seeder
         );
     }
 
-    public static function assertAllowedTarget(string $environment, string $driver, ?string $host, ?string $database): void
+    public static function isAllowedTarget(string $environment, string $driver, ?string $host, ?string $database): bool
     {
         $inMemoryTestDatabase = $environment === 'testing'
             && $driver === 'sqlite'
@@ -42,10 +46,6 @@ class SyntheticFixtureSeeder extends Seeder
             && in_array($host, ['127.0.0.1', 'localhost'], true)
             && $database === 'fokus_law_synthetic';
 
-        if (! $inMemoryTestDatabase && ! $dedicatedLocalSyntheticDatabase) {
-            throw new RuntimeException(
-                'Synthetic fixtures may only be seeded into the in-memory test database or the dedicated local fokus_law_synthetic database.'
-            );
-        }
+        return $inMemoryTestDatabase || $dedicatedLocalSyntheticDatabase;
     }
 }

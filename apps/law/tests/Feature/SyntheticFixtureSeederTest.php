@@ -26,14 +26,31 @@ class SyntheticFixtureSeederTest extends TestCase
 
     public function test_fixture_seeder_rejects_a_remote_database_even_outside_production(): void
     {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('only be seeded into the in-memory test database');
-
-        SyntheticFixtureSeeder::assertAllowedTarget(
+        $this->assertFalse(SyntheticFixtureSeeder::isAllowedTarget(
             'local',
             'mysql',
             'db.example.invalid',
             'fokus_law_synthetic',
-        );
+        ));
+    }
+
+    public function test_fixture_seeder_accepts_the_dedicated_local_synthetic_mysql_target(): void
+    {
+        $this->assertTrue(SyntheticFixtureSeeder::isAllowedTarget(
+            'local',
+            'mysql',
+            '127.0.0.1',
+            'fokus_law_synthetic',
+        ));
+    }
+
+    public function test_fixture_seeder_rejects_a_production_environment_even_with_the_synthetic_database_name(): void
+    {
+        $this->assertFalse(SyntheticFixtureSeeder::isAllowedTarget(
+            'production',
+            'mysql',
+            '127.0.0.1',
+            'fokus_law_synthetic',
+        ));
     }
 }
