@@ -95,15 +95,16 @@ jobs:
 
           docker compose -p "$COMPOSE_PROJECT_NAME" up --build --detach --wait --wait-timeout 240
 
-          app_port="$(docker compose -p "$COMPOSE_PROJECT_NAME" port app 80)"
-          if [[ "$app_port" != "127.0.0.1:8081" ]]; then
-            echo "Unexpected app bind: $app_port"
+          app_container="$(docker compose -p "$COMPOSE_PROJECT_NAME" ps -q app)"
+          app_bindings="$(docker inspect "$app_container" --format '{{range (index .HostConfig.PortBindings "80/tcp")}}{{.HostIp}}:{{.HostPort}}{{end}}')"
+          if [[ "$app_bindings" != "127.0.0.1:8081" ]]; then
+            echo "Unexpected app bind: $app_bindings"
             exit 1
           fi
 
-          db_port="$(docker compose -p "$COMPOSE_PROJECT_NAME" port db 3306 2>/dev/null || true)"
-          db_x_port="$(docker compose -p "$COMPOSE_PROJECT_NAME" port db 33060 2>/dev/null || true)"
-          if [[ -n "$db_port" || -n "$db_x_port" ]]; then
+          db_container="$(docker compose -p "$COMPOSE_PROJECT_NAME" ps -q db)"
+          db_bindings="$(docker inspect "$db_container" --format '{{range .HostConfig.PortBindings}}{{if .}}published{{end}}{{end}}')"
+          if [[ -n "$db_bindings" ]]; then
             echo "The synthetic database must not publish host ports."
             exit 1
           fi
