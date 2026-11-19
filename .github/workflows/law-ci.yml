@@ -126,7 +126,7 @@ jobs:
             exit 1
           fi
 
-          curl --fail --silent --show-error http://127.0.0.1:8081/up >/dev/null
-          home="$(curl --fail --silent --show-error http://127.0.0.1:8081/)"
+          docker compose -p "$COMPOSE_PROJECT_NAME" exec --no-TTY app curl --fail --silent --show-error http://127.0.0.1/up >/dev/null
+          home="$(docker compose -p "$COMPOSE_PROJECT_NAME" exec --no-TTY app curl --fail --silent --show-error http://127.0.0.1/)"
           grep -q 'Ambiente de desenvolvimento sintético' <<< "$home"
           grep -q 'Não insira dados pessoais, processos reais ou informações do PJe.' <<< "$home"
