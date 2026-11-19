@@ -1,0 +1,56 @@
+name: Fokus Law CI
+
+on:
+  push:
+    paths:
+      - "apps/law/**"
+      - ".github/workflows/law-ci.yml"
+  pull_request:
+    paths:
+      - "apps/law/**"
+      - ".github/workflows/law-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: law-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/law
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ":memory:"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/law/package-lock.json
+      - uses: docker/setup-buildx-action@v3
+      - name: Validate Composer metadata
+        run: composer validate --strict
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Install JavaScript dependencies
+        run: npm ci
+      - name: Build frontend assets
+        run: npm run build
+      - name: Run automated checks
+        run: php artisan test --compact
+      - name: Build synthetic Docker image
+        run: docker buildx build --file Dockerfile --tag fokus-law:ci --load .
