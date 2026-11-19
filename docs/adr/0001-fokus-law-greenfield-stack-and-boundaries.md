@@ -5,13 +5,13 @@
 - Decision date: 2026-11-18
 - Recorded in this repository: 2026-11-19
 - Scope: Synthetic MVP for Fokus Cloud Law — 1ª Vara Crime de Ilhéus
-- Source decisions: [Linear REI-195](https://linear.app/reis-developer/issue/REI-195/vara-definir-arquitetura-greenfield-e-fronteiras-dos-ambientes) and the approved [PRD](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a) (sections 1, 7, 8, 9 and 10.1)
+- Source decisions: [Linear REI-195](https://linear.app/reis-developer/issue/REI-195/vara-definir-arquitetura-greenfield-e-fronteiras-dos-ambientes), the approved [PRD](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a) (sections 1, 4, 5, 7, 8, 9 and 10.1), and current product scope in [Linear REI-206](https://linear.app/reis-developer/issue/REI-206/vara-documentar-funcionalidades-e-regras-dos-modulos)
 
 ## Context
 
 The product is a Greenfield application for the synthetic MVP. The approved scope has one developer, a server-rendered application, and no automatic migration of code or data from legacy systems. The authorized KVM1 is shared with existing production services, so synthetic co-hosting requires logical separation and evidence before activation. Institutional data, production use, PJe integration, and institutional homologation are outside this decision.
 
-The implementation issues reference a synthetic Pessoa → Processo → Expedição workflow. The product-scope history has a later decision that lists Expedições for a subsequent phase; this ADR does not reconcile that scope tension. Implementation scope must follow the current approved PRD and Linear acceptance criteria. Identity, authorization, audit, storage, and backup boundaries remain explicit. Actual host configuration, application isolation, and end-to-end recovery are separate verification gates.
+The current product scope in the PRD and REI-206 defines the synthetic MVP as Pessoa → Processo; Gestão de Expedições is for a subsequent phase and is outside MVP acceptance. Older workflow references that include Expedição are historical and superseded for MVP scope. This clarification aligns product-scope references only; it does not change the approved architecture decision or authorize deployment. Identity, authorization, audit, storage, and backup boundaries remain explicit. Actual host configuration, logical application separation, and end-to-end recovery are separate verification gates.
 
 As observed on 2026-11-19, the VPS reports PHP 8.5.12, Percona Server for MySQL 8.4.11, and CloudPanel 6.0.8. Effective application configuration and InnoDB availability were not fully verified. At the edge, law.fokuscloud.com.br is redirected by a Cloudflare rule before reaching the origin; the current origin certificate does not include the law hostname and no Law vhost was observed. A Docker-published TCP 3333 listener for the existing Fokus Lead service was externally reachable despite UFW's default-deny policy; its purpose remains unconfirmed. The user chose to keep that mapping unchanged for now. These are dated observations, not mitigations or authorization to change shared routing.
 
@@ -58,9 +58,10 @@ For the synthetic MVP, backups are application-specific, encrypted before transf
 - Account governance and scopes: cross-checked against the current PRD on 2026-11-19; only test-account approval and module/action grants are attributed to Jorge, while unit/competence/secrecy checks remain server-side enforcement.
 - Current hosting observations: PHP 8.5.12, Percona 8.4.11, CloudPanel 6.0.8; MySQL engine and Law vhost configuration remain unverified. Cloudflare redirect/certificate observations and externally reachable Docker TCP 3333 were recorded as current state, not proof of mitigation.
 - Synthetic fixtures are wholly fictitious and not derived from masked copies.
-- PRD/Linear history contains a scope tension around Expedições; this ADR does not settle it.
+- Current scope cross-check (2026-11-19): PRD sections 4 and 5 and REI-206 place Gestão de Expedições in a later phase; MVP acceptance follows Pessoa → Processo with the approved Pessoa–Processo links and controls. Earlier Expedição references remain historical only. This is a scope clarification, not a new architecture or implementation decision.
 
 - Decision authority and selected stack: recorded in REI-195 and approved PRD, retrieved on 2026-11-19.
 - Synthetic/production boundary and activation gates: cross-checked against PRD section 10.1 on 2026-11-19; all infrastructure gates remain open.
 - No PJe integration, import, institutional data, or homologation is added by this ADR.
 - This record documents an existing approved decision; it does not constitute runtime, security, deployment, or institutional acceptance evidence.
+
