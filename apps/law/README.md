@@ -17,4 +17,10 @@ Greenfield Laravel application for the synthetic MVP. This repository contains n
 4. Run `php artisan key:generate` and `php artisan migrate` only against that synthetic database.
 5. Start local development with `php artisan serve`.
 
+## Synthetic fixture
+
+`php artisan db:seed` creates one unverified synthetic test account using the reserved `.test` email domain. The seeder only accepts SQLite `:memory:` while `APP_ENV=testing`, or MySQL on `localhost`/ `127.0.0.1` with database `fokus_law_synthetic` while `APP_ENV=local` or `development`. Other targets are rejected before a database connection is opened. This fixture does not grant application access.
+
+The GitHub Actions workflow validates Composer metadata and runs the Laravel test suite against the in-memory SQLite database. It does not use production secrets or connect to institutional services.
+
 The MVP is not approved for real institutional data, PJe integration, or production deployment. Environment isolation, access controls, synthetic fixtures, backup/restore, and the Pessoa → Processo → Expedição flow are tracked in Linear and remain to be implemented and verified.
