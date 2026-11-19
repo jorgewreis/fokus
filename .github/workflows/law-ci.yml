@@ -130,3 +130,14 @@ jobs:
           home="$(docker compose -p "$COMPOSE_PROJECT_NAME" exec --no-TTY app curl --fail --silent --show-error http://127.0.0.1/)"
           grep -q 'Ambiente de desenvolvimento sintético' <<< "$home"
           grep -q 'Não insira dados pessoais, processos reais ou informações do PJe.' <<< "$home"
+
+          confirmation_status="$(docker compose -p "$COMPOSE_PROJECT_NAME" exec --no-TTY app curl --silent --show-error --output /dev/null --write-out '%{http_code}' 'http://127.0.0.1/account-requests/1/confirm?expires=0&signature=ci-log-probe')"
+          if [[ "$confirmation_status" != "403" ]]; then
+            echo "Expected invalid signed confirmation to return 403, got $confirmation_status."
+            exit 1
+          fi
+          access_log="$(docker compose -p "$COMPOSE_PROJECT_NAME" exec --no-TTY app cat /var/log/apache2/access.log)"
+          if grep -q 'signature=ci-log-probe' <<< "$access_log"; then
+            echo "Apache access log exposed a signed confirmation query string."
+            exit 1
+          fi
