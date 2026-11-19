@@ -59,7 +59,7 @@ Execute os testes na imagem/app:
     docker compose -p fokus-law-synthetic exec -T app php artisan test --compact
     docker compose -p fokus-law-synthetic exec -T app php artisan test --compact tests/Feature/SyntheticAccountRequestSeederSafetyTest.php
 
-A primeira suíte usa o ambiente testing do PHPUnit e SQLite :memory:. O teste de segurança verifica que banco remoto, APP_ENV=production e DB_URL configurada são recusados. Em 19/11/2026, a suíte local passou com 14 testes e 68 assertions. O resultado não comprova MySQL/Compose runtime, entrega HTTP pelo host ou isolamento remoto.
+A primeira suíte usa o ambiente testing do PHPUnit e SQLite :memory:. O teste de segurança verifica que banco remoto, APP_ENV=production e DB_URL configurada são recusados. Em 19/11/2026, esta branch passou com 13 testes e 67 assertions. O resultado não comprova MySQL/Compose runtime, entrega HTTP pelo host ou isolamento remoto.
 
 ## Parar e remover fixtures
 
