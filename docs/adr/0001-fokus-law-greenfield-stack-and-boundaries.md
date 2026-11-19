@@ -9,9 +9,11 @@
 
 ## Context
 
-The product is a Greenfield application for the synthetic MVP. The approved scope has one developer, a server-rendered operational workflow, and no automatic migration of code or data from legacy systems. The authorized KVM1 is shared with existing production services, so synthetic co-hosting requires logical separation and evidence before activation. Institutional data, production use, PJe integration, and institutional homologation are outside this decision.
+The product is a Greenfield application for the synthetic MVP. The approved scope has one developer, a server-rendered application, and no automatic migration of code or data from legacy systems. The authorized KVM1 is shared with existing production services, so synthetic co-hosting requires logical separation and evidence before activation. Institutional data, production use, PJe integration, and institutional homologation are outside this decision.
 
-The architecture must support the Pessoa → Processo → Expedição workflow while keeping identity, authorization, audit, storage, and backup boundaries explicit. The runtime and capacity of the actual host, the application isolation controls, and end-to-end recovery are separate verification gates.
+The implementation issues reference a synthetic Pessoa → Processo → Expedição workflow. The product-scope history has a later decision that lists Expedições for a subsequent phase; this ADR does not reconcile that scope tension. Implementation scope must follow the current approved PRD and Linear acceptance criteria. Identity, authorization, audit, storage, and backup boundaries remain explicit. Actual host configuration, application isolation, and end-to-end recovery are separate verification gates.
+
+As observed on 2026-11-19, the VPS reports PHP 8.5.12, Percona Server for MySQL 8.4.11, and CloudPanel 6.0.8. Effective application configuration and InnoDB availability were not fully verified. At the edge, law.fokuscloud.com.br is redirected by a Cloudflare rule before reaching the origin; the current origin certificate does not include the law hostname and no Law vhost was observed. A Docker-published TCP 3333 listener for the existing Fokus Lead service was externally reachable despite UFW's default-deny policy; its purpose remains unconfirmed. The user chose to keep that mapping unchanged for now. These are dated observations, not mitigations or authorization to change shared routing.
 
 ## Options considered
 
@@ -30,13 +32,13 @@ The architecture must support the Pessoa → Processo → Expedição workflow w
 - Pros: separates frontend deployment from API implementation and permits independent clients.
 - Cons: adds an API contract, deployment surface, and authentication boundary without a required MVP client or workflow that benefits from the split.
 
-The alternatives and tradeoffs above reflect the options recorded in the approved REI-195 decision; no additional product or infrastructure option is implied.
+The approved REI-195 decision explicitly records the selected stack and the Django and SPA/API alternatives. The pros and cons above are architecture analysis recorded in this ADR; they should not be read as additional product approval.
 
 ## Decision
 
 Use a modular monolith in Laravel 13 and PHP 8.5, with MySQL 8.4 LTS using InnoDB and Blade-rendered pages. Keep modules within the application; do not create separate frontend/API services for this MVP. The project is Greenfield and does not automatically migrate legacy code or data.
 
-For synthetic development, use individual accounts with MFA and server-side authorization that denies ungranted modules and actions by default. Self-registration remains pending and grants no functional access. Only Jorge approves test accounts and explicitly grants modules, action sets, units, and secrecy levels. Login, invitation, and TOTP setup alone do not grant access. Support autonomy does not grant account-approval or access-provisioning powers.
+For synthetic development, use individual accounts with MFA and server-side authorization that denies ungranted modules and actions by default. Self-registration remains pending and grants no functional access. Only Jorge approves test accounts and explicitly grants modules and action sets. The server must enforce the user's applicable unit, competence, and secrecy scope; these dimensions are not additional grants made by this decision. Login, invitation, and TOTP setup alone do not grant access. Support autonomy does not grant account-approval or module/action-provisioning powers.
 
 The synthetic environment may share the KVM1 with existing production only after the developer approves activation and the controls in PRD section 10.1 are evidenced. This is logical separation, not infrastructure isolation. The application must use dedicated site directories and PHP-FPM pool, MySQL database and user, credentials, keys, sessions, and storage; contain no production data, secrets, or integrations; and pass negative cross-product access tests. No remote deployment or activation is authorized by this ADR.
 
@@ -52,8 +54,13 @@ For the synthetic MVP, backups are application-specific, encrypted before transf
 
 ## Verification record
 
+- Options and approved selection: Django and SPA/API are named as considered alternatives in REI-195; detailed pros/cons and consequences here are architecture analysis, not separate user approvals.
+- Account governance and scopes: cross-checked against the current PRD on 2026-11-19; only test-account approval and module/action grants are attributed to Jorge, while unit/competence/secrecy checks remain server-side enforcement.
+- Current hosting observations: PHP 8.5.12, Percona 8.4.11, CloudPanel 6.0.8; MySQL engine and Law vhost configuration remain unverified. Cloudflare redirect/certificate observations and externally reachable Docker TCP 3333 were recorded as current state, not proof of mitigation.
+- Synthetic fixtures are wholly fictitious and not derived from masked copies.
+- PRD/Linear history contains a scope tension around Expedições; this ADR does not settle it.
+
 - Decision authority and selected stack: recorded in REI-195 and approved PRD, retrieved on 2026-11-19.
-- Alternatives, tradeoffs, selected decision, and consequences: present in this ADR.
 - Synthetic/production boundary and activation gates: cross-checked against PRD section 10.1 on 2026-11-19; all infrastructure gates remain open.
 - No PJe integration, import, institutional data, or homologation is added by this ADR.
 - This record documents an existing approved decision; it does not constitute runtime, security, deployment, or institutional acceptance evidence.
