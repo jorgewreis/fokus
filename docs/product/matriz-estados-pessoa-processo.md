@@ -5,7 +5,7 @@
 
 | Etapa | Estado/condição | Resultado definido pela fonte | Limite / pendência |
 |---|---|---|---|
-| Qualquer etapa com requisição assíncrona | Carregando | Indicar que a operação está em andamento e impedir submissão duplicada enquanto a mesma operação não terminou, quando a interface precisar aguardar resposta. | Forma visual/copy não definidos; registrar como inaplicável onde a etapa for síncrona. |
+| Qualquer etapa com requisição assíncrona | Carregando | Indicar que a operação está em andamento quando a interface precisar aguardar resposta. | Forma visual/copy não definidos; registrar como inaplicável onde a etapa for síncrona. |
 | Localizar Pessoas | Lista inicial ou busca sem resultados | Busca somente por nome; cadastro de Pessoa continua disponível a usuário autorizado. | Copy, ordenação e paginação não definidos aqui. |
 | Cadastrar Pessoa | Campos válidos e dados sintéticos | Salvar Pessoa conforme campos obrigatórios e tipo PF/PJ fixo após criação. | Não existe fluxo aprovado para alterar classificação PF/PJ. |
 | Cadastrar Pessoa | Campo obrigatório inválido/ausente | Bloquear salvamento até satisfazer validações aprovadas. | Texto de mensagem e foco pós-erro não definidos. |
