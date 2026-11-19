@@ -64,4 +64,3 @@ For the synthetic MVP, backups are application-specific, encrypted before transf
 - Synthetic/production boundary and activation gates: cross-checked against PRD section 10.1 on 2026-11-19; all infrastructure gates remain open.
 - No PJe integration, import, institutional data, or homologation is added by this ADR.
 - This record documents an existing approved decision; it does not constitute runtime, security, deployment, or institutional acceptance evidence.
-

@@ -14,12 +14,14 @@ class SyntheticFixtureSeeder extends Seeder
         $connection = config('database.default');
         $driver = config("database.connections.{$connection}.driver");
         $database = config("database.connections.{$connection}.database");
+        $url = config("database.connections.{$connection}.url");
 
         if (! self::isAllowedTarget(
             app()->environment(),
             $driver,
             config("database.connections.{$connection}.host"),
             $database,
+            $url,
         )) {
             throw new RuntimeException(
                 'Synthetic fixtures may only be seeded into the in-memory test database or the dedicated local fokus_law_synthetic database.'
@@ -35,8 +37,17 @@ class SyntheticFixtureSeeder extends Seeder
         );
     }
 
-    public static function isAllowedTarget(string $environment, string $driver, ?string $host, ?string $database): bool
-    {
+    public static function isAllowedTarget(
+        string $environment,
+        string $driver,
+        ?string $host,
+        ?string $database,
+        ?string $url = null,
+    ): bool {
+        if ($url !== null && trim($url) !== '') {
+            return false;
+        }
+
         $inMemoryTestDatabase = $environment === 'testing'
             && $driver === 'sqlite'
             && $database === ':memory:';

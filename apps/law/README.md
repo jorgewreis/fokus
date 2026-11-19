@@ -23,4 +23,20 @@ Greenfield Laravel application for the synthetic MVP. This repository contains n
 
 The GitHub Actions workflow validates Composer metadata and runs the Laravel test suite against the in-memory SQLite database. It does not use production secrets or connect to institutional services.
 
-The MVP is not approved for real institutional data, PJe integration, or production deployment. Environment isolation, access controls, synthetic fixtures, backup/restore, and the Pessoa → Processo → Expedição flow are tracked in Linear and remain to be implemented and verified.
+The approved synthetic MVP flow is Pessoa → Processo. Gestão de Expedições is a future phase and is outside MVP acceptance. Access controls, environment isolation, backup/restore, and the Pessoa–Processo flow remain subject to implementation and verification. This repository does not authorize real institutional data, PJe integration, institutional homologation, or production deployment.
+
+## Project references
+
+- [Canonical PRD](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a) — current product requirements and scope.
+- [ADR-0001](../../docs/adr/0001-fokus-law-greenfield-stack-and-boundaries.md) — approved stack and environment boundaries.
+- [REI-194](https://linear.app/reis-developer/issue/REI-194/vara-implementar-o-percurso-minimo-do-mvp-institucional) — MVP parent issue.
+- [REI-198](https://linear.app/reis-developer/issue/REI-198/vara-inicializar-aplicacao-greenfield-e-ambiente-sintetico-isolado) — application bootstrap and synthetic environment.
+
+## Verification
+
+Run from this directory:
+
+- composer validate --strict
+- php artisan test --compact
+
+The test configuration uses SQLite in memory and must not target a production or institutional database. The test suite does not prove environment isolation, authorization completeness, MySQL restore behavior, or deployment readiness.
