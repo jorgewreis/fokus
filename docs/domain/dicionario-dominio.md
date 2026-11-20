@@ -28,7 +28,7 @@ erDiagram
     UNIDADE ||--o{ PROCESSO : identifica
 ```
 
-O diagrama é conceitual e omite dimensões de autorização que ainda não têm catálogo aprovado. Não representa tabelas existentes.
+O diagrama é conceitual e omite dimensões de autorização que ainda não têm semântica operacional aprovada. Não representa tabelas existentes.
 
 ### 2.1 Pessoa
 
@@ -88,7 +88,7 @@ Entidade associativa explícita entre Pessoa e Processo, pois ambos podem partic
 
 Módulo/ação, Unidade, competência e sigilo são dimensões distintas. A Unidade é associada explicitamente ao Processo; competência e sigilo não são inferidos do CNJ, da Unidade ou do tipo de participação. O acesso fora do escopo deve ser negado sem revelar a existência de Processo não autorizado.
 
-- **Sigilo:** atributo/dimensão separado. Catálogo e comportamento aprovados ainda não existem para o MVP sintético. Não criar valores, defaults ou acesso a Processos baseado em rótulos inventados. A decisão pendente na [REI-231](https://linear.app/reis-developer/issue/REI-231/vara-definir-catalogo-de-sigilo-e-acesso-a-processos-sinteticos) bloqueia a implementação de acesso a Processos até definição.
+- **Sigilo:** atributo/dimensão separado. Por decisão de Jorge em 20/11/2026, o vocabulário de referência do MVP sintético é o do [Decreto Judiciário TJBA nº 218/2025, texto compilado](https://www7.tjba.jus.br/secao/arquivo/9/39235/DJ%20218.2025%20-%20Texto%20compilado.pdf): Público; Sigilo nível 1 (Segredo de Justiça); nível 2 (Mínimo); nível 3 (Médio); nível 4 (Intenso); nível 5 (Absoluto e Restrito ao Magistrado). A norma rege processos no PJe de 1º e 2º graus do TJBA; no Fokus sintético, esta adoção define somente vocabulário, sem importar automaticamente os ACLs, autoridades ou equivalência institucional do PJe. O texto compilado chama nível 2 de “Mínimo”, mas uma alínea também o chama de “Médio”; preservar o código e registrar essa inconsistência até confirmação normativa. Permanecem pendentes a atribuição/alteração no ambiente sintético, o mapeamento entre classificação e grants de contas e a resposta quando faltar classificação. Enquanto essas regras não forem aprovadas, negar acesso funcional a Processos; não criar defaults nem inferir sigilo do CNJ, Unidade, competência ou participação. A [REI-231](https://linear.app/reis-developer/issue/REI-231/vara-definir-catalogo-de-sigilo-e-acesso-a-processos-sinteticos) permanece aberta para fechar essas regras.
 - **Competência:** dimensão separada de Unidade e sigilo; catálogo/valores, fonte e atribuição pendentes. Não implementar autorização por competência até decisão na [REI-232](https://linear.app/reis-developer/issue/REI-232/vara-definir-competencia-e-escopo-de-acesso-a-processos-sinteticos).
 - **Auditoria de negações:** registrar no catálogo somente eventos expressamente aprovados. Auditoria geral de tentativas negadas de leitura ou alteração segue pendente; não ampliar coleta por inferência.
 
@@ -106,7 +106,7 @@ Módulo/ação, Unidade, competência e sigilo são dimensões distintas. A Unid
 
 | Tema | Limite atual | Rastreabilidade |
 |---|---|---|
-| Catálogo de sigilo e autorização de Processo | Sem valores/defaults; acesso a Processos bloqueado até decisão. | [REI-231](https://linear.app/reis-developer/issue/REI-231/vara-definir-catalogo-de-sigilo-e-acesso-a-processos-sinteticos) |
+| Catálogo de sigilo e autorização de Processo | Vocabulário TJBA PJe (Público, níveis 1–5) adotado para fixtures sintéticas; atribuição, grants e classificação ausente pendentes; acesso segue bloqueado. | [REI-231](https://linear.app/reis-developer/issue/REI-231/vara-definir-catalogo-de-sigilo-e-acesso-a-processos-sinteticos) |
 | Catálogo/atribuição de competência | Sem inferência e sem autorização por competência até decisão. | [REI-232](https://linear.app/reis-developer/issue/REI-232/vara-definir-competencia-e-escopo-de-acesso-a-processos-sinteticos) |
 | Normalização/duplicidade documental | Preservar original; comparação por tipo aguarda regra aprovada. | [REI-233](https://linear.app/reis-developer/issue/REI-233/vara-definir-normalizacao-e-duplicidade-dos-documentos-de-pessoas) |
 | Desvincular/suspender Conta–Pessoa | Bloqueia exclusão de Pessoa vinculada a conta; sem cascata. | [REI-234](https://linear.app/reis-developer/issue/REI-234/vara-definir-ciclo-de-desvinculacao-de-conta-e-pessoa) |
