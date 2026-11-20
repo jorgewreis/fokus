@@ -8,4 +8,11 @@ O arquivo [cnj-mpm-competencias-2025-04.csv](cnj-mpm-competencias-2025-04.csv) r
 - A tabela é uma referência de vocabulário; não identifica as competências atribuídas à Vara, nem mapeia classes SGT, nem concede acesso. A configuração e os grants exigem as decisões e controles do PRD.
 - Antes de usar em configuração operacional, conferir fonte vigente, política de atualização e tratamento de códigos retirados; não atribuir automaticamente o código `999`.
 
+## Classes SGT
+
+- A versão observada na API oficial sucessora em 20/11/2026 foi `05/11/2026`; a leitura completa dos detalhes foi limitada por HTTP 429 e interrompida.
+- A tentativa recuperou 849 nós e comparou seus códigos com o dump, mas não comprovou os atributos de todos os nós nem explicou a diferença entre 849 itens e 842 linhas `classes`.
+- Não existe lista importada nem classe aprovada para seleção; a implementação mantém fail-closed até coletar detalhes completos e Jorge revisar os candidatos.
+- Evidências, amostras, hashes e regras conservadoras: [relatório de completude](sgt-relatorio-completude-2026-11-20.md) e [referência de classes](../referencia-sgt-classes.md).
+
 Rastreamento: [REI-232](https://linear.app/reis-developer/issue/REI-232/vara-definir-competencia-e-escopo-de-acesso-a-processos-sinteticos).
