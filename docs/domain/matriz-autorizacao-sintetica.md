@@ -13,7 +13,7 @@ Uma requisição de Processo só pode prosseguir se todas as condições aprovad
 1. A conta está aprovada, ativa e autenticada conforme os requisitos de sessão/MFA.
 2. A conta tem grant explícito para o módulo e para a ação solicitada.
 3. A Unidade do Processo está dentro do grant da conta.
-4. A autorização por competência passa. **No estado atual, competência está pendente na REI-232; por isso, nenhuma requisição funcional de Processo pode ser liberada.**
+4. A conta possui grant explícito da mesma competência atribuída ao Processo. **O catálogo e os controles ainda não estão implementados; nenhuma requisição funcional de Processo pode ser liberada.**
 5. O Processo tem classificação de sigilo explícita.
 6. A conta tem grant explícito para a mesma entrada/código de sigilo atribuída ao Processo.
 
@@ -28,7 +28,7 @@ Nas tabelas abaixo, `C` representa qualquer entrada/código já existente no cat
 | Conta pendente, inativa ou não autenticada | Qualquer | Qualquer | Qualquer | Negar |
 | Conta aprovada e ativa; ação sem grant | Qualquer | Qualquer | Qualquer | Negar |
 | Conta com grants e Unidade divergente | Qualquer | Correspondente ou não | Falha | Negar |
-| Conta com grants; competência não definida/aprovada | Qualquer | Correspondente ou não | Indeterminada | Negar; manter acesso funcional bloqueado |
+| Conta sem grant da competência do Processo, ou Processo sem competência | Qualquer | Correspondente ou não | Falha | Negar; não revelar existência |
 | Conta com demais gates satisfeitos | Ausente | Qualquer | Satisfeitos | Negar sem revelar existência ou metadados do Processo |
 | Conta com demais gates satisfeitos | Entrada `C` | Grant ausente | Satisfeitos | Negar sem revelar existência ou metadados do Processo |
 | Conta com demais gates satisfeitos | Entrada `C` | Grant de entrada diferente de `C` | Satisfeitos | Negar; não aplicar hierarquia ou herança |
@@ -59,7 +59,7 @@ Para alterar Processo, além da autorização de leitura e dos mesmos gates, a c
 
 ## Pendências
 
-- REI-232: catálogo, atribuição e grants de competência. Até decisão, todo acesso funcional a Processos permanece negado.
+- REI-232: obter e versionar catálogo de competência, detalhar alterações de configuração e implementar os controles. Até a implementação, todo acesso funcional a Processos permanece negado.
 - REI-196: implementar autorização no servidor após resolver as dependências e proteger todos os caminhos de leitura e escrita.
 - REI-205: validar o percurso sintético e os casos positivos/negativos após implementação.
 
