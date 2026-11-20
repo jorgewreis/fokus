@@ -51,14 +51,17 @@ class AccountPasswordController extends Controller
             [
                 'email' => mb_strtolower(trim($validated['email'])),
                 'password' => $validated['password'],
-                'password_confirmation' => $validated['password_confirmation'],
+                'password_confirmation' => $validated['password'],
                 'token' => $validated['token'],
             ],
             function ($user, string $password) use ($audit): void {
-                $user->forceFill(['password' => $password])->setRememberToken(Str::random(60))->save();
-                DB::table('sessions')->where('user_id', $user->getKey())->delete();
-                $audit->record($user, 'account.password_reset', 'user', $user->getKey());
-                event(new PasswordReset($user));
+                DB::transaction(function () use ($user, $password, $audit): void {
+                    $user->forceFill(['password' => $password])->setRememberToken(Str::random(60));
+                    $user->save();
+                    DB::table('sessions')->where('user_id', $user->getKey())->delete();
+                    $audit->record($user, 'account.password_reset', 'user', $user->getKey());
+                    event(new PasswordReset($user));
+                });
             },
         );
 

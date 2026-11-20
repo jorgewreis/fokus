@@ -2,6 +2,7 @@
 
 use App\Mail\MfaRecoveryNotice;
 use App\Models\User;
+use App\Security\SyntheticDatabaseGuard;
 use App\Services\AccountAudit;
 use App\Services\AccountRequestLifecycle;
 use Illuminate\Console\Command;
@@ -10,7 +11,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -22,18 +22,16 @@ Artisan::command('account-requests:expire', function (AccountRequestLifecycle $l
     $this->info("Expired {$expired} account requests.");
 })->purpose('Expire old synthetic account requests and remove their personal data')->hourly();
 
-Artisan::command('law:recover-admin-mfa', function (AccountAudit $audit): int {
-    $db = config('database.connections.'.config('database.default'));
-    $safeTarget = app()->environment('local')
-        && filled(config('app.key'))
-        && config('database.default') === 'mysql'
-        && ($db['host'] ?? null) === 'db'
-        && (string) ($db['port'] ?? '') === '3306'
-        && ($db['database'] ?? null) === 'fokus_law_synthetic'
-        && ($db['username'] ?? null) === 'fokus_law_local'
-        && blank($db['url'] ?? null);
+Artisan::command('law:recover-admin-mfa', function (AccountAudit $audit, SyntheticDatabaseGuard $databaseGuard): int {
+    try {
+        $databaseGuard->assertAllowed();
+    } catch (Throwable) {
+        $this->error('Recuperação recusada: exige APP_ENV=local e MySQL sintético dedicado.');
 
-    if (! $safeTarget || config('mail.default') !== 'smtp') {
+        return Command::FAILURE;
+    }
+
+    if (! app()->environment('local') || blank(config('app.key')) || config('mail.default') !== 'smtp') {
         $this->error('Recuperação recusada: exige APP_ENV=local, MySQL sintético dedicado e SMTP configurado para a notificação.');
 
         return Command::FAILURE;

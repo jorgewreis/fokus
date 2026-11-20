@@ -32,7 +32,7 @@ class BootstrapSyntheticAdminTest extends TestCase
             'admin-bootstrap.email' => 'jorge@example.test',
         ]);
         $guard = Mockery::mock(SyntheticDatabaseGuard::class);
-        $guard->shouldReceive('assertAllowed')->once();
+        $guard->shouldReceive('assertAllowed')->twice();
         $this->app->instance(SyntheticDatabaseGuard::class, $guard);
 
         $this->artisan('fokus:bootstrap-admin')
