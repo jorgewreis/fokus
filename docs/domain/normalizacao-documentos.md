@@ -57,6 +57,7 @@ REI-201 pode implementar cadastro, consulta, edição, classificação PF/PJ, ap
 ## Fontes e limites
 
 - PRD canônico, *PRD | Fokus Cloud Law — 1ª Vara Crime de Ilhéus | MVP 2027*, §4.3 (catálogo, aplicabilidade e validação documental), consultado em 20/11/2026: <https://app.notion.com/p/41b6af4c510981e0b980eff10759823a>.
+- Receita Federal, [CNPJ alfanumérico](https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/cnpj-alfanumerico) e [documentação técnica do CNPJ](https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/documentos-tecnicos/cnpj), consultadas em 20/11/2026: formato alfanumérico em produção desde 27/07/2026, com primeiro registro em 31/07/2026. Esta regra amplia somente a validação local de CNPJ; não define chave de comparação por tipo.
 - [Dicionário de domínio — Pessoas e Processos](dicionario-dominio.md), seção Documento.
 - [REI-233 — Definir normalização e duplicidade dos documentos de Pessoas](https://linear.app/reis-developer/issue/REI-233/vara-definir-normalizacao-e-duplicidade-dos-documentos-de-pessoas), critérios para preservar valor original, não inferir transformação genérica e manter lacunas explícitas.
 - [REI-201 — Implementar cadastro de Pessoas e deduplicação assistida](https://linear.app/reis-developer/issue/REI-201/vara-implementar-cadastro-de-pessoas-e-deduplicacao-assistida), escopo e limites de implementação.
