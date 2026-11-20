@@ -94,7 +94,7 @@ Módulo/ação, Unidade, competência e sigilo são dimensões distintas. A Unid
 
 Os resultados verificáveis e exemplos da regra de acesso a Processos estão na [matriz de autorização sintética](matriz-autorizacao-sintetica.md). A matriz é um contrato documental; não atesta implementação dos controles.
 
-Quando um vínculo classe–competência é retirado da configuração, os Processos existentes preservam a classificação e o acesso continua sujeito ao grant correspondente e aos demais gates; a combinação retirada deixa de estar disponível para novos cadastros. Se a classe de um desses Processos for alterada, exigir combinação classe–competência ativa antes de concluir. A configuração sintética e o painel de grants foram integrados pelo PR #25; ainda não há integração do mapa e dos controles completos aos fluxos de Processo.
+Quando uma competência é retirada da configuração, desativar também, na mesma transação e sob o lock/revisão da configuração, os vínculos classe–competência existentes que a utilizam. Preservar as linhas históricas e os Processos já classificados; a combinação deixa de estar disponível para novos cadastros. Se a competência voltar à configuração da Vara, os vínculos antigos continuam inativos até Jorge revisá-los e reativá-los explicitamente, com auditoria. Se a classe de um Processo existente for alterada, exigir combinação classe–competência ativa antes de concluir. A configuração sintética e o painel de grants foram integrados pelo PR #25; a implementação do mapa está em andamento e os controles completos ainda não estão integrados aos fluxos de Processo.
 
 ## 3. Itens futuros e decisões pendentes
 

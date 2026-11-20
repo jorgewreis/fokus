@@ -66,6 +66,7 @@ Jorge concede explicitamente a competência à conta sintética. A verificação
 | Classe de Processo com competência retirada é alterada | Exigir competência ativa compatível com a nova classe antes de concluir. |
 | Vínculo classe–competência retirado; Processo existente conserva a combinação | Preservar classificação; acesso continua sujeito aos grants e demais gates. Não oferecer a combinação em novos cadastros. |
 | Classe de Processo com vínculo classe–competência retirado é alterada | Exigir combinação classe–competência ativa antes de concluir. |
+| Competência retirada e depois reativada na configuração da Vara | Os vínculos classe–competência antigos permanecem inativos; somente ficam disponíveis após revisão e reativação explícita e auditada por Jorge. |
 
 Os códigos `3` e `16` são exemplos extraídos do snapshot, não uma declaração das competências da Vara. A matriz descreve resultados esperados. O [PR #24](https://github.com/jorgewreis/fokus/pull/24) integrou os serviços internos de catálogo e grants; o [PR #25](https://github.com/jorgewreis/fokus/pull/25) integrou configuração auditada, painel protegido e snapshot histórico SGT. Seleção de classes, mapa classe–competência e autorização completa de Processo continuam pendentes de implementação e integração. Verificação visual, CSRF real e concorrência MySQL permanecem pendentes.
 
