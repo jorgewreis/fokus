@@ -68,6 +68,10 @@ Objeto de valor único da Pessoa no MVP. CEP, logradouro, número, cidade e UF s
 
 Conta e cadastro de Pessoa são conceitos separados. A associação é opcional e tem cardinalidade máxima 1:1: uma conta pode se vincular a no máximo uma Pessoa, e uma Pessoa a no máximo uma conta. Pessoas sem conta e contas sem Pessoa são válidas; credenciais, autenticação e permissões não integram o cadastro pessoal. No ambiente sintético, somente Jorge estabelece ou altera o vínculo e a ação é auditável. Igualdade de e-mail não comprova identidade e não cria vínculo automaticamente.
 
+Decisão de auditoria de 20/11/2026: o evento de vínculo registra ator, instante, operação, IDs internos da Conta e da Pessoa e resultado. A autoedição de contato registra ator, instante, ação, ID interno da Pessoa e resultado. Não registrar valores de endereço/telefone nem e-mail na trilha.
+
+Exceção aprovada do PRD: uma conta ativa vinculada pode alterar somente telefone e endereço do próprio cadastro, com auditoria. A rota própria identifica a Pessoa pela conta autenticada; não permite alterar nome, documentos, WhatsApp, classificação PF/PJ ou vínculo. No formulário atual, telefone associado a identificador WhatsApp não pode ser trocado/removido nessa operação limitada; a regra preserva a referência até revisão do produto.
+
 A exclusão de Pessoa vinculada a conta fica bloqueada. Não desvincular, excluir ou suspender a conta em cascata. O ciclo explícito de desvinculação/suspensão permanece pendente na [REI-234](https://linear.app/reis-developer/issue/REI-234/vara-definir-ciclo-de-desvinculacao-de-conta-e-pessoa). A regra aprovada de exclusão também impede excluir Pessoa com qualquer vínculo Pessoa–Processo.
 
 ### 2.3 Unidade

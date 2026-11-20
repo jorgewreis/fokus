@@ -73,6 +73,8 @@ Os códigos de competência `3` e `16` são exemplos extraídos do snapshot, nã
 ## Auditoria e implementação
 
 - Registrar cada atribuição/alteração feita por Jorge com ator, data/hora, identificador interno do Processo, operação e código anterior/novo, sem copiar dados pessoais ou documentos para a trilha.
+- O vínculo Conta–Pessoa por Jorge registra ator, instante, IDs internos da Conta e da Pessoa, operação e resultado; não compara e-mail nem registra valor documental ou de contato.
+- A autoedição de telefone/endereço pela conta ativa vinculada registra ator, instante, ação, ID interno da Pessoa e resultado; valores de contato não são copiados à auditoria.
 - Avaliar autorização no servidor para listas, detalhe, vínculos e mutações. Não confiar em ocultar controles na interface.
 - Aplicar resposta de negação que não revele existência nem metadados de Processo fora do escopo.
 - Esta matriz não aprova auditoria geral de todas as tentativas negadas; registrar somente eventos expressamente aprovados no catálogo de auditoria.
@@ -80,7 +82,7 @@ Os códigos de competência `3` e `16` são exemplos extraídos do snapshot, nã
 
 ## Pendências
 
-- REI-232: verificar vigência do catálogo e implementar o fluxo aprovado de revisão de atualizações e os controles ainda pendentes. Até a implementação dos gates necessários, todo acesso funcional a Processos permanece negado.
+- REI-232: verificar vigência do catálogo e implementar o fluxo aprovado de revisão de atualizações e controles ainda pendentes. Rotas parciais de Processo existem na branch em revisão; acesso a Processo sem classificação ou sem todos os grants explícitos segue negado.
 - REI-196: implementar autorização no servidor após resolver as dependências e proteger todos os caminhos de leitura e escrita.
 - REI-205: validar o percurso sintético e os casos positivos/negativos após implementação.
 
