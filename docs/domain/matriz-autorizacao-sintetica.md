@@ -4,7 +4,7 @@
 **Atualizado em:** 20/11/2026
 **Fonte canônica:** [PRD Fokus Cloud Law](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a) e decisões nas REI-231/232.
 
-Esta matriz define a regra de sigilo do ambiente sintético. Não copia os ACLs ou os papéis do PJe/TJBA, nem constitui regra para produção ou dados reais. O catálogo adotado é apenas o vocabulário do Decreto Judiciário TJBA nº 218/2025: Público e níveis 1 a 5. O texto oficial mantém divergência nominal sobre o nível 2; a autorização compara o identificador exato da entrada, não o texto exibido nem uma ordem numérica.
+Esta matriz define regras de sigilo e competência do ambiente sintético. Não copia os ACLs ou os papéis do PJe/TJBA, nem constitui regra para produção ou dados reais. O catálogo de sigilo adotado é apenas o vocabulário do Decreto Judiciário TJBA nº 218/2025: Público e níveis 1 a 5. O texto oficial mantém divergência nominal sobre o nível 2; a autorização compara o identificador exato da entrada, não o texto exibido nem uma ordem numérica.
 
 ## Regra cumulativa
 
@@ -13,7 +13,7 @@ Uma requisição de Processo só pode prosseguir se todas as condições aprovad
 1. A conta está aprovada, ativa e autenticada conforme os requisitos de sessão/MFA.
 2. A conta tem grant explícito para o módulo e para a ação solicitada.
 3. A Unidade do Processo está dentro do grant da conta.
-4. A conta possui grant explícito da mesma competência atribuída ao Processo. **O catálogo e os controles ainda não estão implementados; nenhuma requisição funcional de Processo pode ser liberada.**
+4. A conta possui grant explícito da mesma competência atribuída ao Processo. **Há serviços internos de catálogo e grants, mas os controles completos ainda não estão integrados; nenhuma requisição funcional de Processo pode ser liberada.**
 5. O Processo tem classificação de sigilo explícita.
 6. A conta tem grant explícito para a mesma entrada/código de sigilo atribuída ao Processo.
 
@@ -41,13 +41,33 @@ Para alterar Processo, além da autorização de leitura e dos mesmos gates, a c
 
 | Caso | Exemplo | Esperado |
 |---|---|---|
-| Correspondência exata | Processo classificado como nível 2; conta tem grant explícito do mesmo nível e todos os outros gates passam | A regra de sigilo passa; a decisão final ainda depende de competência aprovada |
+| Correspondência exata | Processo classificado como nível 2; conta tem grant explícito do mesmo nível e todos os outros gates passam | A regra de sigilo passa; a decisão final também exige grant da competência correspondente |
 | Código divergente | Processo classificado como nível 2; conta tem somente grant para nível 1 | Negar, sem inferir proximidade ou hierarquia |
 | Sem grant | Processo classificado como nível 2; conta tem grant de módulo/ação, Unidade e competência, mas nenhum grant de sigilo | Negar |
 | Sem classificação | Processo sem entrada de sigilo; conta tem grants para níveis 1 a 5 | Negar e não confirmar existência/metadados |
 | Classificação alterada | Jorge altera nível 3 para nível 2 com auditoria | A classificação corrente passa a ser nível 2; grant anterior de nível 3 não basta |
 | Poder de classificação não é leitura | Jorge classifica, mas sua conta não tem grant de leitura do mesmo nível do Processo | A ação de classificar é permitida e auditada; a leitura segue negada |
 | Unidade ou competência falha | Grant de sigilo exato, mas Unidade diverge ou competência não passa | Negar |
+
+## Competência: fonte, atribuição e exemplos
+
+A fonte de referência é a aba `Competencias juízo` da [planilha oficial de tabelas auxiliares MPM](https://www.cnj.jus.br/wp-content/uploads/2025/04/tabelas-auxiliares-mpm.xlsx). A [extração versionada](catalogos/README.md) contém 39 códigos e descrições, com hash e limites da fonte; a planilha não informa versão semântica, não declara as competências da Vara e não fornece mapa classe–competência. A vigência e a política de atualização precisam ser verificadas. Por decisão de Jorge, o código MPM `999` (“Não se aplica”) não é selecionável nem concedido no ambiente sintético; o serviço interno atual o recusa para grant.
+
+No ambiente sintético, Jorge configura e audita ramo, grau, uma ou mais competências da Vara e o mapa explícito dessas competências às classes SGT. A classe oferecida respeita o ramo, o grau e o mapa. Havendo várias competências mapeadas para a classe, quem cadastra escolhe uma; uma única correspondência pode ser atribuída automaticamente. Quando a classe muda, a competência é revalidada; caso não seja válida para a nova classe, é necessária escolha válida antes de concluir. Sem carga SGT inicial válida, o PRD permite cadastro inicial pelo CNJ, sem classe ou assuntos; a ausência de competência, contudo, não concede acesso funcional ao Processo.
+
+Jorge concede explicitamente a competência à conta sintética. A verificação compara o mesmo código atribuído ao Processo, além de módulo/ação, Unidade e sigilo. A competência retirada da configuração da Vara permanece nos Processos existentes e deixa de ser opção em novos cadastros; não há reclassificação automática. Para esses registros, o acesso continua exigindo o grant correspondente; ao mudar sua classe, é necessária uma competência ativa compatível com a nova classe. A retirada de um vínculo classe–competência também preserva a classificação dos Processos existentes e o acesso sujeito aos grants e demais gates; a combinação retirada não pode ser usada em novos cadastros. Ao alterar a classe, exigir uma combinação ativa antes de concluir.
+
+| Caso sintético | Resultado esperado da regra de competência |
+|---|---|
+| Processo com competência `3`; conta ativa possui grant explícito `3` | Passa a dimensão de competência; demais gates continuam obrigatórios. |
+| Processo com competência `3`; conta possui somente grant `16` | Negar acesso, sem revelar existência ou metadados. |
+| Processo sem competência ou conta sem grant correspondente | Negar acesso, sem revelar existência ou metadados. |
+| Competência `3` retirada da configuração, preservada no Processo existente; conta mantém grant `3` | Passa a dimensão de competência para o registro existente; demais gates continuam obrigatórios. Não oferecer `3` para novo cadastro. |
+| Classe de Processo com competência retirada é alterada | Exigir competência ativa compatível com a nova classe antes de concluir. |
+| Vínculo classe–competência retirado; Processo existente conserva a combinação | Preservar classificação; acesso continua sujeito aos grants e demais gates. Não oferecer a combinação em novos cadastros. |
+| Classe de Processo com vínculo classe–competência retirado é alterada | Exigir combinação classe–competência ativa antes de concluir. |
+
+Os códigos `3` e `16` são exemplos extraídos do snapshot, não uma declaração das competências da Vara. A matriz descreve resultados esperados; os serviços internos adicionados no [PR #24](https://github.com/jorgewreis/fokus/pull/24) não implementam rotas, configuração da Vara ou autorização completa de Processo. Um serviço interno de configuração sintética está em implementação e ainda não está integrado aos fluxos de Processo.
 
 ## Auditoria e implementação
 
@@ -59,7 +79,7 @@ Para alterar Processo, além da autorização de leitura e dos mesmos gates, a c
 
 ## Pendências
 
-- REI-232: obter e versionar catálogo de competência, detalhar alterações de configuração e implementar os controles. Até a implementação, todo acesso funcional a Processos permanece negado.
+- REI-232: verificar vigência e política de atualização do catálogo e acompanhar a configuração e os controles ainda pendentes. Até a implementação dos gates necessários, todo acesso funcional a Processos permanece negado.
 - REI-196: implementar autorização no servidor após resolver as dependências e proteger todos os caminhos de leitura e escrita.
 - REI-205: validar o percurso sintético e os casos positivos/negativos após implementação.
 
