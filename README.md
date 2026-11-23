@@ -1,10 +1,12 @@
 # Fokus
 
-Monorepo corporativo da Fokus. Este checkout contém o aplicativo Greenfield Fokus Law em [apps/law/](apps/law/).
+Monorepo corporativo planejado como fonte central de código, documentação e páginas do Fokus Cloud, Admin, Law comercial, Lead, Styles e Jarvis. Este checkout ainda contém em [apps/law/](apps/law/) o MVP sintético personalizado do Fokus Law on demand da 1ª Vara Crime de Ilhéus; ele não é o produto Law comercial e sua separação para um repositório externo permanece pendente de confirmar destino, histórico, dependências e reversão.
 
 ## Navegação
 
-- [Aplicação Fokus Law](apps/law/)
+- [Plano diretor do portfólio Fokus](docs/portfolio/README.md)
+- [Roteiro de implementação do portfólio](docs/portfolio/roadmap.md)
+- [Aplicação Fokus Law on demand — 1ª Vara Crime](apps/law/)
 - [Instalação e execução local](apps/law/README.md)
 - [ADR-0001: arquitetura e fronteiras de ambiente](docs/adr/0001-fokus-law-greenfield-stack-and-boundaries.md)
 - [Dicionário conceitual de Pessoas e Processos](docs/domain/dicionario-dominio.md)
