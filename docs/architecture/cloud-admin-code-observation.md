@@ -12,7 +12,7 @@ Esses fatos descrevem a estrutura daquela revisão. Não determinam a arquitetur
 
 ## Critérios de aceite para suporte e isolamento
 
-A política aprovada para o piloto limita o suporte a dados comerciais e técnicos; conteúdo operacional de clientes permanece inacessível. Antes de ampliar o uso, a equipe deve demonstrar em testes server-side isolados que:
+A decisão vigente limita o contexto disponível durante suporte aos dados comerciais da empresa e da assinatura vinculadas à sessão. Não inclui dados técnicos adicionais nem conteúdo operacional de clientes. Antes de ampliar o uso, a equipe deve demonstrar em testes server-side isolados que:
 
 1. somente usuários e vínculos autorizados iniciam uma sessão de suporte;
 2. a sessão é encerrada ao sair, expirar ou perder autorização;
