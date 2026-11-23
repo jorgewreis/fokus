@@ -8,14 +8,14 @@
     "fokus-styles",
     "ui"
   ],
-  "homepage": "https://github.com/jorgewreis/fokus-styles/tree/main/packages/fokus-react#readme",
+  "homepage": "https://github.com/jorgewreis/fokus/tree/main/packages/styles/packages/fokus-react#readme",
   "bugs": {
-    "url": "https://github.com/jorgewreis/fokus-styles/issues"
+    "url": "https://github.com/jorgewreis/fokus/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jorgewreis/fokus-styles.git",
-    "directory": "packages/fokus-react"
+    "url": "git+https://github.com/jorgewreis/fokus.git",
+    "directory": "packages/styles/packages/fokus-react"
   },
   "license": "MIT",
   "author": "Jorge Reis",

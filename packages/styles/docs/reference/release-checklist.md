@@ -1,7 +1,10 @@
 # Checklist de release
 
-Este checklist deve ser executado antes de qualquer publicação npm. A etapa atual permanece
-sem release, tag ou push.
+Este checklist deve ser executado antes de qualquer publicação npm a partir
+do monorepo. A 3.0.0 já está no npm desde 22/11/2026. A próxima publicação
+usa a tag `styles-vX.Y.Z` e o workflow `.github/workflows/styles-release.yml`.
+Tags `v*.*.*` não publicam este pacote. Não crie tag nem rode o workflow sem
+autorização.
 
 ## Contrato público
 

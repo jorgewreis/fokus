@@ -2,7 +2,12 @@
 
 ## [Unreleased]
 
-## [3.0.0] - Em preparação, não publicada
+## [3.0.0] - 2026-11-22
+
+Publicada no npm em 22/11/2026. O nome do pacote continua `fokus-styles`.
+Esse corte saiu do repositório anterior, com a tag `v3.0.0`. O código-fonte
+agora é `packages/styles` em `jorgewreis/fokus`. A próxima publicação usa a
+tag `styles-vX.Y.Z` nesse monorepo.
 
 ### Breaking
 
@@ -989,7 +994,8 @@ e este projeto adere a [Semantic Versioning](https://semver.org/lang/pt-BR/).
   `scss/utilities/_typography.scss`.
 - Estado `:read-only` em `.form-control`.
 
-[Unreleased]: https://github.com/jorgewreis/fokus-styles/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/jorgewreis/fokus/commits/main/packages/styles
+[3.0.0]: https://www.npmjs.com/package/fokus-styles/v/3.0.0
 [0.3.0]: https://github.com/jorgewreis/clarus-css/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/jorgewreis/clarus-css/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/jorgewreis/clarus-css/compare/v0.1.1...v0.1.2

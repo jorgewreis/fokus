@@ -23,5 +23,5 @@ clientes: exemplos de produção só serão adicionados quando houver autorizaç
 ## Showcase de terceiros
 
 Projetos públicos usando o Fokus Styles podem ser propostos por uma
-[issue com o rótulo `showcase`](https://github.com/jorgewreis/fokus-styles/issues). Entradas
+[issue com o rótulo `showcase`](https://github.com/jorgewreis/fokus/issues). Entradas
 serão publicadas somente com contexto e autorização verificáveis.

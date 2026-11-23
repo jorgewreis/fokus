@@ -2,12 +2,12 @@
 
 [Site e guias do Fokus Styles](https://styles.fokuscloud.com.br/) ·
 [Fokus Cloud](https://www.fokuscloud.com.br/) ·
-[GitHub](https://github.com/jorgewreis/fokus-styles) ·
+[GitHub](https://github.com/jorgewreis/fokus/tree/main/packages/styles) ·
 [npm](https://www.npmjs.com/package/fokus-styles)
 
 **CLI opcional no mesmo pacote — não é necessária para usar o núcleo CSS.**
 
-CLI oficial do [Fokus Styles](https://github.com/jorgewreis/fokus-styles) — três
+CLI oficial do [Fokus Styles](https://github.com/jorgewreis/fokus/tree/main/packages/styles) — três
 comandos que empacotam ferramentas já usadas internamente pelo framework,
 pra qualquer projeto consumidor.
 

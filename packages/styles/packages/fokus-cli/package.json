@@ -9,14 +9,14 @@
     "sass",
     "build"
   ],
-  "homepage": "https://github.com/jorgewreis/fokus-styles/tree/main/packages/fokus-cli#readme",
+  "homepage": "https://github.com/jorgewreis/fokus/tree/main/packages/styles/packages/fokus-cli#readme",
   "bugs": {
-    "url": "https://github.com/jorgewreis/fokus-styles/issues"
+    "url": "https://github.com/jorgewreis/fokus/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jorgewreis/fokus-styles.git",
-    "directory": "packages/fokus-cli"
+    "url": "git+https://github.com/jorgewreis/fokus.git",
+    "directory": "packages/styles/packages/fokus-cli"
   },
   "license": "MIT",
   "author": "Jorge Reis",

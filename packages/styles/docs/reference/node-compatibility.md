@@ -70,10 +70,12 @@ compilação SCSS, importação JS, CLI `--help` e tipos. React teve somente cam
 de declarações conferido, **não** peer/runtime instalado e testado.
 
 Esta evidência pertence ao commit acima, não a futuros commits nem ao pacote
-atualmente publicado no registry. O PR #49 foi integrado na main em 10/11/2026. A matriz está em
-`.github/workflows/minimum-node-investigation.yml` e roda nos PRs; publicação
-continua sendo uma decisão separada. Node 22.11.0 (piso apenas de produção), Node 26+
-e outras plataformas não foram homologados por essa execução histórica.
+atualmente publicado no registry. O PR #49 foi integrado na main em 10/11/2026. A matriz dessa
+execução histórica estava em `.github/workflows/minimum-node-investigation.yml` no
+repositório anterior. No monorepo, o job equivalente é `minimum-node-canary` em
+`.github/workflows/styles-ci.yml`. Publicação continua sendo uma decisão separada.
+Node 22.11.0 (piso apenas de produção), Node 26+ e outras plataformas não foram
+homologados por essa execução histórica. A 3.0.0 foi publicada no npm em 22/11/2026.
 
 ## Validação adicional desta correção
 

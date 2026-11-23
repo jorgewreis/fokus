@@ -2,10 +2,11 @@
 
 ## Estado da release
 
-A versão 3.0.0 está em preparação. Este guia e o manifesto do checkout não
-significam que ela foi publicada. Em 10/11/2026, a consulta ao registry npm
-retornou latest 2.7.0 e nenhuma versão 3.0.0. Confira novamente antes do corte.
-Merge, criação de tag e publicação requerem aprovação separada.
+A versão 3.0.0 foi publicada no npm em 22/11/2026. O nome do pacote continua
+`fokus-styles`. O código-fonte está em
+[`packages/styles`](https://github.com/jorgewreis/fokus/tree/main/packages/styles)
+do monorepo `jorgewreis/fokus`. A consulta de 10/11/2026, que ainda via
+`2.7.0` como latest, ficou desatualizada.
 
 ## Por que uma versão major
 
@@ -24,11 +25,11 @@ Desenvolver e testar o checkout exige
 
 1. Confira Node/npm no ambiente local, CI e build de produção. Prefira patches
    atualizados de Node 22 ou 24, sem permanecer no piso apenas por compatibilidade.
-2. Após a publicação ser confirmada, atualize deliberadamente a dependência
-   para 3.0.0 e regenere o lockfile do seu aplicativo. Instale com
-   `--engine-strict`; não use `--force` para ocultar incompatibilidades.
+2. Atualize deliberadamente a dependência para 3.0.0 e regenere o lockfile
+   do seu aplicativo. Instale com `--engine-strict`; não use `--force` para
+   ocultar incompatibilidades.
 3. Teste os imports CSS/JS, compilação Sass, comandos CLI e componentes usados.
-   A preparação não renomeia classes `fs-*` nem subpaths de importação.
+   A 3.0.0 não renomeia classes `fs-*` nem subpaths de importação.
 4. Revise regressões de foco/overlays e o estado disabled de Tag após loading:
    um disabled explícito é preservado; reabilite explicitamente se necessário.
 5. Confira budgets do aplicativo. O teto gzip JS do framework é 27.008 bytes;
@@ -38,10 +39,12 @@ Desenvolver e testar o checkout exige
 
 Exemplos de URL sem versão, como
 `https://cdn.jsdelivr.net/npm/fokus-styles/dist/css/fokus.css`, podem seguir
-a versão mais recente. Fixe uma versão já publicada e validada, por exemplo
+a versão mais recente, hoje a 3.0.0. Fixe uma versão já publicada e validada,
+por exemplo
+`https://cdn.jsdelivr.net/npm/fokus-styles@3.0.0/dist/css/fokus.css`
+ou, para permanecer na linha anterior,
 `https://cdn.jsdelivr.net/npm/fokus-styles@2.7.0/dist/css/fokus.css`,
 e atualize CSS/JS/fontes em conjunto somente após testar a versão desejada.
-Não aponte produção para 3.0.0 antes de confirmar sua publicação.
 
 A faixa npm `^2.7.0` não recebe automaticamente 3.0.0. Manter 2.7.0 fixada
 não torna suas dependências compatíveis com Node antigo: seu manifesto antigo
@@ -60,5 +63,9 @@ novamente no consumidor, sem o lockfile do repositório.
 
 Antes de autorizar publicação, confirme versão livre no registry, CI e smoke
 no SHA final, conteúdo e integridade do tarball e o dist-tag pretendido.
-O push de uma tag `v*.*.*` dispara o workflow de publicação automaticamente.
-Não reutilize v2.7.0. Não altere tags históricas nem publique durante a preparação.
+No monorepo, o push de uma tag `styles-v*.*.*` dispara
+[`.github/workflows/styles-release.yml`](../../../../.github/workflows/styles-release.yml).
+A tag é `styles-v` mais a versão de `packages/styles/package.json`
+(`styles-v3.0.1` para a versão `3.0.1`). Tags `v*.*.*` não publicam este
+pacote a partir daqui. Não reutilize `v2.7.0` nem a `v3.0.0` já publicada.
+Não altere tags históricas.

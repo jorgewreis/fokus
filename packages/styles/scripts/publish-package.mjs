@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 const registry = 'https://registry.npmjs.org/';
 const expectedPackageName = 'fokus-styles';
+const releaseTagPrefix = 'styles-v';
 
 function npmCommand(args, cwd, timeout) {
   let command = 'npm';
@@ -105,8 +106,9 @@ function validateReleaseIdentity(manifest, env) {
   if (typeof manifest.version !== 'string' || !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(manifest.version)) {
     throw new Error('package.json must use a stable SemVer version without leading zeroes, prerelease, or build metadata');
   }
-  if (env.GITHUB_REF_TYPE !== 'tag' || env.GITHUB_REF_NAME !== `v${manifest.version}`) {
-    throw new Error(`Git tag identity mismatch: expected v${manifest.version}`);
+  const expectedTag = `${releaseTagPrefix}${manifest.version}`;
+  if (env.GITHUB_REF_TYPE !== 'tag' || env.GITHUB_REF_NAME !== expectedTag) {
+    throw new Error(`Git tag identity mismatch: expected ${expectedTag}`);
   }
 }
 

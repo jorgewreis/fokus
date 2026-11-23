@@ -2,14 +2,14 @@
 
 [Site e guias do Fokus Styles](https://styles.fokuscloud.com.br/) ·
 [Fokus Cloud](https://www.fokuscloud.com.br/) ·
-[GitHub](https://github.com/jorgewreis/fokus-styles) ·
+[GitHub](https://github.com/jorgewreis/fokus/tree/main/packages/styles) ·
 [npm](https://www.npmjs.com/package/fokus-styles)
 
-Fonte interna dos ícones SVG opcionais do [Fokus Styles](https://github.com/jorgewreis/fokus-styles) —
+Fonte interna dos ícones SVG opcionais do [Fokus Styles](https://github.com/jorgewreis/fokus/tree/main/packages/styles) —
 1994 ícones do conjunto [Lucide](https://lucide.dev) (licença ISC),
 gerados em dois formatos, sem nenhuma dependência em runtime.
 
-Instalação e uso completo: [`docs/guides/icons.md`](https://github.com/jorgewreis/fokus-styles/blob/main/docs/guides/icons.md)
+Instalação e uso completo: [`docs/guides/icons.md`](https://github.com/jorgewreis/fokus/blob/main/packages/styles/docs/guides/icons.md)
 no repositório principal.
 
 ## Instalação

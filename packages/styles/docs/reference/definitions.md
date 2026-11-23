@@ -865,4 +865,4 @@ Mockup: `mockup/overlays-commands.html#hover-card`.
   visuais — cada componente/grupo implementado tem um mockup dedicado,
   mantido atualizado.
 - Testes (funcionais e visuais) rodam automaticamente no GitHub Actions a
-  cada push/PR (`.github/workflows/ci.yml`), além do lint e build.
+  cada push/PR (`.github/workflows/styles-ci.yml`), além do lint e build.

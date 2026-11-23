@@ -163,7 +163,8 @@ hover, active, foco, disabled e loading.
 - Confirmar que todos os seletores usados existem no CSS da versão instalada.
 - Respeitar o pipeline e os testes do consumidor, sem trocar seu CSS global silenciosamente.
 
-Documentação completa: https://styles.fokuscloud.com.br/ . Para comparar uma versão
-específica, consulte a tag correspondente em https://github.com/jorgewreis/fokus-styles .
+Documentação completa: https://styles.fokuscloud.com.br/ . O código atual está em
+https://github.com/jorgewreis/fokus/tree/main/packages/styles . Tags de release
+deste pacote no monorepo usam o padrão `styles-vX.Y.Z`.
 O SCSS distribuído em `packages/` e o CSS compilado em `dist/css/` permitem conferir
 os contratos localmente mesmo sem acesso ao site.

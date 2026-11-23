@@ -6,7 +6,7 @@
 
 [![npm version](https://img.shields.io/npm/v/fokus-styles.svg)](https://www.npmjs.com/package/fokus-styles)
 [![npm license](https://img.shields.io/npm/l/fokus-styles.svg)](LICENSE)
-[![CI](https://github.com/jorgewreis/fokus-styles/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jorgewreis/fokus-styles/actions/workflows/ci.yml)
+[![CI](https://github.com/jorgewreis/fokus/actions/workflows/styles-ci.yml/badge.svg?branch=main)](https://github.com/jorgewreis/fokus/actions/workflows/styles-ci.yml)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/fokus-styles.svg)](https://bundlephobia.com/package/fokus-styles)
 
 [Instalação](#instalação) ·
@@ -25,7 +25,7 @@ profissionais, e é distribuído publicamente como produto para qualquer
 desenvolvedor que precise construir interfaces consistentes sem carregar
 React, Vue, Angular, jQuery ou qualquer outra dependência de runtime.
 
-> **Status:** `2.7.0`. O Fokus Styles consolida CSS, JavaScript, ícones, React
+> **Status:** `3.0.0`, publicada no npm em 22/11/2026. O Fokus Styles consolida CSS, JavaScript, ícones, React
 > e CLI em um único pacote npm. O foco atual é consolidar o núcleo CSS e os componentes
 > essenciais antes de ampliar o catálogo. O framework já possui componentes
 > avançados, mas eles são tratados como extensões e não definem o caminho
@@ -35,7 +35,8 @@ React, Vue, Angular, jQuery ou qualquer outra dependência de runtime.
 Este README é a **visão geral** do projeto. Para aprender a usar cada recurso em
 detalhe, com exemplos completos, consulte a **[documentação completa](docs/README.md)**.
 
-> Versão 3.0.0 em preparação: este checkout não comprova publicação npm.
+> O código-fonte deste pacote é [`packages/styles`](https://github.com/jorgewreis/fokus/tree/main/packages/styles)
+> no monorepo `jorgewreis/fokus`. A próxima publicação usa a tag `styles-vX.Y.Z`.
 > Consulte o [guia de migração para v3](docs/guides/migration-v3.md).
 
 ## Compatibilidade Node
@@ -55,7 +56,7 @@ cada fonte conforme o tipo de informação que procura:
   entrada para os produtos Fokus.
 - [Fokus Styles](https://styles.fokuscloud.com.br/) — documentação publicada,
   fundamentos, instalação e guias visuais/interativos de uso.
-- [Repositório no GitHub](https://github.com/jorgewreis/fokus-styles) — código-fonte,
+- [Repositório no GitHub](https://github.com/jorgewreis/fokus/tree/main/packages/styles) — código-fonte,
   exemplos, decisões técnicas, issues e histórico de mudanças.
 - [Pacote no npm](https://www.npmjs.com/package/fokus-styles) — versões publicadas,
   metadados, distribuição e instalação do pacote.

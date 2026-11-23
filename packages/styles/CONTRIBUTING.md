@@ -7,7 +7,7 @@ Ao participar deste projeto, você concorda em seguir o
 
 Antes de propor uma mudança, consulte o [Fokus Cloud](https://www.fokuscloud.com.br/)
 para o contexto do ecossistema, o [site do Fokus Styles](https://styles.fokuscloud.com.br/)
-para os guias publicados, o [repositório no GitHub](https://github.com/jorgewreis/fokus-styles)
+para os guias publicados, o [repositório no GitHub](https://github.com/jorgewreis/fokus/tree/main/packages/styles)
 para o código e issues e o [pacote no npm](https://www.npmjs.com/package/fokus-styles)
 para a distribuição pública. A documentação versionada deste checkout começa em
 [`docs/README.md`](docs/README.md).
@@ -113,12 +113,15 @@ Depreciações passam por **duas versões minor** antes de remoção:
 
 ## Processo de release
 
-Só quem mantém o projeto corta releases. Passo a passo, na ordem:
+Só quem mantém o projeto corta releases, a partir do monorepo
+`jorgewreis/fokus`. O pacote npm continua `fokus-styles`. Os comandos abaixo
+rodam em `packages/styles`, salvo o `git tag`, que é criado na raiz do
+monorepo.
 
 1. Garantir que `main` está com `npm run build && npm run lint && npm test`,
    `npm run test:visual`, `npm run test:a11y`, `npm run contrast:check` e
-   `npm run size:check` verdes.
-2. Atualizar a versão em `package.json` (raiz) seguindo
+   `npm run size:check` verdes (workflow `Styles CI`).
+2. Atualizar a versão em `packages/styles/package.json` seguindo
    [semver](#semver-e-depreciação).
 3. Mover o conteúdo de `## [Unreleased]` no `CHANGELOG.md` para uma nova
    seção `## [x.y.z] - AAAA-MM-DD`, deixando `## [Unreleased]` vazio no
@@ -126,12 +129,20 @@ Só quem mantém o projeto corta releases. Passo a passo, na ordem:
 4. `npm pack --dry-run` para conferir que `files`/`exports` do
    `package.json` publicam exatamente o esperado (sem docs internos, sem
    artefato de teste).
-5. Commit dessas mudanças, depois `git tag vx.y.z` e `git push origin main
-   --tags`.
-6. O push da tag dispara `.github/workflows/release.yml`: reroda a suíte
-   completa e publica exclusivamente `fokus-styles` no npm com `--provenance`.
-   Ícones, CLI e React são subpaths do mesmo pacote e seguem a versão da tag —
-   só bumpe a versão deles quando o pacote específico mudar.
+5. Commit dessas mudanças em `main`. Na raiz do monorepo, criar a tag
+   `styles-vx.y.z` (o prefixo `styles-v` mais a versão do `package.json`;
+   exemplo: versão `3.0.1` → tag `styles-v3.0.1`) e enviar com
+   `git push origin main --tags`.
+6. O push da tag dispara `.github/workflows/styles-release.yml` na raiz do
+   monorepo: reroda a suíte em `packages/styles` e publica exclusivamente
+   `fokus-styles` no npm com `--provenance`, usando o secret `NPM_TOKEN`.
+   Ícones, CLI e React são subpaths do mesmo pacote e seguem a versão da tag.
+   Tags `v*.*.*` não disparam esta publicação. A `3.0.0` já foi publicada em
+   22/11/2026; não recrie essa versão.
+
+O secret `NPM_TOKEN` precisa existir em `jorgewreis/fokus`
+(Settings → Secrets and variables → Actions). Ele não é herdado do
+repositório antigo.
 
 ## Reportando bugs e propondo funcionalidades
 
