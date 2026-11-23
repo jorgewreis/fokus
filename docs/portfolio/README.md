@@ -44,6 +44,7 @@ Quando houver conflito, preservar o histórico, registrar a decisão com fonte e
 ## Documentos relacionados
 
 - [Arquitetura conceitual do portfólio](../architecture/portfolio-architecture.md)
+- [Reconciliação do Law on demand e sua fronteira de repositório](../architecture/law-on-demand-repository-reconciliation.md)
 - [Observação estática de arquitetura — Cloud e Admin](../architecture/cloud-admin-code-observation.md)
 - [Inventário de fontes por produto](source-of-truth-inventory.md)
 - [Roteiro de implementação](roadmap.md)
