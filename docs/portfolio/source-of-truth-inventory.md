@@ -30,7 +30,7 @@ No checkout local, `apps/law/composer.json` declara PHP `^8.3` e Laravel `^13.17
 
 `git worktree list --porcelain` mostrou, além do checkout legado, worktrees de `REI-235`, descoberta/reconciliação, `REI-143`, autorização de processos, ciclo de contas e PRD institucional. Foram consultados os estados Git; não se revisou conteúdo nem se alterou esses trabalhos. O worktree `vara-definir-prd-e-escopo-greenfield-do-mvp-inst` está em `010ff608` com modificações locais em documentação e implementação, além de `apps/law/backup/`, `compose.backup.yaml` e um teste novo não rastreados. O worktree `gar` contém dois arquivos não rastreados de TOTP. Esses itens foram deixados intactos. Os demais worktrees consultados estavam limpos naquele momento.
 
-Para não trabalhar sobre esses diretórios, os 13 artefatos documentais deste plano foram aplicados em worktree novo, `worktrees/fokus-portfolio`, a partir de `origin/main` `010ff608`, e registrados no commit local `f9555117a93d0fa67a512d82b2e52ab9546c5b3d` na branch `codex/fokus-portfolio-plan`. A branch está um commit à frente da base e não foi enviada ao remoto. O checkout legado e seus arquivos permaneceram preservados. Revalidar estados e alterações locais antes de qualquer integração futura.
+Para não trabalhar sobre esses diretórios, os 13 artefatos documentais deste plano foram aplicados em worktree novo, `worktrees/fokus-portfolio`, a partir de `origin/main` `010ff608`, e versionados em commits locais na branch `codex/fokus-portfolio-plan`, ainda não enviada ao remoto. O checkout legado e seus arquivos permaneceram preservados. Revalidar estados e alterações locais antes de qualquer integração futura.
 
 ## Próxima ação de inventário
 
