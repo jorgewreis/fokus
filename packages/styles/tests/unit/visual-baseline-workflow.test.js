@@ -1,12 +1,18 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import yaml from "js-yaml";
 
-const workflow = yaml.load(readFileSync(path.resolve(".github/workflows/update-visual-baselines.yml"), "utf8"));
+const workflowPath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../../.github/workflows/styles-update-visual-baselines.yml",
+);
+const workflow = yaml.load(readFileSync(workflowPath, "utf8"));
 
 describe("visual baseline update workflow security", () => {
   it("only runs manually and rejects dispatches outside main", () => {
+    expect(workflow.defaults.run["working-directory"]).toBe("packages/styles");
     expect(Object.keys(workflow.on)).toEqual(["workflow_dispatch"]);
     const validation = workflow.jobs.validate_dispatch.steps[0].run;
     expect(validation).toContain('"refs/heads/main"');

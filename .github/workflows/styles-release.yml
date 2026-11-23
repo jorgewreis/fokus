@@ -1,13 +1,22 @@
-name: Release
+# Publica o pacote npm `fokus-styles` a partir de packages/styles.
+# Tag monorepo: styles-vX.Y.Z (ex.: styles-v3.0.1), igual a "styles-v" + version
+# de packages/styles/package.json. Tags v*.*.* não disparam este workflow.
+# Exige o secret de repositório NPM_TOKEN em jorgewreis/fokus.
+
+name: Styles release
 
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "styles-v*.*.*"
 
 permissions:
   contents: read
   id-token: write
+
+defaults:
+  run:
+    working-directory: packages/styles
 
 jobs:
   publish:
@@ -23,13 +32,15 @@ jobs:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
           cache: npm
+          cache-dependency-path: packages/styles/package-lock.json
 
       - name: Verify tag matches package.json version
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${GITHUB_REF_NAME#styles-v}"
           PKG_VERSION=$(node -p "require('./package.json').version")
-          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-            echo "Tag $GITHUB_REF_NAME (versao $TAG_VERSION) nao bate com package.json (versao $PKG_VERSION)."
+          if [ "$GITHUB_REF_NAME" != "styles-v${PKG_VERSION}" ] || [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME (versao $TAG_VERSION) nao bate com packages/styles/package.json (versao $PKG_VERSION)."
+            echo "A tag esperada e styles-v${PKG_VERSION}."
             exit 1
           fi
 
@@ -76,8 +87,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # Corte histórico do rename Clarus, já executado no repositório antigo.
+      # Só voltaria a rodar se alguém enviasse a tag styles-v2.0.0.
       - name: Deprecate legacy Clarus packages
-        if: github.ref_name == 'v2.0.0'
+        if: github.ref_name == 'styles-v2.0.0'
         run: |
           for PACKAGE in clarus-css clarus-icons clarus-cli clarus-react; do
             npm deprecate "$PACKAGE" "Este pacote foi descontinuado. Migre para fokus-styles: https://www.npmjs.com/package/fokus-styles"

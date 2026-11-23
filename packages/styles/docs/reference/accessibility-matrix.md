@@ -71,7 +71,7 @@ renderizado de fato nos mockups (via o gate axe).
 - Toda contribuição de componente novo segue o checklist de acessibilidade
   do [guia de contribuição](../contributing/contributing.md) antes do merge.
 - O gate `npm run test:a11y` roda no CI a cada PR (ver
-  [.github/workflows/ci.yml](../../.github/workflows/ci.yml)); uma
+  [.github/workflows/styles-ci.yml](../../../../.github/workflows/styles-ci.yml)); uma
   regressão de contraste, nome acessível ou papel ARIA quebra o build.
 - Esta tabela é mantida manualmente — ao adicionar/alterar teclado, ARIA ou
   foco de um componente, atualize a linha correspondente na mesma PR.

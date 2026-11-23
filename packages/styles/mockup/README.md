@@ -3,7 +3,7 @@
 Os laboratórios complementam a [documentação publicada do Fokus Styles](https://styles.fokuscloud.com.br/)
 e os guias versionados em [`docs/`](../docs/README.md), dentro do ecossistema
 [Fokus Cloud](https://www.fokuscloud.com.br/). O código-fonte e o histórico
-ficam no [GitHub](https://github.com/jorgewreis/fokus-styles); o pacote
+ficam no [GitHub](https://github.com/jorgewreis/fokus/tree/main/packages/styles); o pacote
 distribuído está no [npm](https://www.npmjs.com/package/fokus-styles).
 
 Os mockups são documentação viva: cada seção combina uma definição em

@@ -26,7 +26,7 @@ também deve ser executado após qualquer ajuste nos tokens locais dos controles
 
 `npm run contrast -- --strict` sai com código de erro se algum par ficar
 abaixo do mínimo AA — é o comando rodado pelo gate `contrast:check` do CI
-(`.github/workflows/ci.yml`).
+(`.github/workflows/styles-ci.yml`).
 
 ## Por que o tema escuro precisa de pesos próprios
 

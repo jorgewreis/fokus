@@ -2,12 +2,12 @@
 
 [Site e guias do Fokus Styles](https://styles.fokuscloud.com.br/) ·
 [Fokus Cloud](https://www.fokuscloud.com.br/) ·
-[GitHub](https://github.com/jorgewreis/fokus-styles) ·
+[GitHub](https://github.com/jorgewreis/fokus/tree/main/packages/styles) ·
 [npm](https://www.npmjs.com/package/fokus-styles)
 
 **Subpath opcional — não faz parte do núcleo recomendado.**
 
-Wrapper React fino para o [Fokus Styles](https://github.com/jorgewreis/fokus-styles)
+Wrapper React fino para o [Fokus Styles](https://github.com/jorgewreis/fokus/tree/main/packages/styles)
 — cada componente aplica `data-fs`/classes e delega comportamento (foco,
 teclado, posicionamento, overlay) inteiramente pro JS vanilla já existente
 em `fokus-styles/js/*`. Não reimplementa nada: os componentes deste pacote

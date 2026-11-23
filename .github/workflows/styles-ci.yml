@@ -6,6 +6,8 @@ on:
     paths:
       - 'packages/styles/**'
       - '.github/workflows/styles-ci.yml'
+      - '.github/workflows/styles-release.yml'
+      - '.github/workflows/styles-update-visual-baselines.yml'
   workflow_dispatch:
 
 permissions:

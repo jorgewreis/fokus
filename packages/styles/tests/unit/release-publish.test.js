@@ -8,7 +8,7 @@ import { publishBuiltPackage } from '../../scripts/publish-package.mjs';
 
 const packageName = 'fokus-styles';
 const version = '2.8.0';
-const expectedTagEnv = { GITHUB_REF_TYPE: 'tag', GITHUB_REF_NAME: `v${version}` };
+const expectedTagEnv = { GITHUB_REF_TYPE: 'tag', GITHUB_REF_NAME: `styles-v${version}` };
 const fakeBytes = Buffer.from('offline candidate tarball bytes');
 const integrity = `sha512-${createHash('sha512').update(fakeBytes).digest('base64')}`;
 const realCliFakeBytes = Buffer.from('isolated real-CLI fake npm tarball');
@@ -99,7 +99,11 @@ function destinationFromCalls(calls) {
 
 describe('release publish gate (offline process boundary)', () => {
   it('connects the release workflow to the tested release path after all existing gates', async () => {
-    const workflow = await readFile(path.join(process.cwd(), '.github/workflows/release.yml'), 'utf8');
+    const workflow = await readFile(path.resolve(process.cwd(), '../../.github/workflows/styles-release.yml'), 'utf8');
+    expect(workflow).toContain('styles-v*.*.*');
+    expect(workflow).toContain('working-directory: packages/styles');
+    expect(workflow).toContain('https://registry.npmjs.org');
+    expect(workflow).toContain('secrets.NPM_TOKEN');
     const publishStep = workflow.indexOf('run: node scripts/publish-package-cli.mjs');
     expect(publishStep).toBeGreaterThan(-1);
     for (const gate of ['npm run lint', 'npm run build', 'npm test', 'npm run types:check', 'npm run docs:check', 'npm run contrast:check', 'npm run size:check', 'npm run test:visual', 'npm run test:a11y']) {
@@ -237,7 +241,13 @@ describe('release publish gate (offline process boundary)', () => {
   });
 
   it('rejects a tag that does not match package name/version before invoking npm', async () => {
-    const { action, calls } = await executeWith({ env: { ...expectedTagEnv, GITHUB_REF_NAME: 'v9.9.9' } });
+    const { action, calls } = await executeWith({ env: { ...expectedTagEnv, GITHUB_REF_NAME: 'styles-v9.9.9' } });
+    await expect(action).rejects.toThrow(/tag identity mismatch/);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('rejects the legacy v* tag even when the version matches', async () => {
+    const { action, calls } = await executeWith({ env: { ...expectedTagEnv, GITHUB_REF_NAME: `v${version}` } });
     await expect(action).rejects.toThrow(/tag identity mismatch/);
     expect(calls).toHaveLength(0);
   });
@@ -355,7 +365,7 @@ describe('release publish gate (offline process boundary)', () => {
     const { parent, cwd, tempRoot } = await fixture();
     const cli = path.join(process.cwd(), 'scripts/publish-package-cli.mjs');
     let nodeExecutable = process.execPath;
-    const childEnv = { ...process.env, GITHUB_REF_TYPE: 'tag', GITHUB_REF_NAME: `v${version}`, RUNNER_TEMP: tempRoot };
+    const childEnv = { ...process.env, GITHUB_REF_TYPE: 'tag', GITHUB_REF_NAME: `styles-v${version}`, RUNNER_TEMP: tempRoot };
 
     if (process.platform === 'win32') {
       const isolatedNode = path.join(parent, 'isolated-node');

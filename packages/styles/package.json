@@ -32,11 +32,12 @@
   "homepage": "https://styles.fokuscloud.com.br/",
   "documentation": "https://styles.fokuscloud.com.br/",
   "bugs": {
-    "url": "https://github.com/jorgewreis/fokus-styles/issues"
+    "url": "https://github.com/jorgewreis/fokus/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jorgewreis/fokus-styles.git"
+    "url": "git+https://github.com/jorgewreis/fokus.git",
+    "directory": "packages/styles"
   },
   "license": "MIT",
   "author": "Jorge Reis",

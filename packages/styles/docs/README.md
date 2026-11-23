@@ -14,7 +14,7 @@ complementam e devem ser consultadas em conjunto:
   produtos que compartilham a base Fokus.
 - [Fokus Styles](https://styles.fokuscloud.com.br/) — documentação publicada,
   fundamentos, instalação e guias visuais/interativos.
-- [GitHub](https://github.com/jorgewreis/fokus-styles) — implementação,
+- [GitHub](https://github.com/jorgewreis/fokus/tree/main/packages/styles) — implementação,
   exemplos executáveis, issues, decisões e histórico versionado.
 - [npm](https://www.npmjs.com/package/fokus-styles) — pacote público, versões
   disponíveis e instruções de instalação/distribuição.
@@ -50,7 +50,7 @@ os testes da versão consultada no GitHub definem o comportamento efetivo.
 - [Matriz de utilitários](reference/utility-matrix.md)
 - [Suporte a navegadores](reference/browser-support.md)
 - [Compatibilidade Node e toolchain](reference/node-compatibility.md)
-- [Migração para v3 (em preparação)](guides/migration-v3.md)
+- [Migração para v3](guides/migration-v3.md)
 - [Migração para v1](guides/migration-v1.md)
 - [Migração de outro framework](guides/migration-external.md)
 
