@@ -18,6 +18,7 @@
 - Integração: banco, autenticação, armazenamento, filas e serviços realmente usados.
 - Contrato: API, webservice e dependências entre consumidores/produtores.
 - Ponta a ponta: fluxos críticos, autorização por produto/espaço e revogação.
+- Suporte administrativo: para qualquer modo assistido, cobrir em servidor leitura e mutação de dados operacionais, escopo por produto/tenant, encerramento, expiração e revogação; o aceite precisa comprovar ausência de acesso/efeitos vedados.
 - UX/acessibilidade: teclado, foco, semântica, contraste conforme critério aplicável, zoom e breakpoints acordados.
 - Resiliência: timeout, retry, idempotência, indisponibilidade, backup/restore e rollback quando previstos.
 
