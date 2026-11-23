@@ -6,7 +6,7 @@
 
 O repositório corporativo `jorgewreis/fokus` é a fonte central planejada para código, documentação técnica e páginas de Fokus Cloud, Admin, Law comercial, Lead, Styles e Jarvis. O Fokus Law on demand da 1ª Vara Crime de Ilhéus é uma aplicação personalizada e fica fora deste repositório, com código, dados, identidade, autorização, ambiente e operação próprios.
 
-O checkout atual ainda contém `apps/law/`, cuja documentação e ADR descrevem o MVP sintético da 1ª Vara. A consulta somente leitura ao GitHub identificou `jorgewreis/website-tjba-ios1vcrime-2026` como repositório candidato relacionado à Vara, mas não confirmou que ele seja a fonte canônica da revisão atual nem que seja destino adequado para a aplicação Laravel de `apps/law/`. A localização canônica e a separação segura desse aplicativo ainda não estão concluídas. Não mover nem remover essa árvore até confirmar repositório de destino, histórico, processo de publicação, dependências e reversão.
+O checkout atual ainda contém `apps/law/`, cuja documentação e ADR descrevem o MVP sintético da 1ª Vara. A consulta somente leitura identificou um repositório privado relacionado à Vara, mas não confirmou que ele seja a fonte canônica da revisão atual nem que seja destino adequado para a aplicação Laravel de `apps/law/`. A localização canônica e a separação segura desse aplicativo ainda não estão concluídas. Não mover nem remover essa árvore até confirmar repositório de destino, histórico, processo de publicação, dependências e reversão.
 
 ## Produtos e responsabilidades
 
