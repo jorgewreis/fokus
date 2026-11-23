@@ -4,19 +4,21 @@
 
 ## Registros existentes a reutilizar
 
+As chaves REI são referências internas do Linear e podem ser localizadas no workspace privado. URLs e títulos de issues foram omitidos desta cópia pública.
+
 | Referência | Uso neste plano | Estado observado na consulta |
 | --- | --- | --- |
-| [REI-191](https://linear.app/reis-developer/issue/REI-191/plat-auditar-servicos-compartilhados-e-arquitetura-do-monorepo) | Issue-mãe de arquitetura do monorepo, inventário e documentação inicial. | Em andamento; descrição atualizada. |
-| [REI-193](https://linear.app/reis-developer/issue/REI-193/gov-inventariar-dependencias-compartilhadas-para-inicio-greenfield) | Dependências compartilhadas e origem dos ativos comerciais. | Em andamento. |
-| [REI-189](https://linear.app/reis-developer/issue/REI-189/law-inventariar-modulos-e-lacunas-do-produto-juridico) | Inventário e fronteira do Law comercial. | Em andamento. |
-| [REI-190](https://linear.app/reis-developer/issue/REI-190/lead-inventariar-produto-imobiliario-e-definir-mvp) | Inventário/escopo documentado do Lead; não prova implementação. | Concluído conforme critérios documentais próprios. |
-| [REI-272](https://linear.app/reis-developer/issue/REI-272/gov-reconciliar-plano-diretor-2027-com-o-prd-vigente-do-fokus-law) | Reconciliar fronteira de portfólio com PRD e Plano Diretor. | Movida a Em andamento e atualizada em 23/11/2026. |
-| [REI-24](https://linear.app/reis-developer/issue/REI-24/planejar-ativacao-de-releases-imutaveis) | Evidências/gates operacionais de releases do sistema legado. | Em revisão; não substitui desenho do monorepo. |
-| [REI-45](https://linear.app/reis-developer/issue/REI-45/ux-plano-de-analise-e-correcoes-fokus-styles-cloud-e-law) | Auditoria UX existente de Styles, Cloud e Law; Lead explicitamente não incluído. | Em andamento. |
-| [REI-165](https://linear.app/reis-developer/issue/REI-165/seguranca-impedir-enumeracao-pre-login-e-exposicao-de-vinculos-lawlead) | Achado e correção específicos de enumeração Law/Lead. | Não duplicar; não equivale ao contrato completo de identidade do portal. |
-| [REI-166](https://linear.app/reis-developer/issue/REI-166/arquitetura-separar-o-dominio-operacional-law-do-repositorio-cloud) | Separar domínio Law comercial de `fokus-cloud`; status A fazer na consulta de 23/11/2026. | Não é o mesmo escopo de manter o Law on demand da 1ª Vara fora do Fokus central; preservar a distinção e relações existentes. |
-| [REI-212](https://linear.app/reis-developer/issue/REI-212/gov-mapear-dependencias-compartilhadas-de-infraestrutura-e-integracoes) | Inventário concluído de dependências compartilhadas, resultado registrado no Notion. | Não duplicar discovery de infraestrutura; verificar as lacunas pendentes no REI-193 e as tarefas de integração na triagem. |
-| [REI-27](https://linear.app/reis-developer/issue/REI-27/acompanhar-qualidade-e-evolucao-do-jarvis), [REI-28](https://linear.app/reis-developer/issue/REI-28/reconciliar-base-e-executor-do-jarvis), [REI-274](https://linear.app/reis-developer/issue/REI-274/jarvis-preparar-e-validar-o-primeiro-ciclo-autonomo-documental) | Continuidade e limites do ciclo existente do Jarvis. | Não ampliam automaticamente escopo para migração do repositório. |
+| REI-191 | Issue-mãe de arquitetura do monorepo, inventário e documentação inicial. | Em andamento; descrição atualizada. |
+| REI-193 | Dependências compartilhadas e origem dos ativos comerciais. | Em andamento. |
+| REI-189 | Inventário e fronteira do Law comercial. | Em andamento. |
+| REI-190 | Inventário/escopo documentado do Lead; não prova implementação. | Concluído conforme critérios documentais próprios. |
+| REI-272 | Reconciliar fronteira de portfólio com PRD e Plano Diretor. | Movida a Em andamento e atualizada em 23/11/2026. |
+| REI-24 | Evidências/gates operacionais de releases do sistema legado. | Em revisão; não substitui desenho do monorepo. |
+| REI-45 | Auditoria UX existente de Styles, Cloud e Law; Lead explicitamente não incluído. | Em andamento. |
+| REI-165 | Achado e correção específicos de enumeração Law/Lead. | Não duplicar; não equivale ao contrato completo de identidade do portal. |
+| REI-166 | Separar domínio Law comercial de `fokus-cloud`; status A fazer na consulta de 23/11/2026. | Não é o mesmo escopo de manter o Law on demand da 1ª Vara fora do Fokus central; preservar a distinção e relações existentes. |
+| REI-212 | Inventário concluído de dependências compartilhadas, resultado registrado no Notion. | Não duplicar discovery de infraestrutura; verificar as lacunas pendentes no REI-193 e as tarefas de integração na triagem. |
+| REI-27, REI-28, REI-274 | Continuidade e limites do ciclo existente do Jarvis. | Não ampliam automaticamente escopo para migração do repositório. |
 
 Os estados são uma fotografia da consulta realizada, não devem ser reutilizados como estado atual sem nova leitura. `REI-191` já existia e permaneceu a issue-mãe; os drafts abaixo não foram criados para evitar duplicar trabalho coberto ou contornar o limite do workspace.
 
@@ -47,4 +49,4 @@ As candidatas usam estado inicial `Planejado`, prioridade padrão `Medium`, sem 
 
 ## Bloqueio observado
 
-Em 23/11/2026, as tentativas de criação de issues via MCP Linear retornaram `INVALID_ARGUMENT`; nenhuma retornou ID. Uma chamada mínima de confirmação respondeu HTTP 400: `You've exceeded the free issue limit for this workspace. Please upgrade or contact sales@linear.app for a free trial.` Portanto, nenhum draft listado foi criado. Não foi tentada outra conta, workspace ou mecanismo para contornar o limite. A criação pode ser retomada no mesmo workspace quando o limite for liberado; até lá estes drafts permanecem apenas versionados no repositório.
+Em 23/11/2026, as tentativas de criação de issues via MCP Linear retornaram `INVALID_ARGUMENT`; nenhuma retornou ID. A chamada de confirmação respondeu HTTP 400 informando que o limite gratuito de issues do workspace foi excedido. Portanto, nenhum draft listado foi criado. Não foi tentada outra conta, workspace ou mecanismo para contornar o limite. A criação pode ser retomada no mesmo workspace quando o limite for liberado; até lá estes drafts permanecem apenas versionados no repositório.
