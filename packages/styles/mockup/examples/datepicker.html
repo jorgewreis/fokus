@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Datepicker &amp; Timepicker</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/components.css">
+    <link rel="stylesheet" href="../../dist/css/forms.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <style>
+        .theme-panel {
+            padding: 24px;
+        }
+
+        html[data-theme="dark"] .theme-panel {
+            color: var(--fs-color-text);
+            background-color: var(--fs-color-surface);
+        }
+
+        section {
+            max-width: 320px;
+            margin-bottom: 24px;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+
+    <div class="theme-panel">
+<section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Datepicker — calendário customizado (JS)</p>
+            <label for="datepicker-claro" class="fs-form-label">Data de entrega</label>
+            <div class="fs-datepicker">
+                <input type="text" class="fs-form-control" id="datepicker-claro" data-fs="datepicker" data-fs-target="#datepicker-claro-panel" placeholder="dd/mm/aaaa" value="15/07/2026">
+            </div>
+            <div id="datepicker-claro-panel"></div>
+        </section>
+
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Date nativo — <code>&lt;input type="date"&gt;</code> estilizado (CSS-only)</p>
+            <label for="native-date-claro" class="fs-form-label">Data de nascimento</label>
+            <input type="date" class="fs-form-control" id="native-date-claro">
+        </section>
+
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Time nativo — <code>&lt;input type="time"&gt;</code> estilizado (CSS-only)</p>
+            <label for="native-time-claro" class="fs-form-label">Horário preferido</label>
+            <input type="time" class="fs-form-control" id="native-time-claro">
+        </section>
+    </div>
+
+    
+
+    <!-- SCRIPTS IMPORT -->
+    <script src="../../dist/js/fokus.js"></script>
+
+</body>
+</html>

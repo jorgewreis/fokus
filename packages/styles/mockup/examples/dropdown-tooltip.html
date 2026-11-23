@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Dropdown &amp; Tooltip</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/components.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <style>
+        .theme-panel {
+            padding: 24px;
+        }
+
+        html[data-theme="dark"] .theme-panel {
+            color: var(--fs-color-text);
+            background-color: var(--fs-color-surface);
+        }
+
+        section {
+            margin-bottom: 24px;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+
+    <div class="theme-panel">
+<section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mt-3 fs-u-mb-1">Dropdown — auto-init via data-fs, posicionamento, foco e teclado (setas, Escape, clique fora)</p>
+            <p class="fs-u-fs-xs fs-u-mb-2">Alinhamento padrão (<code class="fs-u-font-mono">data-align="start"</code>, borda esquerda do menu = borda esquerda do botão):</p>
+            <div class="fs-dropdown fs-u-mr-4">
+                <button type="button" class="fs-btn fs-btn-primary fs-dropdown-toggle" data-fs="dropdown" data-fs-target="#menu-claro">
+                    Opções
+                </button>
+                <div class="fs-dropdown-menu" id="menu-claro">
+                    <span class="fs-dropdown-header">Conta</span>
+                    <a href="#" class="fs-dropdown-item">Perfil</a>
+                    <a href="#" class="fs-dropdown-item">Configurações</a>
+                    <div class="fs-dropdown-divider"></div>
+                    <a href="#" class="fs-dropdown-item is-disabled">Item desabilitado</a>
+                    <button type="button" class="fs-dropdown-item">Sair</button>
+                </div>
+            </div>
+
+            <p class="fs-u-fs-xs fs-u-mb-2 fs-u-mt-3"><code class="fs-u-font-mono">data-align="end"</code> (borda direita do menu = borda direita do botão):</p>
+            <div class="fs-dropdown" style="margin-left: 300px;">
+                <button type="button" class="fs-btn fs-btn-primary fs-dropdown-toggle" data-fs="dropdown" data-fs-target="#menu-claro-end" data-align="end">
+                    Opções (end)
+                </button>
+                <div class="fs-dropdown-menu" id="menu-claro-end">
+                    <a href="#" class="fs-dropdown-item">Perfil</a>
+                    <a href="#" class="fs-dropdown-item">Configurações</a>
+                    <button type="button" class="fs-dropdown-item">Sair</button>
+                </div>
+            </div>
+
+            <div class="fs-u-mt-4 fs-u-d-flex fs-u-flex-wrap fs-u-gap-3">
+                <div class="fs-dropdown">
+                    <button type="button" class="fs-btn fs-btn-outline-primary fs-dropdown-toggle" data-fs="dropdown" data-fs-target="#menu-content">Conteúdo rico</button>
+                    <div class="fs-dropdown-menu fs-dropdown-rich" id="menu-content">
+                        <div class="fs-dropdown-rich-header">
+                            <span class="fs-dropdown-rich-avatar" aria-hidden="true">F</span>
+                            <span class="fs-dropdown-rich-heading">
+                                <span class="fs-dropdown-rich-title">Conta Fokus</span>
+                                <span class="fs-dropdown-rich-description">Plano profissional · renovação em 12 dias</span>
+                            </span>
+                            <span class="fs-badge fs-badge-soft-success fs-dropdown-rich-status">Ativo</span>
+                        </div>
+                        <div class="fs-dropdown-divider"></div>
+                        <div class="fs-dropdown-rich-list">
+                            <a href="#perfil" class="fs-dropdown-item">
+                                <span class="fs-dropdown-rich-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></span>
+                                <span class="fs-dropdown-rich-copy"><span class="fs-dropdown-rich-item-title">Seu perfil</span><span class="fs-dropdown-rich-item-description">Dados pessoais e preferências</span></span>
+                                <span class="fs-dropdown-rich-chevron" aria-hidden="true">›</span>
+                            </a>
+                            <a href="#workspace" class="fs-dropdown-item">
+                                <span class="fs-dropdown-rich-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M8 4v16M8 9h13"></path></svg></span>
+                                <span class="fs-dropdown-rich-copy"><span class="fs-dropdown-rich-item-title">Workspace</span><span class="fs-dropdown-rich-item-description">Gerencie equipes, projetos e permissões</span></span>
+                                <span class="fs-dropdown-rich-chevron" aria-hidden="true">›</span>
+                            </a>
+                            <a href="#billing" class="fs-dropdown-item">
+                                <span class="fs-dropdown-rich-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h3"></path></svg></span>
+                                <span class="fs-dropdown-rich-copy"><span class="fs-dropdown-rich-item-title">Faturamento</span><span class="fs-dropdown-rich-item-description">Plano, cobrança e histórico de pagamentos</span></span>
+                                <span class="fs-dropdown-rich-chevron" aria-hidden="true">›</span>
+                            </a>
+                        </div>
+                        <div class="fs-dropdown-divider"></div>
+                        <div class="fs-dropdown-rich-footer"><span>Último acesso hoje, às 09:42</span><a href="#sair" role="menuitem" data-fs-dropdown-dismiss>Sair</a></div>
+                    </div>
+                </div>
+                <div class="fs-dropdown">
+                    <button type="button" class="fs-btn fs-btn-outline-secondary fs-dropdown-toggle" data-fs="dropdown" data-fs-target="#menu-up" data-placement="top">Abrir para cima</button>
+                    <div class="fs-dropdown-menu fs-dropdown-menu-sm" id="menu-up">
+                        <a href="#atalho" class="fs-dropdown-item">Atalho rápido</a>
+                        <a href="#ajuda" class="fs-dropdown-item">Ajuda</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Tooltip — auto-init via data-fs, show/hide por hover/foco, 4 posicionamentos</p>
+            <button type="button" class="fs-btn fs-u-mr-2" data-fs="tooltip" data-placement="top" title="Tooltip no topo">Top</button>
+            <button type="button" class="fs-btn fs-u-mr-2" data-fs="tooltip" data-placement="bottom" title="Tooltip embaixo">Bottom</button>
+            <button type="button" class="fs-btn fs-u-mr-2" data-fs="tooltip" data-placement="left" title="Tooltip à esquerda">Left</button>
+            <button type="button" class="fs-btn" data-fs="tooltip" data-placement="right" title="Tooltip à direita">Right</button>
+        </section>
+    </div>
+
+    
+
+    <!-- SCRIPTS IMPORT -->
+    <script src="../../dist/js/fokus.js"></script>
+
+</body>
+</html>

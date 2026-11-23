@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME (versao $TAG_VERSION) nao bate com package.json (versao $PKG_VERSION)."
+            exit 1
+          fi
+
+      - name: Record toolchain versions
+        run: node --version && npm --version
+
+      - name: Install dependencies
+        run: npm ci --engine-strict
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Types check
+        run: npm run types:check
+
+      - name: Documentation check
+        run: npm run docs:check
+
+      - name: Contrast check (WCAG AA)
+        run: npm run contrast:check
+
+      - name: Size budgets
+        run: npm run size:check
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Visual tests
+        run: npm run test:visual
+
+      - name: A11y tests (axe)
+        run: npm run test:a11y
+
+      # O repositório publica exclusivamente o pacote agregado fokus-styles.
+      # Cada publish é idempotente, para permitir reruns seguros do workflow.
+      - name: Publish fokus-styles
+        run: node scripts/publish-package-cli.mjs
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Deprecate legacy Clarus packages
+        if: github.ref_name == 'v2.0.0'
+        run: |
+          for PACKAGE in clarus-css clarus-icons clarus-cli clarus-react; do
+            npm deprecate "$PACKAGE" "Este pacote foi descontinuado. Migre para fokus-styles: https://www.npmjs.com/package/fokus-styles"
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

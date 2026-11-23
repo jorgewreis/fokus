@@ -1,0 +1,19 @@
+html[data-theme="dark"],
+html[data-fs-theme="dark"],
+html[data-theme="dark"] body,
+html[data-fs-theme="dark"] body {
+  min-height: 100%;
+  color: var(--fs-color-text);
+  background-color: var(--fs-color-surface);
+}
+
+/* Textos de contrato aparecem sobre superfícies escuras nos laboratórios. */
+html[data-theme="dark"] :is(.demo-eyebrow, .showcase-eyebrow),
+html[data-fs-theme="dark"] :is(.demo-eyebrow, .showcase-eyebrow) {
+  color: var(--fs-alert-primary-text);
+}
+
+html[data-theme="dark"] .demo-reference code,
+html[data-fs-theme="dark"] .demo-reference code {
+  color: var(--fs-alert-primary-text);
+}

@@ -1,0 +1,89 @@
+@forward "../../../fokus-core/scss/settings/utilities";
+@use "sass:map";
+@use "../../../fokus-core/scss/settings" as *;
+@use "../../../fokus-core/scss/tools" as *;
+
+// API declarativa inspirada na Utility API do Bootstrap. A API aceita um
+// subconjunto estático e previsível: valores oficiais, sem JIT e sem classes
+// arbitrárias. Categorias históricas permanecem em seus módulos próprios para
+// preservar aliases e a ordem do CSS público.
+@mixin fs-generate-utility($name, $definition) {
+  $property: map.get($definition, property);
+  $class: map.get($definition, class);
+  $values: map.get($definition, values);
+  $category: map.get($definition, category);
+  $important: map.get($definition, important);
+  $responsive: false;
+  $print: false;
+  $states: ();
+  $declaration-property: $property;
+
+  @if map.has-key($definition, responsive) { $responsive: map.get($definition, responsive); }
+
+  @if map.has-key($definition, print) { $print: map.get($definition, print); }
+
+  @if map.has-key($definition, states) { $states: map.get($definition, states); }
+
+  @if map.has-key($definition, css-var) and map.get($definition, css-var) {
+    $declaration-property: --#{map.get($definition, css-variable-name)};
+  }
+  $suffix: "";
+
+  @if $important and fs-feature-enabled(important-utilities, true) {
+    $suffix: " !important";
+  }
+
+  @each $key, $value in $values {
+    .fs-u-#{$class}-#{$key} {
+      #{$declaration-property}: #{$value}#{$suffix};
+    }
+  }
+
+  @if $responsive and fs-feature-enabled(responsive, true) {
+    @each $breakpoint, $min in $breakpoints {
+      $infix: breakpoint-infix($breakpoint);
+
+      @if $min != 0 {
+        @include media-breakpoint-up($breakpoint) {
+          @each $key, $value in $values {
+            .fs-u-#{$class}#{$infix}-#{$key} {
+              #{$declaration-property}: #{$value}#{$suffix};
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @each $state, $pseudo in $states {
+    @each $key, $value in $values {
+      .fs-u-#{$class}-#{$key}-#{$state}:#{$pseudo} {
+        #{$declaration-property}: #{$value}#{$suffix};
+      }
+    }
+  }
+
+  @if $print and fs-feature-enabled(print, true) {
+    @media print {
+      @each $key, $value in $values {
+        .fs-u-#{$class}-#{$key}-print {
+          #{$declaration-property}: #{$value}#{$suffix};
+        }
+      }
+    }
+  }
+}
+
+@mixin fs-generate-utilities($utilities: $fs-utilities) {
+  @each $name, $definition in $utilities {
+    $category: utilities;
+
+    @if map.has-key($definition, category) {
+      $category: map.get($definition, category);
+    }
+
+    @if fs-config-list-enabled($category, $name) {
+      @include fs-generate-utility($name, $definition);
+    }
+  }
+}
