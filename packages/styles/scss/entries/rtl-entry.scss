@@ -1,0 +1,14 @@
+@charset "UTF-8";
+@use "../../packages/fokus-core/scss/tokens";
+@use "../../packages/fokus-core/scss/base";
+@use "../../packages/fokus-core/scss/layout";
+@use "../../packages/fokus-components/scss/components";
+@use "../../packages/fokus-utilities/scss/utilities";
+@use "../../packages/fokus-core/scss/settings" as *;
+
+@if fs-feature-enabled(rtl, true) {
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: start;
+  }
+}

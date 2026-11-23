@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Layout</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/layout.css">
+    <link rel="stylesheet" href="../../dist/css/forms.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+
+    <div class="fs-container fs-u-p-2">
+        <!-- Grid numerada de 12 colunas, com gutter via .g-3 -->
+        <div class="fs-row fs-u-g-3">
+            <div class="fs-col-md-8 fs-u-p-2">col-md-8</div>
+            <div class="fs-col-md-4 fs-u-p-2">col-md-4</div>
+        </div>
+        <div class="fs-row fs-u-g-3 fs-u-mt-3">
+            <div class="fs-col-4 fs-u-p-2">col-4</div>
+            <div class="fs-col-4 fs-u-p-2">col-4</div>
+            <div class="fs-col-4 fs-u-p-2">col-4</div>
+        </div>
+
+        <!-- Colunas de largura igual automática -->
+        <div class="fs-row fs-u-gx-2 fs-u-mt-3">
+            <div class="fs-col-sm fs-u-p-2">col 1</div>
+            <div class="fs-col-md fs-u-p-2">col 2</div>
+            <div class="fs-col fs-u-p-2">col 3</div>
+        </div>
+        <div class="fs-row fs-row-fluid fs-u-justify-content-start fs-u-mt-3">
+            <div class="fs-col fs-col-fluid fs-u-p-2">col 1</div>
+        </div>
+    </div>
+
+    <div class="fs-container-fluid fs-u-p-2">
+        <div class="fs-form-row fs-u-mt-3 fs-u-gap-x-2">
+            <div class="fs-form-col">
+                <label for="input-text" class="fs-form-label fs-form-size-md">Nome completo</label>
+                <input type="text" class="fs-form-control fs-form-size-xxl" id="input-text" placeholder="Enter text" value="Jorge Reis">
+                <span class="fs-form-text fs-form-size-xxl info">This is a valid text input field.</span>
+            </div>
+        </div>
+        <div class="fs-form-row fs-u-mt-3 fs-u-gap-x-2">
+            <div class="fs-form-col">
+                <label for="input-readonly" class="fs-form-label fs-form-size-md">Somente leitura</label>
+                <input type="text" class="fs-form-control fs-form-size-xxl" id="input-readonly" value="Valor fixo" readonly>
+            </div>
+        </div>
+    </div>
+
+    <div class="fs-container-fluid fs-u-p-2 fs-u-mt-3">
+        <!-- Utilitários de tipografia -->
+        <p class="fs-u-text-center fs-u-fw-medium fs-u-fs-lg">Texto centralizado, peso medium, fonte lg</p>
+        <p class="fs-u-text-uppercase fs-u-fs-sm">texto em uppercase, fonte sm</p>
+        <p class="fs-u-text-truncate" style="max-width: 200px;">Texto longo o suficiente para ser truncado com reticências</p>
+        <p class="fs-u-font-mono fs-u-fs-md">Texto em fonte monoespaçada</p>
+    </div>
+
+    <div class="fs-container-fluid fs-u-p-2 fs-u-mt-3">
+        <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Stack — empilhamento vertical com gap consistente</p>
+        <div class="fs-stack" style="max-width: 320px; background-color: var(--fs-color-subtle); padding: 12px;">
+            <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">Item 1</div>
+            <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">Item 2</div>
+            <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">Item 3</div>
+        </div>
+        <div class="fs-stack fs-stack-gap-1 fs-u-mt-2" style="max-width: 320px; background-color: var(--fs-color-subtle); padding: 12px;">
+            <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">Gap menor (fs-stack-gap-1)</div>
+            <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">Item 2</div>
+        </div>
+    </div>
+
+    <div class="fs-container-fluid fs-u-p-2 fs-u-mt-3">
+        <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Cluster — grupo horizontal com quebra automática</p>
+        <div class="fs-cluster" style="background-color: var(--fs-color-subtle); padding: 12px;">
+            <span class="fs-u-p-2" style="background-color: var(--fs-color-surface); border-radius: var(--fs-radius-sm);">Frontend</span>
+            <span class="fs-u-p-2" style="background-color: var(--fs-color-surface); border-radius: var(--fs-radius-sm);">Design System</span>
+            <span class="fs-u-p-2" style="background-color: var(--fs-color-surface); border-radius: var(--fs-radius-sm);">Acessibilidade</span>
+            <span class="fs-u-p-2" style="background-color: var(--fs-color-surface); border-radius: var(--fs-radius-sm);">Performance</span>
+            <span class="fs-u-p-2" style="background-color: var(--fs-color-surface); border-radius: var(--fs-radius-sm);">CSS</span>
+        </div>
+    </div>
+
+    <div class="fs-container-fluid fs-u-p-2 fs-u-mt-3">
+        <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Sidebar — aside com largura fixa + conteúdo flexível</p>
+        <div class="fs-sidebar fs-sidebar-width-sm" style="background-color: var(--fs-color-subtle); padding: 12px;">
+            <div class="fs-sidebar-aside fs-u-p-2" style="background-color: var(--fs-color-surface);">Aside (largura fixa)</div>
+            <div class="fs-sidebar-content fs-u-p-2" style="background-color: var(--fs-color-surface);">Conteúdo (preenche o espaço restante e quebra pra baixo da aside quando o container fica estreito demais)</div>
+        </div>
+        <div class="fs-sidebar fs-sidebar-width-sm fs-sidebar-reverse fs-u-mt-2" style="background-color: var(--fs-color-subtle); padding: 12px;">
+            <div class="fs-sidebar-aside fs-u-p-2" style="background-color: var(--fs-color-surface);">Aside (reverse — à direita)</div>
+            <div class="fs-sidebar-content fs-u-p-2" style="background-color: var(--fs-color-surface);">Conteúdo</div>
+        </div>
+    </div>
+
+    <div class="fs-container-fluid fs-u-p-2 fs-u-mt-3">
+        <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Sticky — permanece fixo ao rolar o container</p>
+        <div tabindex="0" style="max-height: 120px; overflow-y: auto; border: 1px solid var(--fs-color-border);">
+            <div class="fs-u-sticky-top fs-u-p-2" style="background-color: var(--fs-color-subtle);">Cabeçalho fixo (fs-u-sticky-top)</div>
+            <div class="fs-u-p-2">Linha 1</div>
+            <div class="fs-u-p-2">Linha 2</div>
+            <div class="fs-u-p-2">Linha 3</div>
+            <div class="fs-u-p-2">Linha 4</div>
+            <div class="fs-u-p-2">Linha 5</div>
+        </div>
+    </div>
+
+    <div class="fs-container-fluid fs-u-p-2 fs-u-mt-3">
+        <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Container queries — reage à largura do container, não da viewport</p>
+        <div class="fs-u-cq" style="width: 600px; max-width: 100%; background-color: var(--fs-color-subtle); padding: 12px;">
+            <p class="fs-u-fs-sm fs-u-mb-1">Container largo (≥ 480px): itens em linha</p>
+            <div class="fs-u-cq-md-d-flex fs-u-gap-2">
+                <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">A</div>
+                <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">B</div>
+                <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">C</div>
+            </div>
+        </div>
+        <div class="fs-u-cq fs-u-mt-2" style="width: 300px; max-width: 100%; background-color: var(--fs-color-subtle); padding: 12px;">
+            <p class="fs-u-fs-sm fs-u-mb-1">Container estreito (&lt; 480px): sem o d-flex do breakpoint md, itens empilham</p>
+            <div class="fs-u-cq-md-d-flex fs-u-gap-2">
+                <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">A</div>
+                <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">B</div>
+                <div class="fs-u-p-2" style="background-color: var(--fs-color-surface);">C</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

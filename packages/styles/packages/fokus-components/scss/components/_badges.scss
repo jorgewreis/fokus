@@ -1,0 +1,169 @@
+@use "sass:map";
+@use "../../../fokus-core/scss/settings" as *;
+@use "../../../fokus-core/scss/tools" as *;
+
+@layer components {
+  // As variantes alteram somente tokens locais. Isso permite ajustar um badge
+  // por marca sem sobrescrever propriedades de apresentação diretamente.
+  .fs-badge {
+    --fs-badge-color: var(--fs-color-text);
+    --fs-badge-bg: var(--fs-color-subtle);
+    --fs-badge-border: transparent;
+    --fs-badge-height: 22px;
+    --fs-badge-radius: var(--fs-radius-sm);
+    --fs-badge-padding-inline: 8px;
+    --fs-badge-padding-block-start: 2px;
+    --fs-badge-padding-block-end: 2px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    min-height: var(--fs-badge-height);
+
+    // O padding vertical simétrico mantém a linha de texto no centro geométrico.
+    padding: var(--fs-badge-padding-block-start) var(--fs-badge-padding-inline) var(--fs-badge-padding-block-end);
+    border: 1px solid var(--fs-badge-border);
+    border-radius: var(--fs-badge-radius);
+    color: var(--fs-badge-color);
+    background-color: var(--fs-badge-bg);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    line-height: 1;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  @each $name, $color in $theme-colors {
+    .fs-badge-#{$name} {
+      --fs-badge-color: #{color-contrast($color)};
+      --fs-badge-bg: var(--fs-color-#{$name});
+    }
+
+    .fs-badge-soft-#{$name} {
+      --fs-badge-color: color-mix(in srgb, var(--fs-color-#{$name}) 45%, var(--fs-color-text));
+      --fs-badge-bg: color-mix(in srgb, var(--fs-color-#{$name}) 14%, transparent);
+      --fs-badge-border: color-mix(in srgb, var(--fs-color-#{$name}) 38%, transparent);
+    }
+
+    .fs-badge-outline-#{$name} {
+      --fs-badge-color: color-mix(in srgb, var(--fs-color-#{$name}) 45%, var(--fs-color-text));
+      --fs-badge-bg: transparent;
+      --fs-badge-border: var(--fs-badge-color);
+    }
+  }
+
+  .fs-badge-sm {
+    --fs-badge-height: 18px;
+    --fs-badge-padding-inline: 6px;
+    --fs-badge-padding-block-start: 1px;
+    --fs-badge-padding-block-end: 1px;
+
+    font-size: $font-size-xs;
+  }
+
+  .fs-badge-lg {
+    --fs-badge-height: 26px;
+    --fs-badge-padding-inline: 10px;
+    --fs-badge-padding-block-start: 3px;
+    --fs-badge-padding-block-end: 3px;
+
+    font-size: $font-size-md;
+  }
+
+  .fs-badge-dot::before {
+    width: 6px;
+    height: 6px;
+    flex: 0 0 6px;
+    border-radius: 50%;
+    background-color: currentcolor;
+    transform: translateY(1px);
+    content: "";
+  }
+
+  .fs-badge-count {
+    min-width: var(--fs-badge-height);
+    padding-inline: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fs-badge-count-circle {
+    aspect-ratio: 1;
+    min-width: var(--fs-badge-height);
+    padding-inline: 0;
+    border-radius: 50%;
+  }
+
+  .fs-badge-split {
+    --fs-badge-split-label-bg: var(--fs-color-black);
+    --fs-badge-split-label-color: var(--fs-color-white);
+    --fs-badge-split-value-bg: var(--fs-color-primary);
+    --fs-badge-split-value-color: #{color-contrast(map.get($theme-colors, primary))};
+    --fs-badge-split-height: 22px;
+    --fs-badge-split-radius: var(--fs-radius-sm);
+
+    display: inline-flex;
+    min-height: var(--fs-badge-split-height);
+    overflow: hidden;
+    border-radius: var(--fs-badge-split-radius);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    line-height: 1;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .fs-badge-split-label,
+  .fs-badge-split-value {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--fs-badge-split-height);
+    padding-block: 2px;
+    padding-inline: 8px;
+  }
+
+  .fs-badge-split-label {
+    color: var(--fs-badge-split-label-color);
+    background-color: var(--fs-badge-split-label-bg);
+  }
+
+  .fs-badge-split-value {
+    color: var(--fs-badge-split-value-color);
+    background-color: var(--fs-badge-split-value-bg);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @each $name, $color in $theme-colors {
+    .fs-badge-split-#{$name} {
+      --fs-badge-split-value-bg: var(--fs-color-#{$name});
+      --fs-badge-split-value-color: #{color-contrast($color)};
+    }
+  }
+
+  .fs-badge-split.fs-badge-sm {
+    --fs-badge-split-height: 18px;
+
+    min-height: var(--fs-badge-split-height);
+    padding: 0;
+  }
+
+  .fs-badge-split.fs-badge-lg {
+    --fs-badge-split-height: 26px;
+
+    min-height: var(--fs-badge-split-height);
+    padding: 0;
+    font-size: $font-size-md;
+  }
+
+  .fs-badge-split.fs-badge-sm .fs-badge-split-label,
+  .fs-badge-split.fs-badge-sm .fs-badge-split-value {
+    padding-block: 1px;
+    padding-inline: 6px;
+  }
+
+  .fs-badge-split.fs-badge-lg .fs-badge-split-label,
+  .fs-badge-split.fs-badge-lg .fs-badge-split-value {
+    padding-block: 3px;
+    padding-inline: 10px;
+  }
+}

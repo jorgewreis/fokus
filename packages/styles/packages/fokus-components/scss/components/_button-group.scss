@@ -1,0 +1,26 @@
+/* stylelint-disable declaration-block-single-line-max-declarations */
+@layer components {
+  .fs-button-group {
+    display: inline-flex;
+    vertical-align: middle;
+  }
+
+  .fs-button-group > .fs-btn { border-radius: 0; }
+  .fs-button-group > .fs-btn:first-child { border-start-start-radius: var(--fs-radius-sm); border-end-start-radius: var(--fs-radius-sm); }
+  .fs-button-group > .fs-btn:last-child { border-start-end-radius: var(--fs-radius-sm); border-end-end-radius: var(--fs-radius-sm); }
+  .fs-button-group > .fs-btn + .fs-btn { margin-inline-start: -1px; }
+  .fs-button-group-vertical { flex-direction: column; align-items: flex-start; }
+  .fs-button-group-vertical > .fs-btn { width: 100%; }
+
+  .fs-button-group[role="group"] {
+    isolation: isolate;
+  }
+
+  .fs-button-group > .fs-btn:focus-visible { z-index: 2; }
+
+  .fs-button-group > .fs-btn[aria-pressed="true"] {
+    --fs-btn-bg: var(--fs-color-primary);
+    --fs-btn-color: var(--fs-color-on-primary);
+    --fs-btn-border-color: var(--fs-color-primary);
+  }
+}

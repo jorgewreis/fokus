@@ -2,6 +2,10 @@
 
 Monorepo corporativo da Fokus. Este checkout contém o aplicativo Greenfield Fokus Law em [apps/law/](apps/law/).
 
+## Fokus Styles
+
+O [Fokus Styles](packages/styles/README.md) reúne framework, catálogo, documentação, exemplos e testes. O código sob [`packages/styles/`](packages/styles/) mantém sua [licença MIT](packages/styles/LICENSE), separada da licença da raiz. A importação não muda o site, o pacote npm ou o processo de publicação.
+
 ## Navegação
 
 - [Aplicação Fokus Law](apps/law/)
