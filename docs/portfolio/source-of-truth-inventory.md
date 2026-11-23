@@ -27,6 +27,10 @@ O snapshot não altera a decisão de portfólio. O PR #31 está aberto em Draft;
 
 Para Lead e Jarvis, a conferência de repositórios privados confirma material documental e provas existentes, mas não é adequada para publicação de identificadores ou detalhes internos. Os registros privados vinculados no Notion/Linear devem sustentar a próxima revisão deste inventário; presença de documentação ou PoC não prova runtime ou prontidão.
 
+### Comparação adicional de Styles no Cloud · 2026-11-23
+
+No mesmo checkout isolado do Cloud `5a34b4d`, com o lockfile instalado, o cenário sintético de assinaturas foi executado com Styles 2.7.0 e com o tarball local 3.0.0 identificado acima. O mesmo navegador, fixtures e viewports (1440×900, 768×1024 e 375×812) foram usados em ambos; o fluxo, incluindo filtros, paginação e drawer, passou nas duas execuções. Seis capturas foram comparadas diretamente: desktop e drawer desktop/mobile tiveram zero pixels RGB diferentes; listagem tablet teve 1 pixel diferente, listagem mobile 9 e drawer tablet 3.262 de 786.432 pixels (0,41%), concentrados no fundo escurecido. Comparação bruta de pixels não determina causa nem aprova a interface inteira. Faltam inspeção e cobertura representativa dos demais fluxos, acessibilidade e proveniência do pacote publicado; não há mudança de dependência ou release.
+
 ## Critério de leitura
 
 - “Descrito” significa que uma fonte documental afirma a capacidade; não prova implementação.
