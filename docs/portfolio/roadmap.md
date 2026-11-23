@@ -23,7 +23,7 @@ flowchart TD
 ## Fase 0 — Reconciliação do portfólio
 
 - Validar revisões e fontes canônicas, ambientes, publicação, dependências, dados e responsáveis de Cloud, Admin, Law comercial, Lead, Styles e Jarvis.
-- Reutilizar as issues de inventário existentes (REI-191, REI-193, REI-189, REI-190 e REI-214) e a reconciliação de governança (REI-272); atualizar seus documentos relacionados sem apagar o histórico.
+- Reutilizar issues de inventário e governança existentes após consultar o backlog vigente; atualizar os registros relacionados sem apagar o histórico.
 - Identificar o repositório canônico do Law on demand e registrar um plano reversível de separação. A decisão de excluí-lo do monorepo central está confirmada; sua migração física permanece bloqueada por confirmação de destino e dependências.
 - Gate: matriz com cada ativo classificado como decisão, especificação, código presente, versão publicada comprovada ou desconhecida; origem, evidência, lacuna e responsável por resolver.
 

@@ -59,4 +59,4 @@ Quando houver conflito, preservar o histórico, registrar a decisão com fonte e
 
 Em 2026-11-23, o checkout estava em `main`, 39 commits atrás de `origin/main`, com `README.md` modificado e diretórios locais não rastreados. Esses itens foram preservados. O README e ADR presentes nesta revisão identificam `apps/law/` como Fokus Law da 1ª Vara; esta constatação não prova que o checkout local represente o último estado remoto.
 
-Fontes consultadas: Plano Diretor e Governança 2027 no Notion; inventário técnico Cloud; inventário do Lead (REI-190); decisão do Law 1ª Vara (PRD e ADR-0001); Issues REI-191, REI-193, REI-189, REI-190, REI-272 e REI-166. Fontes dinâmicas e revisões remotas devem ser revalidadas antes da execução de migrações ou releases.
+Fontes consultadas: decisões estratégicas do portfólio, documentação dos produtos e inventário técnico disponível. O registro detalhado de execução permanece nos sistemas privados do projeto. Fontes dinâmicas e revisões remotas devem ser revalidadas antes da execução de migrações ou releases.

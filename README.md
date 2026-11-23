@@ -15,8 +15,6 @@ Monorepo corporativo planejado como fonte central de código, documentação e p
 
 ## Fontes do produto
 
-- PRD canônico no Notion (referência interna): requisitos e decisões atuais.
-- REI-194 no Linear (referência interna): percurso do MVP.
-- REI-195 no Linear (referência interna): arquitetura e fronteiras de ambiente.
+- Requisitos e decisões do MVP institucional são mantidos nos espaços privados apropriados.
 
 Use somente dados sintéticos locais conforme as instruções do aplicativo. Este repositório não autoriza dados institucionais, conexão com produção, homologação ou implantação.
