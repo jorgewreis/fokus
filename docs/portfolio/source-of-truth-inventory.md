@@ -13,6 +13,20 @@
 | Jarvis | Produto associado a repositório privado próprio. | Esta cópia pública não descreve runtime, dados, agentes ou autonomia internos. | Inventariar e aprovar interfaces, isolamento e limites antes de qualquer integração. |
 | Law on demand — 1ª Vara | A aplicação institucional ainda aparece em `apps/law/` neste repositório. | O estado desejado aprovado é mantê-la fora do repositório central. Seu destino canônico e a revisão que atende usuários ainda não estão confirmados. | Definir origem, destino compatível, consumidores, histórico, dependências e reversão antes de qualquer movimento. |
 
+## Snapshot de fontes públicas · 2026-11-23
+
+Leitura somente de metadados, README e arquivos declarativos nas branches padrão; não inclui execução de código, dados, serviços ou ambientes:
+
+| Fonte | Revisão observada | Evidência documental/código | Lacuna que impede conclusão |
+| --- | --- | --- | --- |
+| [Repositório central](https://github.com/jorgewreis/fokus/tree/010ff6087c355c2cd6abdf86733636717d91291f) | `main` · `010ff608` | A raiz contém `apps/` e `docs/`; o README navega para `apps/law/` e identifica o produto como Fokus Law. | O README aponta para o PRD da 1ª Vara. Esta revisão antecede o PR #31 e não materializa a fronteira aprovada de exclusão. |
+| [Fokus Cloud](https://github.com/jorgewreis/fokus-cloud/tree/5a34b4dcf0caf256126b4495f43c981bf3cc609d) | `main` · `5a34b4d` | A raiz contém uma aplicação Laravel, rotas, documentação e testes. O README descreve a reconstrução como não homologada e não publicada. | Código e declarações do README não identificam a revisão efetivamente servida; outras afirmações do site/README precisam de reconciliação. |
+| [Fokus Styles](https://github.com/jorgewreis/fokus-styles/tree/9f34bdbe6fa41ee29dc6edc36d9452b82d2e7ac2) | `main` · `9f34bdb` | `package.json` declara `3.0.0`; o README ainda declara status `2.7.0` e versão 3.0.0 “em preparação”. | Há divergência documental. Confirmar o estado do registro npm e a revisão de origem do pacote antes de afirmar release ou adoção. |
+
+O snapshot não altera a decisão de portfólio. O PR #31 está aberto em Draft; por isso, `main` ainda não contém a correção documental submetida sobre a fronteira do Law on demand. Há mais de uma linha privada relacionada à aplicação institucional nos registros consultados, mas nenhuma foi eleita aqui como canônica e nenhum destino de migração foi aprovado. Os detalhes internos ficam no Notion/Linear.
+
+Para Lead e Jarvis, a conferência de repositórios privados confirma material documental e provas existentes, mas não é adequada para publicação de identificadores ou detalhes internos. Os registros privados vinculados no Notion/Linear devem sustentar a próxima revisão deste inventário; presença de documentação ou PoC não prova runtime ou prontidão.
+
 ## Critério de leitura
 
 - “Descrito” significa que uma fonte documental afirma a capacidade; não prova implementação.
