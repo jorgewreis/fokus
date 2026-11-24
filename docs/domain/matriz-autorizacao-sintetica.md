@@ -4,7 +4,7 @@
 **Atualizado em:** 20/11/2026
 **Fonte canônica:** [PRD Fokus Cloud Law](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a) e decisões nas REI-231/232.
 
-Esta matriz define regras de sigilo e competência do ambiente sintético. Não copia os ACLs ou os papéis do PJe/TJBA, nem constitui regra para produção ou dados reais. Por decisão de Jorge em 20/11/2026, o catálogo usa os códigos CNJ DataJud `0` a `5` como rótulos de classificação sintética. As definições de intercâmbio DataJud não se tornam papéis, ACLs ou uma hierarquia no Fokus. A autorização compara o código exato; não interpreta texto descritivo, magnitude, herança ou equivalência.
+Esta matriz define regras de sigilo e competência do ambiente sintético. Não copia os ACLs ou os papéis do sistema processual eletrônico do tribunal de referência, nem constitui regra para produção ou dados reais. O catálogo de sigilo adotado é apenas o vocabulário do Decreto Judiciário nº 218/2025: Público e níveis 1 a 5. O texto oficial mantém divergência nominal sobre o nível 2; a autorização compara o identificador exato da entrada, não o texto exibido nem uma ordem numérica.
 
 ## Regra cumulativa
 
@@ -88,8 +88,7 @@ Os códigos de competência `3` e `16` são exemplos extraídos do snapshot, nã
 
 ## Referências
 
-- [FAQ oficial do CNJ DataJud](https://www.cnj.jus.br/sistemas/datajud/perguntas-frequentes/) — fonte dos códigos de sigilo usados no intercâmbio DataJud; os códigos são rótulos de referência nesta aplicação sintética e não constituem ACL do Fokus.
-- [Decreto Judiciário TJBA nº 218/2025, texto compilado](https://www7.tjba.jus.br/secao/lerPublicacao.wsp?tmp.id=39235&tmp.mostrarDiv=sim&tmp.secao=9) — contexto institucional/PJe, sem transposição automática para o catálogo sintético ou ACL.
-- [REI-231 — Sigilo de Processos sintéticos](https://linear.app/reis-developer/issue/REI-231/vara-definir-catalogo-de-sigilo-e-acesso-a-processos-sinteticos).
-- [REI-232 — Competência](https://linear.app/reis-developer/issue/REI-232/vara-definir-competencia-e-escopo-de-acesso-a-processos-sinteticos).
-- [REI-196 — Autorização](https://linear.app/reis-developer/issue/REI-196/vara-aplicar-autorizacao-por-modulo-sigilo-e-autoria).
+- Decreto Judiciário nº 218/2025 (texto compilado) — vocabulário de sigilo de referência, sem transposição automática de ACL.
+- [REI-231 — Sigilo de Processos sintéticos](https://linear.app/reis-developer/issue/REI-231).
+- [REI-232 — Competência](https://linear.app/reis-developer/issue/REI-232).
+- [REI-196 — Autorização](https://linear.app/reis-developer/issue/REI-196).

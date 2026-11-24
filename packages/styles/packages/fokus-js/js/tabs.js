@@ -1,0 +1,110 @@
+import { autoInit, createInstanceRegistry } from "./core/register.js";
+import { guardDisabledActivation, isDisabled } from "./core/disabled.js";
+
+const instances = createInstanceRegistry();
+let idCounter = 0;
+
+export class Tabs {
+  constructor(tablistEl) {
+    this.tablistEl = tablistEl;
+    this.tabs = Array.from(tablistEl.querySelectorAll(".fs-nav-link, [role=tab], [data-fs-tab-target]"));
+    this.manualActivation = tablistEl.getAttribute("data-tabs-activation") === "manual";
+
+    tablistEl.setAttribute("role", "tablist");
+
+    this.tabs.forEach((tab) => {
+      const isActive = tab.classList.contains("is-active");
+
+      idCounter += 1;
+      if (!tab.id) tab.id = `fokus-tab-${idCounter}`;
+
+      tab.setAttribute("role", "tab");
+      tab.setAttribute("aria-selected", String(isActive));
+      tab.setAttribute("tabindex", isActive ? "0" : "-1");
+
+      const paneSelector = tab.getAttribute("data-fs-target") || tab.getAttribute("data-fs-tab-target");
+      const pane = paneSelector ? document.querySelector(paneSelector) : null;
+
+      if (pane) {
+        pane.setAttribute("role", "tabpanel");
+        pane.setAttribute("aria-labelledby", tab.id);
+        pane.setAttribute("tabindex", "0");
+        pane.hidden = !isActive;
+      }
+    });
+
+    this._handleClick = this._handleClick.bind(this);
+    this._handleKeydown = this._handleKeydown.bind(this);
+
+    this._removeDisabledGuard = guardDisabledActivation(tablistEl, ".fs-nav-link, [role=tab], [data-fs-tab-target]");
+    tablistEl.addEventListener("click", this._handleClick);
+    tablistEl.addEventListener("keydown", this._handleKeydown);
+
+    instances.set(tablistEl, this);
+  }
+
+  static getInstance(el) {
+    return instances.get(el);
+  }
+
+  static getOrCreateInstance(el) { return this.getInstance(el) ?? new Tabs(el); }
+  static show(el, tab) { return this.getOrCreateInstance(el).show(tab); }
+  static dispose(el) { return this.getInstance(el)?.dispose(); }
+
+  _handleClick(event) {
+    const tab = event.target.closest(".fs-nav-link:not(.is-disabled), [role=tab]:not(.is-disabled), [data-fs-tab-target]:not(.is-disabled)");
+    if (!tab || !this.tabs.includes(tab)) return;
+    this.show(tab);
+  }
+
+  _handleKeydown(event) {
+    const enabledTabs = this.tabs.filter((tab) => !isDisabled(tab));
+    const currentIndex = enabledTabs.indexOf(document.activeElement);
+    if (currentIndex === -1) return;
+
+    let nextIndex = null;
+    const vertical = this.tablistEl.getAttribute("aria-orientation") === "vertical" || this.tablistEl.classList.contains("fs-tabs-vertical");
+    if (event.key === (vertical ? "ArrowDown" : "ArrowRight")) nextIndex = (currentIndex + 1) % enabledTabs.length;
+    else if (event.key === (vertical ? "ArrowUp" : "ArrowLeft")) nextIndex = (currentIndex - 1 + enabledTabs.length) % enabledTabs.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = enabledTabs.length - 1;
+
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+      const nextTab = enabledTabs[nextIndex];
+      nextTab.focus();
+      if (!this.manualActivation) this.show(nextTab);
+  }
+
+  show(tab) {
+    if (!this.tabs.includes(tab) || isDisabled(tab) || tab.classList.contains("is-active")) return;
+
+    this.tabs.forEach((otherTab) => {
+      const isActive = otherTab === tab;
+
+      otherTab.classList.toggle("is-active", isActive);
+      otherTab.setAttribute("aria-selected", String(isActive));
+      otherTab.setAttribute("tabindex", isActive ? "0" : "-1");
+
+      const paneSelector = otherTab.getAttribute("data-fs-target") || otherTab.getAttribute("data-fs-tab-target");
+      const pane = paneSelector ? document.querySelector(paneSelector) : null;
+      pane?.classList.toggle("is-active", isActive);
+      if (pane) pane.hidden = !isActive;
+    });
+
+    tab.dispatchEvent(new CustomEvent("fs:shown", { bubbles: true }));
+    tab.dispatchEvent(
+      new CustomEvent("fs:tab:changed", { bubbles: true, detail: { target: tab.getAttribute("data-fs-target") } }),
+    );
+  }
+
+  dispose() {
+    this._removeDisabledGuard();
+    this.tablistEl.removeEventListener("click", this._handleClick);
+    this.tablistEl.removeEventListener("keydown", this._handleKeydown);
+    instances.delete(this.tablistEl);
+  }
+}
+
+autoInit("tabs", Tabs);

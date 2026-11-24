@@ -1,0 +1,78 @@
+@use "../../../fokus-core/scss/settings" as *;
+@use "../../../fokus-core/scss/tools" as *;
+
+@layer utilities {
+  @if fs-config-list-enabled(typography, typography) {
+    .fs-u-text-start { text-align: start !important; }
+    .fs-u-text-center { text-align: center !important; }
+    .fs-u-text-end { text-align: end !important; }
+    .fs-u-text-justify { text-align: justify !important; }
+    .fs-u-text-lowercase { text-transform: lowercase !important; }
+    .fs-u-text-uppercase { text-transform: uppercase !important; }
+    .fs-u-text-capitalize { text-transform: capitalize !important; }
+    .fs-u-text-normal { font-style: normal !important; }
+    .fs-u-text-italic { font-style: italic !important; }
+    .fs-u-text-wrap { white-space: normal !important; }
+    .fs-u-text-nowrap { white-space: nowrap !important; }
+    .fs-u-text-pre { white-space: pre !important; }
+    .fs-u-text-pre-wrap { white-space: pre-wrap !important; }
+    .fs-u-text-break { overflow-wrap: anywhere !important; }
+    .fs-u-text-break-all { word-break: break-all !important; }
+    .fs-u-text-keep-all { word-break: keep-all !important; }
+    .fs-u-text-balance { text-wrap: balance !important; }
+    .fs-u-text-pretty { text-wrap: pretty !important; }
+
+    .fs-u-text-truncate {
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+    .fs-u-text-underline { text-decoration-line: underline !important; }
+    .fs-u-text-no-underline { text-decoration-line: none !important; }
+    .fs-u-underline-dotted { text-decoration-style: dotted !important; }
+    .fs-u-underline-dashed { text-decoration-style: dashed !important; }
+    .fs-u-underline-solid { text-decoration-style: solid !important; }
+    .fs-u-underline-1 { text-decoration-thickness: 1px !important; }
+    .fs-u-underline-2 { text-decoration-thickness: 2px !important; }
+    .fs-u-underline-auto { text-decoration-thickness: auto !important; }
+    .fs-u-align-baseline { vertical-align: baseline !important; }
+    .fs-u-align-middle { vertical-align: middle !important; }
+    .fs-u-align-top { vertical-align: top !important; }
+    .fs-u-align-bottom { vertical-align: bottom !important; }
+    .fs-u-font-sans { font-family: var(--fs-font-sans) !important; }
+    .fs-u-font-mono { font-family: var(--fs-font-mono) !important; }
+
+
+    @each $name, $value in (regular: $font-weight-regular, medium: $font-weight-medium, semibold: $font-weight-semibold, bold: $font-weight-bold) {
+      .fs-u-fw-#{$name} { font-weight: $value !important; }
+    }
+
+    @each $name, $value in (xs: $font-size-xs, sm: $font-size-sm, md: $font-size-md, lg: $font-size-lg, xl: $font-size-xl, h1: $font-size-h1, h2: $font-size-h2, h3: $font-size-h3, h4: $font-size-h4, h5: $font-size-h5, h6: $font-size-h6) {
+      .fs-u-fs-#{$name} { font-size: $value !important; }
+    }
+
+    @each $name, $value in (base: $line-height-base, heading: $line-height-heading, none: 1, tight: 1.25, relaxed: 1.75) {
+      .fs-u-leading-#{$name} { line-height: $value !important; }
+    }
+
+    @each $name, $value in (tighter: -0.05em, tight: -0.025em, normal: 0, wide: 0.025em, wider: 0.05em) {
+      .fs-u-tracking-#{$name} { letter-spacing: $value !important; }
+    }
+
+    @each $breakpoint, $min in $breakpoints {
+      $infix: breakpoint-infix($breakpoint);
+
+      @if $min != 0 {
+        @include media-breakpoint-up($breakpoint) {
+          .fs-u-text#{$infix}-start { text-align: start !important; }
+          .fs-u-text#{$infix}-center { text-align: center !important; }
+          .fs-u-text#{$infix}-end { text-align: end !important; }
+
+          @each $name, $value in (xs: $font-size-xs, sm: $font-size-sm, md: $font-size-md, lg: $font-size-lg, xl: $font-size-xl) {
+            .fs-u-fs#{$infix}-#{$name} { font-size: $value !important; }
+          }
+        }
+      }
+    }
+  }
+}

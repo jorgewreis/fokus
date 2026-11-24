@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Tables & Navbar</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/components.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <style>
+        .theme-panel {
+            padding: 24px;
+            background-color: var(--fs-color-subtle);
+        }
+
+        html[data-theme="dark"] .theme-panel,
+        html[data-fs-theme="dark"] .theme-panel {
+            color: var(--fs-color-text);
+            background-color: var(--fs-color-surface);
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+<div class="theme-panel">
+        <section id="navbar-demo" data-showcase-demo>
+        <nav class="fs-navbar fs-u-mb-3" data-fs="navbar" aria-label="Navegação principal">
+            <a href="#" class="fs-navbar-brand">FokusStyles</a>
+            <button type="button" class="fs-navbar-toggler" data-fs-toggle="navbar" data-fs-target="#demo-navbar-menu" aria-controls="demo-navbar-menu" aria-expanded="false">Menu</button>
+            <div class="fs-navbar-collapse" id="demo-navbar-menu" hidden>
+                <ul class="fs-navbar-nav">
+                    <li><a href="#" class="fs-nav-link is-active" aria-current="page">Início</a></li>
+                    <li><a href="#" class="fs-nav-link">Projetos <span class="fs-badge fs-badge-primary fs-badge-sm">3</span></a></li>
+                    <li><a href="#" class="fs-nav-link is-disabled">Configurações</a></li>
+                </ul>
+                <button type="button" class="fs-btn fs-btn-primary fs-btn-sm">Entrar</button>
+            </div>
+        </nav>
+        </section>
+
+        <div data-showcase-demo>
+        <div class="fs-table-responsive">
+            <table class="fs-table fs-table-striped fs-table-hover">
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>Responsável</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Landing page</td>
+                        <td>Jorge</td>
+                        <td>Em andamento</td>
+                    </tr>
+                    <tr class="fs-table-success">
+                        <td>API de pagamentos</td>
+                        <td>Equipe backend</td>
+                        <td>Concluído</td>
+                    </tr>
+                    <tr class="fs-table-danger">
+                        <td>Migração de banco</td>
+                        <td>Equipe infra</td>
+                        <td>Bloqueado</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <table class="fs-table fs-table-sm fs-table-bordered fs-u-mt-3">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Qtd.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>table-sm + table-bordered</td>
+                    <td>1</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+
+</body>
+</html>

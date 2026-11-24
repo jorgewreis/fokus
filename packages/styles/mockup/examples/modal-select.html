@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Modal &amp; Select</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/components.css">
+    <link rel="stylesheet" href="../../dist/css/forms.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <style>
+        .theme-panel {
+            padding: 24px;
+        }
+
+        html[data-theme="dark"] .theme-panel {
+            color: var(--fs-color-text);
+            background-color: var(--fs-color-surface);
+        }
+
+        section {
+            margin-bottom: 24px;
+        }
+
+        .fs-form-select-dropdown {
+            width: 220px;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+
+    <div class="theme-panel">
+<section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mt-3 fs-u-mb-1">Modal — auto-init via data-fs, focus trap, Escape, clique fora, scroll bloqueado</p>
+            <button type="button" class="fs-btn fs-btn-primary fs-u-mr-2" data-fs="modal" data-fs-target="#modal-claro">Abrir modal</button>
+            <button type="button" class="fs-btn fs-u-mr-2" data-fs="modal" data-fs-target="#modal-claro-sm">Modal pequeno</button>
+            <button type="button" class="fs-btn" data-fs="modal" data-fs-target="#modal-claro-static">Backdrop estático</button>
+
+            <div class="fs-modal" id="modal-claro">
+                <div class="fs-modal-dialog">
+                    <div class="fs-modal-content">
+                        <div class="fs-modal-header">
+                            <h3 class="fs-modal-title">Confirmar ação</h3>
+                            <button type="button" class="fs-btn-close" data-fs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="fs-modal-body">
+                            <p>Este modal reaproveita a infraestrutura da Fase 7: focus trap (Tab/Shift+Tab), fecha com Escape ou clique fora, e bloqueia o scroll da página enquanto aberto.</p>
+                        </div>
+                        <div class="fs-modal-footer">
+                            <button type="button" class="fs-btn" data-fs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="fs-btn fs-btn-primary" data-fs-dismiss="modal">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fs-modal" id="modal-claro-sm">
+                <div class="fs-modal-dialog fs-modal-sm">
+                    <div class="fs-modal-content">
+                        <div class="fs-modal-header">
+                            <h3 class="fs-modal-title">Modal pequeno</h3>
+                            <button type="button" class="fs-btn-close" data-fs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="fs-modal-body">
+                            <p>Variante <code class="fs-u-font-mono">.modal-sm</code>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fs-modal" id="modal-claro-static" data-backdrop="static">
+                <div class="fs-modal-dialog">
+                    <div class="fs-modal-content">
+                        <div class="fs-modal-header">
+                            <h3 class="fs-modal-title">Backdrop estático</h3>
+                            <button type="button" class="fs-btn-close" data-fs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="fs-modal-body">
+                            <p>Com <code class="fs-u-font-mono">data-backdrop="static"</code>, Escape e clique fora não fecham — só o botão de fechar ou dismiss.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Select customizado — auto-init via data-fs, reaproveita o Dropdown (Fase 8)</p>
+            <div class="fs-form-row fs-u-gap-x-2">
+                <div class="fs-form-col">
+                    <label for="select-claro" class="fs-form-label fs-form-size-md">Padrão</label>
+                    <select class="fs-form-select-dropdown" id="select-claro" data-fs="select">
+                        <option>Selecione um estado</option>
+                        <option>São Paulo</option>
+                        <option>Rio de Janeiro</option>
+                        <option disabled>Minas Gerais (indisponível)</option>
+                        <option>Bahia</option>
+                    </select>
+                </div>
+                <div class="fs-form-col">
+                    <label for="select-claro-sm" class="fs-form-label fs-form-size-md">Small</label>
+                    <select class="fs-form-select-dropdown" id="select-claro-sm" data-fs="select" data-size="sm">
+                        <option>Pequeno</option>
+                        <option>Médio</option>
+                        <option>Grande</option>
+                    </select>
+                </div>
+                <div class="fs-form-col">
+                    <label for="select-claro-disabled" class="fs-form-label fs-form-size-md">Desabilitado</label>
+                    <select class="fs-form-select-dropdown" id="select-claro-disabled" data-fs="select" disabled>
+                        <option>Indisponível</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    
+
+    <!-- SCRIPTS IMPORT -->
+    <script src="../../dist/js/fokus.js"></script>
+
+</body>
+</html>

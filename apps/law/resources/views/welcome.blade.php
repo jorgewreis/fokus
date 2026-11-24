@@ -49,7 +49,7 @@
             </aside>
 
             <h1>Uma base segura para começar.</h1>
-            <p class="intro">O Fokus Law está sendo preparado para o fluxo sintético de Pessoas e Processos da 1ª Vara Crime de Ilhéus.</p>
+            <p class="intro">O Fokus Law está sendo preparado para o fluxo sintético de Pessoas e Processos do Law on demand.</p>
 
             <section class="status" aria-labelledby="status-title">
                 <span class="status-mark" aria-hidden="true"></span>

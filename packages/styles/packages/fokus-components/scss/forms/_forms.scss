@@ -1,0 +1,537 @@
+@use "../../../fokus-core/scss/settings" as *;
+@use "../../../fokus-core/scss/tools" as *;
+
+@layer components {
+  .fs-form-fieldset {
+    min-inline-size: 0;
+    margin: 0;
+    padding: var(--fs-space-3);
+    border: var(--fs-border-width) solid var(--fs-color-border);
+    border-radius: var(--fs-radius-md);
+  }
+
+  .fs-form-fieldset > legend {
+    max-inline-size: 100%;
+    padding-inline: var(--fs-space-1);
+    color: var(--fs-color-text);
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+  }
+
+  .fs-form-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 12px 16px;
+    width: 100%;
+  }
+
+  .fs-form-col {
+    display: flex;
+    flex: 1 1 240px;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .fs-form-label {
+    width: auto;
+    margin: 0;
+    color: var(--fs-color-muted);
+    font-size: $font-size-sm;
+    font-weight: $font-weight-regular;
+  }
+
+  .fs-form-text {
+    width: auto;
+    margin: 0;
+    color: var(--fs-color-muted);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-regular;
+  }
+
+  .fs-form-text,
+  .fs-valid-feedback,
+  .fs-invalid-feedback {
+    min-height: 1.25rem;
+    padding: 3px 8px;
+    border-radius: var(--fs-radius-sm);
+  }
+
+  .fs-form-text {
+    color: var(--fs-color-muted);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-regular;
+  }
+
+  .fs-valid-feedback,
+  .fs-invalid-feedback {
+    display: none;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-regular;
+
+  }
+
+  .fs-valid-feedback {
+    color: var(--fs-alert-success-text);
+    background-color: var(--fs-feedback-success-bg);
+  }
+
+  .fs-invalid-feedback {
+    color: var(--fs-alert-danger-text);
+    background-color: var(--fs-feedback-danger-bg);
+  }
+
+  .is-valid ~ .fs-valid-feedback,
+  .is-invalid ~ .fs-invalid-feedback {
+    display: block;
+  }
+
+  .fs-form-control,
+  .fs-form-textarea,
+  .fs-form-date,
+  .fs-form-time {
+    width: 100%;
+    min-width: 0;
+    height: var(--fs-control-height);
+    min-block-size: var(--fs-control-height);
+    padding-block: 0;
+    padding-inline: var(--fs-control-padding-x);
+    border: var(--fs-border-width) solid var(--fs-control-border-color);
+    border-radius: var(--fs-control-radius);
+    color: var(--fs-color-text);
+    background-color: var(--fs-control-bg);
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    line-height: 1.35;
+    transition: var(--fs-control-transition);
+    color-scheme: light;
+  }
+
+  [data-theme="dark"] .fs-form-control,
+  [data-theme="dark"] .fs-form-textarea,
+  [data-theme="dark"] .fs-form-date,
+  [data-theme="dark"] .fs-form-time,
+  [data-fs-theme="dark"] .fs-form-control,
+  [data-fs-theme="dark"] .fs-form-textarea,
+  [data-fs-theme="dark"] .fs-form-date,
+  [data-fs-theme="dark"] .fs-form-time {
+    color-scheme: dark;
+  }
+
+  .fs-form-textarea {
+    height: auto;
+    min-block-size: 96px;
+    padding-block: var(--fs-space-2);
+    resize: vertical;
+  }
+
+  .fs-form-control::placeholder,
+  .fs-form-textarea::placeholder {
+    color: var(--fs-control-placeholder-color);
+    opacity: 1;
+  }
+
+  .fs-form-control:focus-visible,
+  .fs-form-textarea:focus-visible,
+  .fs-form-date:focus-visible,
+  .fs-form-time:focus-visible {
+    @include focus-ring;
+  }
+
+  .fs-form-control:disabled,
+  .fs-form-textarea:disabled,
+  .fs-form-date:disabled,
+  .fs-form-time:disabled {
+    color: var(--fs-color-muted);
+    background-color: var(--fs-color-subtle);
+    opacity: var(--fs-control-disabled-opacity);
+    pointer-events: none;
+  }
+
+  .fs-form-control:read-only,
+  .fs-form-textarea:read-only,
+  .fs-form-date:read-only,
+  .fs-form-time:read-only {
+    background-color: var(--fs-color-subtle);
+    cursor: default;
+  }
+
+  .fs-form-control[type="search"] {
+    appearance: auto;
+  }
+
+  .fs-form-control[type="date"],
+  .fs-form-control[type="time"],
+  .fs-form-date,
+  .fs-form-time {
+    accent-color: var(--fs-color-primary);
+  }
+
+  .fs-floating-label {
+    position: relative;
+  }
+
+  .fs-floating-label > .fs-form-control {
+    height: 56px;
+    padding-top: 20px;
+  }
+
+  .fs-floating-label > .fs-form-label {
+    position: absolute;
+    z-index: 1;
+    top: 8px;
+    left: 8px;
+    color: var(--fs-color-muted);
+    font-size: $font-size-xs;
+    pointer-events: none;
+  }
+
+  .fs-form-control[aria-invalid="true"],
+  .fs-form-textarea[aria-invalid="true"],
+  .fs-form-date[aria-invalid="true"],
+  .fs-form-time[aria-invalid="true"],
+  .fs-was-validated .fs-form-control:invalid {
+    border-color: var(--fs-control-invalid-color);
+  }
+
+  .fs-form-control[aria-invalid="false"],
+  .fs-form-textarea[aria-invalid="false"],
+  .fs-form-date[aria-invalid="false"],
+  .fs-form-time[aria-invalid="false"],
+  .fs-was-validated .fs-form-control:valid {
+    border-color: var(--fs-control-valid-color);
+  }
+
+  .fs-form-control-sm {
+    height: var(--fs-control-height-sm);
+    min-block-size: var(--fs-control-height-sm);
+    padding-inline: var(--fs-control-padding-x-sm);
+    font-size: $font-size-xs;
+  }
+
+  .fs-form-control-lg {
+    height: var(--fs-control-height-lg);
+    min-block-size: var(--fs-control-height-lg);
+    padding-inline: var(--fs-control-padding-x-lg);
+    font-size: $font-size-md;
+  }
+
+  .fs-form-control-xs {
+    height: var(--fs-control-height-xs);
+    min-block-size: var(--fs-control-height-xs);
+    padding-inline: var(--fs-control-padding-x-xs);
+    font-size: $font-size-xs;
+  }
+
+  .fs-form-control-xl {
+    height: var(--fs-control-height-xl);
+    min-block-size: var(--fs-control-height-xl);
+    padding-inline: var(--fs-control-padding-x-xl);
+    font-size: $font-size-lg;
+  }
+
+  .fs-form-size-sm {
+    width: 120px;
+  }
+
+  .fs-form-size-md {
+    width: 180px;
+  }
+
+  .fs-form-size-lg {
+    width: 240px;
+  }
+
+  .fs-form-size-xl {
+    width: 300px;
+  }
+
+  .fs-form-size-xxl {
+    width: 360px;
+  }
+
+  .fs-form-control.is-valid {
+    border-color: var(--fs-color-success);
+  }
+
+  .fs-form-control.is-valid:focus-visible {
+    @include focus-ring(var(--fs-color-success));
+  }
+
+  .fs-form-control.is-invalid {
+    border-color: var(--fs-color-danger);
+  }
+
+  .fs-form-control.is-invalid:focus-visible {
+    @include focus-ring(var(--fs-color-danger));
+  }
+
+  .fs-form-select {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: var(--fs-control-height);
+    min-block-size: var(--fs-control-height);
+    padding-block: 0;
+    padding-inline: var(--fs-control-padding-x);
+    border: var(--fs-border-width) solid var(--fs-control-border-color);
+    border-radius: var(--fs-control-radius);
+    color: var(--fs-color-text);
+    background-color: var(--fs-control-bg);
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--fs-control-transition);
+    color-scheme: light;
+  }
+
+  [data-theme="dark"] .fs-form-select,
+  [data-fs-theme="dark"] .fs-form-select {
+    color-scheme: dark;
+  }
+
+  .fs-form-select::after {
+    flex-shrink: 0;
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 8px;
+    content: "";
+    border-top: 5px solid;
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+  }
+
+  .fs-form-select:focus-visible {
+    @include focus-ring;
+  }
+
+  .fs-form-select:disabled {
+    color: var(--fs-color-muted);
+    background-color: var(--fs-color-subtle);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .fs-form-select-sm {
+    height: var(--fs-control-height-sm);
+    min-block-size: var(--fs-control-height-sm);
+    padding-inline: var(--fs-control-padding-x-sm);
+    font-size: $font-size-xs;
+  }
+
+  .fs-form-select-lg {
+    height: var(--fs-control-height-lg);
+    min-block-size: var(--fs-control-height-lg);
+    padding-inline: var(--fs-control-padding-x-lg);
+    font-size: $font-size-md;
+  }
+
+  .fs-form-select-xs {
+    height: var(--fs-control-height-xs);
+    min-block-size: var(--fs-control-height-xs);
+    padding-inline: var(--fs-control-padding-x-xs);
+    font-size: $font-size-xs;
+  }
+
+  .fs-form-select-xl {
+    height: var(--fs-control-height-xl);
+    min-block-size: var(--fs-control-height-xl);
+    padding-inline: var(--fs-control-padding-x-xl);
+    font-size: $font-size-lg;
+  }
+
+  .fs-file-upload {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .fs-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .fs-file-label {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--fs-color-border);
+    border-radius: var(--fs-radius-sm);
+    color: var(--fs-color-text);
+    background-color: var(--fs-color-subtle);
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    user-select: none;
+    transition: filter var(--fs-transition-fast) var(--fs-ease-standard);
+  }
+
+  .fs-file-label:hover {
+    filter: brightness(0.96);
+  }
+
+  .fs-file-input:focus-visible + .fs-file-label {
+    @include focus-ring;
+  }
+
+  .fs-file-input:disabled + .fs-file-label {
+    color: var(--fs-color-muted);
+    opacity: var(--fs-disabled-opacity);
+    pointer-events: none;
+    cursor: default;
+  }
+
+  .fs-file-label-sm {
+    height: 30px;
+    padding: 0 10px;
+    font-size: $font-size-xs;
+  }
+
+  .fs-file-label-lg {
+    height: 46px;
+    padding: 0 18px;
+    font-size: $font-size-lg;
+  }
+
+  // Drag-and-drop (js/file-drop.js): estado visual ao arrastar um arquivo por
+  // cima do `.fs-file-label`, e uma variante maior (dropzone) para quando o alvo
+  // de soltar precisa ser mais generoso que o botão padrão de `.fs-file-label`.
+  .fs-file-label.is-dragover {
+    border-color: var(--fs-color-primary);
+    background-color: var(--fs-color-subtle);
+  }
+
+  .fs-file-label-dropzone {
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    height: auto;
+    padding: 32px 16px;
+    border-style: dashed;
+    border-width: 2px;
+    font-weight: $font-weight-regular;
+    text-align: center;
+  }
+
+  .fs-file-label-dropzone .fs-file-dropzone-hint {
+    color: var(--fs-color-muted);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-regular;
+  }
+
+  // Input Group: funde `.fs-form-control` (ou `.fs-form-select`/`.fs-btn`) com "addons"
+  // de texto/ícone de prefixo/sufixo, reaproveitando os tokens visuais do
+  // próprio `.fs-form-control` (borda, cor, radius). 100% CSS — a altura do addon
+  // acompanha a do controle via `align-items: stretch` (herdado), sem precisar
+  // fixar `height` nele.
+  .fs-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .fs-input-group > .fs-form-control,
+  .fs-input-group > .fs-form-select {
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+  }
+
+  .fs-input-group-text {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--fs-control-height);
+    padding-inline: var(--fs-control-padding-x);
+    border: var(--fs-border-width) solid var(--fs-control-border-color);
+    color: var(--fs-color-muted);
+    background-color: var(--fs-control-addon-bg);
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+  }
+
+  // Funde as bordas dos itens adjacentes (remove a dupla borda) e mantém o
+  // item focado por cima da sobreposição de -1px, senão a borda de foco fica
+  // parcialmente escondida atrás do vizinho.
+  .fs-input-group > :not(:first-child) {
+    margin-left: -1px;
+  }
+
+  .fs-input-group > :focus-visible,
+  .fs-input-group > :focus-within {
+    position: relative;
+    z-index: 1;
+  }
+
+  .fs-input-group > * {
+    border-radius: 0;
+  }
+
+  .fs-input-group > :first-child {
+    border-start-start-radius: var(--fs-control-radius);
+    border-end-start-radius: var(--fs-control-radius);
+  }
+
+  .fs-input-group > :last-child {
+    border-start-end-radius: var(--fs-control-radius);
+    border-end-end-radius: var(--fs-control-radius);
+  }
+
+  .fs-input-group:focus-within {
+    --fs-control-border-color: var(--fs-focus-color);
+  }
+
+  .fs-input-group.is-invalid,
+  .fs-input-group:has([aria-invalid="true"], .is-invalid) {
+    --fs-control-border-color: var(--fs-control-invalid-color);
+  }
+
+  .fs-input-group.is-valid,
+  .fs-input-group:has([aria-invalid="false"], .is-valid) {
+    --fs-control-border-color: var(--fs-control-valid-color);
+  }
+
+  .fs-input-group-stack-sm {
+    flex-wrap: wrap;
+  }
+
+  .fs-input-group-stack-sm > * {
+    flex: 1 1 100%;
+    width: 100%;
+    margin-inline-start: 0;
+    border-radius: var(--fs-control-radius);
+  }
+
+  .fs-input-group-sm > .fs-form-control,
+  .fs-input-group-sm > .fs-form-select,
+  .fs-input-group-sm > .fs-input-group-text {
+    height: var(--fs-control-height-sm);
+    min-block-size: var(--fs-control-height-sm);
+    padding-inline: var(--fs-control-padding-x-sm);
+    font-size: $font-size-xs;
+  }
+
+  .fs-input-group-lg > .fs-form-control,
+  .fs-input-group-lg > .fs-form-select,
+  .fs-input-group-lg > .fs-input-group-text {
+    height: var(--fs-control-height-lg);
+    min-block-size: var(--fs-control-height-lg);
+    padding-inline: var(--fs-control-padding-x-lg);
+    font-size: $font-size-lg;
+  }
+}

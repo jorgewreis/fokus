@@ -1,0 +1,25 @@
+@use "../../../fokus-core/scss/settings" as *;
+@use "../../../fokus-core/scss/tools" as *;
+
+@layer utilities {
+  $display-values: (
+    none,
+    block,
+    inline,
+    inline-block,
+    flex,
+    grid
+  );
+
+  @each $breakpoint, $min in $breakpoints {
+    $infix: breakpoint-infix($breakpoint);
+
+    @include media-breakpoint-up($breakpoint) {
+      @each $display in $display-values {
+        .fs-u-d#{$infix}-#{$display} {
+          display: $display !important;
+        }
+      }
+    }
+  }
+}

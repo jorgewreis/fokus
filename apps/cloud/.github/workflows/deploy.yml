@@ -1,0 +1,370 @@
+name: Deploy Fokus Cloud Laravel
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact main commit with successful isolated Linux validation
+        required: true
+        type: string
+      bootstrap_first_sealed_release:
+        description: Accept only the current unsealed HTML 404 for the first sealed release
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('law-validation-pr-{0}', github.event.pull_request.number) || (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && format('law-validation-dispatch-{0}', github.run_id) || 'production-deploy') }}
+  cancel-in-progress: false
+
+jobs:
+  classify:
+    name: Classify deployment impact
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    outputs:
+      docs_only: ${{ steps.impact.outputs.docs_only }}
+    steps:
+      - name: Checkout complete comparison history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - name: Test conservative deployment classification
+        run: python3 -m unittest discover -s tests/Deployment -p 'test_deployment_guard.py' -v
+      - name: Validate engineering knowledge structure
+        run: python3 tools/ci/validate-knowledge.py
+      - name: Classify changes and compare candidate builds
+        id: impact
+        run: python3 tools/ci/classify-deployment.py
+
+  validate:
+    name: Validate application
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v5
+
+      - name: Test operational deployment contracts
+        run: python3 -m unittest discover -s tests/Deployment -p 'test_operational_*.py' -v
+
+      - name: Setup Node for deterministic Fokus Law asset generation
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Test fail-closed FPM workflow integration without network
+        run: python3 -m unittest discover -s tests/Deployment -p 'test_fpm*.py' -v
+
+      - name: Test manual publication gate without GitHub or server access
+        run: python3 -m unittest discover -s tests/Deployment -p 'test_publication_gate.py' -v
+
+      - name: Generate content-addressed Fokus Law assets for tests
+        run: npm run law:assets:prepare
+
+      - name: Verify immutable asset retention filter
+        run: node tests/Deployment/fokus-law-assets-rsync.mjs
+
+      - name: Setup PHP with SQLite
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Prepare SQLite database for package discovery
+        run: touch database/database.sqlite
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Validate migrations and seed data on SQLite
+        run: |
+          cp .env.example .env
+          touch database/ci.sqlite
+          php artisan key:generate --force
+          DB_CONNECTION=sqlite DB_DATABASE="$GITHUB_WORKSPACE/database/ci.sqlite" php artisan migrate:fresh --seed --force --no-interaction
+
+      - name: Run automated tests
+        run: php artisan test
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Validate generated Fokus Styles contract
+        run: |
+          npm run styles:sync
+          git diff --exit-code -- public/assets/css/shared/fokus.css
+          npm run tokens:check
+          npm run backoffice:contract:check
+
+      - name: Install Chromium for visual Backoffice tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual Backoffice regression tests
+        run: npm run test:backoffice:visual
+
+      - name: Upload visual regression report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: backoffice-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
+      - name: Verify Node.js runtime
+        run: node --version
+
+      - name: Validate published SEO metadata
+        run: npm run seo:check
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.classify.result == 'success' && needs.classify.outputs.docs_only == 'false'
+    name: Publish Laravel application
+    needs: [validate, classify]
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DEPLOY_PUBLIC_BASE_URL: ${{ vars.DEPLOY_PUBLIC_BASE_URL }}
+      DEPLOY_RELEASE_URL: ${{ vars.DEPLOY_RELEASE_URL }}
+      FPM_RELOAD_MODE: ${{ vars.FPM_RELOAD_MODE }}
+      FPM_SERVICE: ${{ vars.FPM_SERVICE }}
+      EXPECTED_RELEASE: ${{ github.sha }}
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node for immutable Fokus Law assets
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Generate immutable assets and one-shot deploy payload
+        run: node tools/generate-fokus-law-assets.mjs --output-root "$GITHUB_WORKSPACE" --staging-dir "$RUNNER_TEMP/fokus-law-assets"
+
+      - name: Setup PHP for the sealed release
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Install PHP dependencies for the sealed release
+        # package:discover opens SQLite during boot. This memory connection is
+        # step-scoped so the sealed tree never receives a runner database file
+        # or runner-only DB configuration. The server keeps using shared/.env.
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Require exact main revision and latest successful Linux validation
+        id: publication
+        env:
+          EXPECTED_CANDIDATE: ${{ inputs.candidate_sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 deploy/publication_gate.py
+
+      # Probe the live release before SSH. The first sealed publication must set
+      # bootstrap_first_sealed_release; only then is the current HTML 404 accepted.
+      - name: Require verifiable deployment prerequisites
+        id: preflight
+        timeout-minutes: 2
+        env:
+          BOOTSTRAP_FIRST_SEALED_RELEASE: ${{ inputs.bootstrap_first_sealed_release == true && 'true' || 'false' }}
+        run: |
+          python3 tools/ci/verify-deployment.py preflight
+          python3 tools/ci/verify-deployment.py probe-current
+
+      # Publish a new sealed directory and switch current atomically. The legacy
+      # in-place entry point still refuses; this publisher fails closed with the
+      # same reason when the destination is the tree current already serves.
+      - name: Configure SSH
+        id: ssh
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_HOST"
+          test -n "$DEPLOY_PORT"
+          test -n "$DEPLOY_USER"
+          test -n "$DEPLOY_SSH_KEY"
+          test -n "$DEPLOY_KNOWN_HOSTS"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" exit
+
+      - name: Seal inactive release at the remote root
+        id: seal
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: python3 deploy/atomic_publisher.py seal-local
+
+      - name: Preflight selected FPM policy before any remote mutation
+        id: fpm_preflight
+        timeout-minutes: 2
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: python3 deploy/fpm_guard_cli.py preflight
+
+      - name: Verify Law schema before publishing application code
+        id: schema
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          # Reviewed additive migration only. Changing it requires a new review.
+          migration=database/migrations/2026_10_30_160000_add_encrypted_details_to_law_contacts.php
+          echo "2db13e1a8d350ac81577c042e915bdfea4bafe821b188ded125f2201e3e8b4d9  $migration" | sha256sum --check --status
+          [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9_./-]+$ ]]
+          [[ "$DEPLOY_PATH" != *..* ]]
+          app="$DEPLOY_PATH/current"
+          remote_dir="/tmp/fokuscloud-law-schema-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          ssh_args=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT")
+          target="$DEPLOY_USER@$DEPLOY_HOST"
+          ssh "${ssh_args[@]}" "$target" "set -eu; test -L '$DEPLOY_PATH/current'; test -f '$app/vendor/autoload.php'; test -f '$app/.env'; mkdir -m 700 '$remote_dir'"
+          scp -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -P "$DEPLOY_PORT" "$migration" deploy/prepublish-law-schema.php "$target:$remote_dir/"
+          ssh "${ssh_args[@]}" "$target" "set -eu; cd '$app'; php '$remote_dir/prepublish-law-schema.php' '$app'; rm -f '$remote_dir/prepublish-law-schema.php' '$remote_dir/2026_10_30_160000_add_encrypted_details_to_law_contacts.php'; rmdir '$remote_dir'"
+
+      - name: Transfer sealed release into a new directory
+        id: stage
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9_./-]+$ ]]
+          [[ "$DEPLOY_PATH" != *..* ]]
+          [[ "$EXPECTED_RELEASE" =~ ^[0-9a-f]{40}$ ]]
+          target="$DEPLOY_USER@$DEPLOY_HOST"
+          ssh_args=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT")
+          ssh "${ssh_args[@]}" "$target" "set -eu; test -L '$DEPLOY_PATH/current'; test -d '$DEPLOY_PATH/releases'; test ! -e '$DEPLOY_PATH/releases/$EXPECTED_RELEASE'"
+          rsync -a --checksum \
+            -e "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p $DEPLOY_PORT" \
+            "$RUNNER_TEMP/sealed-release/" "$target:$DEPLOY_PATH/releases/$EXPECTED_RELEASE/"
+
+      - name: Switch the current symlink atomically
+        id: switch
+        env:
+          BOOTSTRAP_FIRST_SEALED_RELEASE: ${{ inputs.bootstrap_first_sealed_release == true && 'true' || 'false' }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9_./-]+$ ]]
+          [[ "$DEPLOY_PATH" != *..* ]]
+          [[ "$EXPECTED_RELEASE" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$BOOTSTRAP_FIRST_SEALED_RELEASE" == true || "$BOOTSTRAP_FIRST_SEALED_RELEASE" == false ]]
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "set -eu; python3 '$DEPLOY_PATH/releases/$EXPECTED_RELEASE/deploy/atomic_publisher.py' switch --base '$DEPLOY_PATH' --release '$EXPECTED_RELEASE' --bootstrap '$BOOTSTRAP_FIRST_SEALED_RELEASE'"
+
+      - name: Apply explicitly selected PHP-FPM reload policy
+        id: services
+        timeout-minutes: 2
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: python3 deploy/fpm_guard_cli.py activate
+
+      - name: Verify application health and expected active release
+        id: release
+        timeout-minutes: 2
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9_./-]+$ ]]
+          [[ "$DEPLOY_PATH" != *..* ]]
+          [[ "$EXPECTED_RELEASE" =~ ^[0-9a-f]{40}$ ]]
+          if ! python3 tools/ci/verify-deployment.py verify; then
+            ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "set -eu; python3 '$DEPLOY_PATH/releases/$EXPECTED_RELEASE/deploy/atomic_publisher.py' rollback --base '$DEPLOY_PATH' --release '$EXPECTED_RELEASE'"
+            exit 1
+          fi
+
+      - name: Purge Cloudflare cache
+        id: cdn
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ZONE_ID" ]; then
+            echo "Cloudflare purge not configured; skipping."
+            echo "result=skipped" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # HTTP status errors are curl exit 22 and are never retried.
+          attempt=1
+          while true; do
+            set +e
+            curl --fail-with-body --max-time 20 --connect-timeout 10 --request POST \
+              "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+              --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              --header "Content-Type: application/json" \
+              --data '{"purge_everything":true}'
+            status=$?
+            set -e
+            if [ "$status" -eq 0 ]; then
+              exit 0
+            fi
+            if [ "$status" -eq 22 ] || [ "$attempt" -ge 3 ]; then
+              exit "$status"
+            fi
+            echo "transport_retry=${attempt} target=cloudflare_purge"
+            attempt=$((attempt + 1))
+            sleep 1
+          done
+
+      - name: Report each publication phase
+        if: ${{ always() }}
+        env:
+          PHASE_PUBLICATION: ${{ steps.publication.outcome }}
+          PHASE_FPM_PREFLIGHT: ${{ steps.fpm_preflight.outcome }}
+          PHASE_PREFLIGHT: ${{ steps.preflight.outcome }}
+          PHASE_SSH: ${{ steps.ssh.outcome }}
+          PHASE_SCHEMA: ${{ steps.schema.outcome }}
+          PHASE_SEAL: ${{ steps.seal.outcome }}
+          PHASE_STAGE: ${{ steps.stage.outcome }}
+          PHASE_SWITCH: ${{ steps.switch.outcome }}
+          PHASE_SERVICES: ${{ steps.services.outcome }}
+          PHASE_CDN: ${{ steps.cdn.outputs.result || steps.cdn.outcome }}
+          PHASE_RELEASE: ${{ steps.release.outcome }}
+        run: python3 tools/ci/summarize-deployment.py

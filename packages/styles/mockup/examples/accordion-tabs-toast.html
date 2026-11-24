@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Accordion, Tabs &amp; Toast</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/components.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <style>
+        .theme-panel {
+            padding: 24px;
+        }
+
+        html[data-theme="dark"] .theme-panel {
+            color: var(--fs-color-text);
+            background-color: var(--fs-color-surface);
+        }
+
+        section {
+            max-width: 480px;
+            margin-bottom: 24px;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+
+    <div class="theme-panel">
+        <section id="accordion-demo" data-showcase-demo>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mt-3 fs-u-mb-2">Accordion — auto-init via data-fs, só um painel aberto por vez (data-multiple="true" permite vários)</p>
+            <div class="fs-accordion" data-fs="accordion" id="accordion-claro">
+                <div class="fs-accordion-item">
+                    <h3 class="fs-accordion-header">
+                        <button type="button" class="fs-accordion-button" aria-expanded="true">O que é o Fokus Styles?</button>
+                    </h3>
+                    <div class="fs-accordion-collapse">
+                        <div class="fs-accordion-body">Um framework CSS open source, próximo ao Bootstrap, com HTML/CSS/JS nativo e zero dependências.</div>
+                    </div>
+                </div>
+                <div class="fs-accordion-item">
+                    <h3 class="fs-accordion-header">
+                        <button type="button" class="fs-accordion-button" aria-expanded="false">Como funciona o dark mode?</button>
+                    </h3>
+                    <div class="fs-accordion-collapse">
+                        <div class="fs-accordion-body">Via CSS Custom Properties, alternando com o atributo <code class="fs-u-font-mono">data-theme="dark"</code>.</div>
+                    </div>
+                </div>
+                <div class="fs-accordion-item">
+                    <h3 class="fs-accordion-header">
+                        <button type="button" class="fs-accordion-button" aria-expanded="false">Reaproveita a infraestrutura da Fase 7?</button>
+                    </h3>
+                    <div class="fs-accordion-collapse">
+                        <div class="fs-accordion-body">Sim — <code class="fs-u-font-mono">collapse()</code>/<code class="fs-u-font-mono">expand()</code> de <code class="fs-u-font-mono">FokusStyles.core</code> animam a altura de cada painel.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-2">Tabs — auto-init via data-fs, navegação por ArrowLeft/ArrowRight/Home/End</p>
+            <div class="fs-tabs" data-fs="tabs" id="tabs-claro">
+                <a href="#" class="fs-nav-link is-active" data-fs-target="#tab-perfil-claro">Perfil</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-seguranca-claro">Segurança</a>
+                <a href="#" class="fs-nav-link is-disabled" data-fs-target="#tab-notificacoes-claro">Notificações</a>
+            </div>
+            <div class="fs-tab-content fs-u-p-3">
+                <div class="fs-tab-pane is-active" id="tab-perfil-claro">Conteúdo da aba Perfil.</div>
+                <div class="fs-tab-pane" id="tab-seguranca-claro">Conteúdo da aba Segurança.</div>
+                <div class="fs-tab-pane" id="tab-notificacoes-claro">Conteúdo da aba Notificações (desabilitada).</div>
+            </div>
+        </section>
+
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-2">Tabs — estilo pill, alinhado ao centro</p>
+            <div class="fs-tabs fs-tabs-pill fs-tabs-center" data-fs="tabs" id="tabs-pill-claro">
+                <a href="#" class="fs-nav-link is-active" data-fs-target="#tab-pill-perfil-claro">Perfil</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-pill-seguranca-claro">Segurança</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-pill-notificacoes-claro">Notificações</a>
+            </div>
+            <div class="fs-tab-content fs-u-p-3">
+                <div class="fs-tab-pane is-active" id="tab-pill-perfil-claro">Conteúdo da aba Perfil.</div>
+                <div class="fs-tab-pane" id="tab-pill-seguranca-claro">Conteúdo da aba Segurança.</div>
+                <div class="fs-tab-pane" id="tab-pill-notificacoes-claro">Conteúdo da aba Notificações.</div>
+            </div>
+        </section>
+
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-2">Tabs — estilo depth, fill, tamanho lg</p>
+            <div class="fs-tabs fs-tabs-depth fs-tabs-fill fs-tabs-lg" data-fs="tabs" id="tabs-depth-claro">
+                <a href="#" class="fs-nav-link is-active" data-fs-target="#tab-depth-perfil-claro">Perfil</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-depth-seguranca-claro">Segurança</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-depth-notificacoes-claro">Notificações</a>
+            </div>
+            <div class="fs-tab-content fs-u-p-3">
+                <div class="fs-tab-pane is-active" id="tab-depth-perfil-claro">Conteúdo da aba Perfil.</div>
+                <div class="fs-tab-pane" id="tab-depth-seguranca-claro">Conteúdo da aba Segurança.</div>
+                <div class="fs-tab-pane" id="tab-depth-notificacoes-claro">Conteúdo da aba Notificações.</div>
+            </div>
+        </section>
+
+        <div id="tabs-demo" data-showcase-demo>
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-2">Tabs — linha, alinhado à direita, tamanho sm</p>
+            <div class="fs-tabs fs-tabs-right fs-tabs-sm" data-fs="tabs" id="tabs-right-claro">
+                <a href="#" class="fs-nav-link is-active" data-fs-target="#tab-right-perfil-claro">Perfil</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-right-seguranca-claro">Segurança</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-right-notificacoes-claro">Notificações</a>
+            </div>
+            <div class="fs-tab-content fs-u-p-3">
+                <div class="fs-tab-pane is-active" id="tab-right-perfil-claro">Conteúdo da aba Perfil.</div>
+                <div class="fs-tab-pane" id="tab-right-seguranca-claro">Conteúdo da aba Segurança.</div>
+                <div class="fs-tab-pane" id="tab-right-notificacoes-claro">Conteúdo da aba Notificações.</div>
+            </div>
+        </section>
+
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-2">Tabs — boxed, toggle e vertical</p>
+            <div class="fs-tabs fs-tabs-boxed fs-u-mb-2" data-fs="tabs" id="tabs-boxed-claro">
+                <a href="#" class="fs-nav-link is-active" data-fs-target="#tab-boxed-a-claro">Resumo</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-boxed-b-claro">Atividade</a>
+            </div>
+            <div class="fs-tabs fs-tabs-toggle fs-u-mb-2" data-fs="tabs" id="tabs-toggle-claro">
+                <a href="#" class="fs-nav-link is-active" data-fs-target="#tab-toggle-a-claro">Lista</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-toggle-b-claro">Grade</a>
+            </div>
+            <div class="fs-tabs fs-tabs-vertical fs-u-mb-2" data-fs="tabs" id="tabs-vertical-claro">
+                <a href="#" class="fs-nav-link is-active" data-fs-target="#tab-vertical-a-claro">Geral</a>
+                <a href="#" class="fs-nav-link" data-fs-target="#tab-vertical-b-claro">Permissões</a>
+            </div>
+            <div class="fs-tab-content fs-u-p-3">
+                <div class="fs-tab-pane is-active" id="tab-boxed-a-claro">Resumo do registro.</div>
+                <div class="fs-tab-pane" id="tab-boxed-b-claro">Atividade recente.</div>
+                <div class="fs-tab-pane is-active" id="tab-toggle-a-claro">Visualização em lista.</div>
+                <div class="fs-tab-pane" id="tab-toggle-b-claro">Visualização em grade.</div>
+                <div class="fs-tab-pane is-active" id="tab-vertical-a-claro">Configurações gerais.</div>
+                <div class="fs-tab-pane" id="tab-vertical-b-claro">Permissões do grupo.</div>
+            </div>
+        </section>
+        </div>
+
+        <div id="toast-demo" data-showcase-demo>
+        <section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-2">Toast — auto-init via data-fs, mostrado sob demanda com FokusStyles.Toast.getInstance().show(), auto-dismiss</p>
+            <button type="button" class="fs-btn fs-btn-primary" id="toast-trigger-claro">Mostrar toast</button>
+        </section>
+
+        <div class="fs-toast-container">
+            <div class="fs-toast fs-toast-success" data-fs="toast" id="toast-claro" data-delay="4000">
+                <div class="fs-toast-header">
+                    <span>Sucesso</span>
+                    <button type="button" class="fs-btn-close" data-fs-dismiss="toast" aria-label="Fechar"></button>
+                </div>
+                <div class="fs-toast-body">Operação concluída com sucesso.</div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    
+
+    <!-- SCRIPTS IMPORT -->
+    <script src="../../dist/js/fokus.js"></script>
+    <script>
+        document.getElementById("toast-trigger-claro").addEventListener("click", () => {
+            FokusStyles.Toast.getInstance(document.getElementById("toast-claro")).show();
+        });
+        document.getElementById("toast-trigger-escuro")?.addEventListener("click", () => {
+            FokusStyles.Toast.getInstance(document.getElementById("toast-escuro")).show();
+        });
+    </script>
+
+</body>
+</html>

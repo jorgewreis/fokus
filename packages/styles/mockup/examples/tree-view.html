@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Tree View</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/components.css">
+    <link rel="stylesheet" href="../../dist/css/forms.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <style>
+        .theme-panel {
+            padding: 24px;
+        }
+
+        html[data-theme="dark"] .theme-panel {
+            color: var(--fs-color-text);
+            background-color: var(--fs-color-surface);
+        }
+
+        section {
+            max-width: 320px;
+            margin-bottom: 24px;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+
+    <div class="theme-panel">
+<section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Tree View — navegue com as setas, Home/End, Enter/Espaço</p>
+            <ul class="fs-tree" data-fs="tree-view" aria-label="Arquivos do projeto">
+                <li aria-expanded="true">
+                    <span class="fs-tree-label">src</span>
+                    <ul>
+                        <li><span class="fs-tree-label">index.js</span></li>
+                        <li>
+                            <span class="fs-tree-label">components</span>
+                            <ul>
+                                <li><span class="fs-tree-label">Button.js</span></li>
+                                <li><span class="fs-tree-label">Modal.js</span></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <span class="fs-tree-label">docs</span>
+                    <ul>
+                        <li><span class="fs-tree-label">guia.md</span></li>
+                    </ul>
+                </li>
+                <li><span class="fs-tree-label">README.md</span></li>
+                <li><span class="fs-tree-label">package.json</span></li>
+            </ul>
+        </section>
+    </div>
+
+    
+
+    <!-- SCRIPTS IMPORT -->
+    <script src="../../dist/js/fokus.js"></script>
+
+</body>
+</html>

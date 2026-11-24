@@ -1,0 +1,10 @@
+# Public pages may be indexed, cited, and used to train AI models.
+# AI crawlers use this group. Do not add a Disallow: / group for them.
+User-agent: *
+Content-Signal: search=yes,ai-input=yes,ai-train=yes
+Allow: /
+Disallow: /api/
+Disallow: /backoffice/
+Disallow: /portal/
+Disallow: /cadastro
+Disallow: /acesso

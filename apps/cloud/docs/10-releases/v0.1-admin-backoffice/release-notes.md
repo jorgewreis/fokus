@@ -1,0 +1,167 @@
+# Notas da release 0.1
+
+## Status da 0.0.1
+
+Concluida como release documental apos validacao, commit, tag anotada e push
+ao remoto. O workflow de deploy da tag registrou uma falha operacional durante
+a migration, porque a tabela `law_hearings` ja existia no banco enquanto a
+migration correspondente nao estava em estado compativel:
+`https://github.com/jorgewreis/FokusCloud/actions/runs/33505517110`.
+
+## Status da 0.1
+
+Planejada.
+
+## Status da 0.0.2
+
+Concluida como entrega funcional do Marco 2. A validacao aprovada da tag esta
+em `https://github.com/jorgewreis/FokusCloud/actions/runs/33564280938`, com
+migration/seeder SQLite, 36 testes, build e publicacao aprovados.
+
+## Status da 0.0.3
+
+Concluida como entrega funcional do Marco 3. O catalogo administrativo passa a
+gerir produtos, funcionalidades, planos, composicoes, precos e publicacao; o
+catalogo publico usa contrato versionado `0.0.3` a partir de snapshot publicado
+no backend. A validacao da tag foi aprovada em
+`https://github.com/jorgewreis/FokusCloud/actions/runs/33624520690`.
+
+## Entrega prevista
+
+A release `0.1` entrega o Backoffice Admin funcional em ambiente de
+desenvolvimento/homologacao, com operacao comercial e financeira administravel
+pela equipe interna da Fokus Cloud.
+
+## Incluido na release
+
+### 0.0.1 - pacote documental
+
+- Pasta de release `docs/10-releases/v0.1-admin-backoffice`.
+- Roadmap dos oito marcos da versao `0.1`.
+- Checklist por modulo.
+- Analise de lacunas tecnicas.
+- Criterios de aceite.
+- Plano de testes.
+- Roteiro de homologacao.
+- Matriz de rastreabilidade.
+- Definition of Done.
+- Checklist de revisao documental.
+- Decisoes abertas classificadas.
+
+### 0.1 - entrega funcional prevista
+
+- Acesso interno separado com MFA.
+- Perfis internos `superadministrador` e `administrador_comercial`.
+- Painel geral do Backoffice.
+- Gestao administrativa de empresas.
+- Gestao de planos, catalogo e publicacao.
+- Gestao de assinaturas e historico comercial.
+- Gestao de vouchers/cupons.
+- Auditoria de acoes sensiveis.
+- Alertas operacionais.
+- Mercado Pago em sandbox real.
+- Conciliacao manual de divergencias financeiras.
+
+### 0.0.2 - seguranca interna
+
+- RBAC exclusivo de plataforma com dois papeis internos.
+- Pagina propria de acesso interno, MFA por e-mail e ativacao por convite.
+- Bloqueio progressivo por conta, IP e dispositivo.
+- Gestao de administradores internos com revogacao de sessoes.
+- Auditoria de seguranca mascarada com retencao de 180 dias.
+
+### 0.0.3 - catalogo administrativo
+
+- Endpoints administrativos de catalogo para produtos, funcionalidades, planos
+  e composicao.
+- Publicacao imediata exclusiva do superadministrador, com motivo, auditoria e
+  snapshot versionado.
+- Contrato publico `0.0.3` consumido pelo frontend de assinatura.
+- Remocao de fallback estatico de precos e composicoes no fluxo publico.
+
+Evidencias locais de fechamento:
+
+| Evidencia | Resultado |
+| --- | --- |
+| `php artisan migrate:fresh --seed --force` com SQLite em memoria | Concluido |
+| `php artisan test` | Concluido, 41 testes |
+| `npm run build` | Concluido |
+| `git diff --check` | Concluido |
+
+## Fora da release
+
+- Emissao fiscal.
+- Suporte cadastral amplo a dados pessoais de clientes.
+- Alteracao de CPF, CNPJ, razao social, nome civil, e-mail ou senha do cliente
+  pelo Backoffice.
+- Acesso operacional aos dados internos do Fokus Law ou Fokus Lead.
+- Publicacao agendada de catalogo.
+- Aprovacao em duas pessoas.
+- Relatorios financeiros avancados.
+
+## Evidencias de fechamento
+
+Evidencias da release documental `0.0.1`:
+
+| Evidencia | Resultado |
+| --- | --- |
+| `git diff --check` | Concluido |
+| Revisao de links internos | Concluido |
+| Checklist documental | Concluido |
+| Commit documental | Concluido |
+| Tag anotada `v0.0.1` | Concluido |
+
+Evidencias da release funcional `0.1`, a preencher no encerramento da
+homologacao:
+
+| Evidencia | Resultado |
+| --- | --- |
+| Testes automatizados | Pendente |
+| Build frontend | Pendente |
+| Homologacao guiada | Pendente |
+| Falhas bloqueantes | Pendente |
+| Decisoes nao bloqueantes | Pendente |
+
+## Observacoes
+
+Este documento deve ser atualizado quando a implementacao funcional da `0.1`
+for concluida, incluindo commit, ambiente homologado, data de fechamento e
+restricoes conhecidas.
+## 0.0.4 - Marco 4
+
+Entrega de vouchers com reserva e snapshot, crédito comercial na primeira cobrança, edição governada, exclusões condicionais de catálogo/publicação e correções dos formulários. O catálogo público mantém o contrato 0.0.3.
+
+## Status da pré-release `v0.0.4-alpha.1`
+
+A implementação foi validada com 57 testes automatizados e 271 asserções
+aprovados no marco. O build frontend, git diff --check, a integração em main,
+a tag v0.0.4-alpha.1 e o workflow de publicação também foram confirmados. A
+homologação manual em navegador real permanece pendente.
+
+## `v0.0.5-alpha.1` — Marco 5
+
+Pre-release de consulta comercial de empresas e gestao controlada de
+assinaturas. Inclui APIs e paginas reais de empresas e assinaturas, pagamentos
+locais, itens, historico, snapshots, mascaramento de dados pessoais, pausa,
+reativacao, cancelamento agendado, encerramento imediato com historico
+preservado, upgrade pendente, downgrade agendado,
+override de superadministrador, auditoria e status comerciais normalizados.
+
+Ficam fora desta alpha o billing sandbox completo do Mercado Pago,
+conciliacao, reembolsos, alertas financeiros e homologacao completa em
+navegador. O contrato publico do catalogo permanece 0.0.3.
+
+O workflow da tag v0.0.5-alpha.1 foi concluído com sucesso. A homologação
+manual em navegador real permanece pendente.
+
+## `v0.0.6-alpha.1` — Billing sandbox
+
+Primeira camada operacional de Mercado Pago sandbox, com checkout idempotente,
+webhooks HMAC, recorrência, tolerância de inadimplência, pagamentos,
+conciliação manual, reembolsos controlados e página administrativa de Pagamentos.
+Credenciais sandbox reais e homologação completa permanecem requisitos antes da
+promoção para beta.
+
+O workflow da tag v0.0.6-alpha.1 foi concluído com sucesso após a correção
+da primeira execução do pipeline. Permanecem pendentes os cenários
+automatizados complementares, o sandbox real e a homologação manual.
