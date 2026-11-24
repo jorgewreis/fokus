@@ -1,0 +1,37 @@
+# Gerado por apps/cloud/tools/ci/promote-workflows.py a partir de
+# apps/cloud/.github/workflows/immutable-release-tests.yml. Não edite à mão: altere a fonte
+# revisada e rode o script (o teste test_operational_workflow_promotion.py
+# falha se este arquivo divergir).
+name: Cloud · Immutable release primitives
+
+"on":
+  pull_request:
+    paths:
+      - 'apps/cloud/**'
+      - '.github/workflows/cloud-immutable-release-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-filesystem-contracts:
+    defaults:
+      run:
+        working-directory: apps/cloud
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Fetch exact reviewed contracts without merging
+        run: |
+          git fetch --no-tags origin b271260d1e9cf4778bf3304e961db73751a297f1 a8cc9729181471c9f46ccb15d51383e1aceb61ab
+      - name: Test isolated B+C primitives and fail-closed contracts
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 tools/releases/test_immutable.py -v
+          python3 -m unittest discover -s tests/Deployment -p test_legacy_publication_guard.py -v
+          python3 tools/releases/test_derived_law_contract.py -v

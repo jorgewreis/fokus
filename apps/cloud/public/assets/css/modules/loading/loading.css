@@ -1,0 +1,113 @@
+
+.loading-container-page {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+
+    width: 100vw;
+    height: 100vh;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.loading-system-title {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 5vh;
+}
+    .loading-system-title .primary {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 80px;
+        font-weight: 600;
+        letter-spacing: 4px;
+
+        color: var(--fs-color-text);
+    }
+    .loading-system-title .secondary {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 80px;
+        font-weight: 600;
+        letter-spacing: 4px;
+
+        color: var(--fs-color-secondary);
+    }
+
+.loading-system-models {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: center;
+
+    gap: 5vw;
+}
+
+.model-card {
+    width: 300px;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    gap: 20px;
+}
+    .model-card .model-name {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 36px;
+        font-weight: 600;
+        letter-spacing: 4px;
+
+        color: var(--fs-color-secondary);
+    }
+        .model-card .model-name.lead {
+            color: var(--fs-color-primary);
+        }
+        .model-card .model-name.law {
+            color: var(--fs-color-warning);
+        }
+        .model-card .model-name.styles {
+            color: var(--fs-color-success);
+        }
+
+    .model-card .model-description {
+        font-family: "Google Sans", sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+
+        color: var(--fs-alert-secondary-text);
+    }
+
+.model-content {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    gap: 3px;
+}
+    .model-content span.category {
+        font-family: "Google Sans", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+
+        margin-bottom: 5px;
+
+        color: var(--fs-color-secondary);
+    }
+    .model-content span.itens {
+        font-family: "Google Sans", sans-serif;
+        font-size: 11px;
+        font-weight: 400;
+
+        color: var(--fs-alert-secondary-text);
+    }
