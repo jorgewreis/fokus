@@ -49,7 +49,7 @@
             </aside>
 
             <h1>Uma base segura para começar.</h1>
-            <p class="intro">O Fokus Law está sendo preparado para o fluxo sintético de Pessoas e Processos da 1ª Vara Crime de Ilhéus.</p>
+            <p class="intro">O Fokus Law está sendo preparado para o fluxo sintético de Pessoas e Processos do Law on demand.</p>
 
             <section class="status" aria-labelledby="status-title">
                 <span class="status-mark" aria-hidden="true"></span>
@@ -62,8 +62,19 @@
             <nav aria-label="Acesso à aplicação">
                 <p><a href="{{ route('login.create') }}">Entrar</a></p>
                 @auth
-                    @if (auth()->user()->is_synthetic_admin)
+                    @if (auth()->user()->is_active && auth()->user()->mfa_enabled_at)
+                        <p><a href="{{ route('people.own-contacts.edit') }}">Meus telefones e endereço</a></p>
+                        @if (app(\App\Services\AccountAccess::class)->allows(auth()->user(), 'people', 'read'))
+                            <p><a href="{{ route('people.index') }}">Gestão de Pessoas</a></p>
+                        @endif
+                        @if (app(\App\Services\AccountAccess::class)->allows(auth()->user(), 'processes', 'create'))
+                            <p><a href="{{ route('processes.create') }}">Cadastrar Processo</a></p>
+                        @endif
+                    @endif
+                    @if (auth()->user()->is_synthetic_admin && auth()->user()->is_active && auth()->user()->mfa_enabled_at)
                         <p><a href="{{ route('account-admin.index') }}">Administrar contas sintéticas</a></p>
+                        <p><a href="{{ route('process-secrecy-admin.index') }}">Classificar Processos sintéticos</a></p>
+                        <p><a href="{{ route('person-account-links.index') }}">Vincular Conta e Pessoa</a></p>
                     @endif
                 @endauth
                 <p><a href="{{ route('account-requests.create') }}">Solicitar acesso para avaliação</a></p>

@@ -1,6 +1,6 @@
 # Fokus
 
-Monorepo corporativo planejado como fonte central de código, documentação e páginas do Fokus Cloud, Admin, Law comercial, Lead, Styles e Jarvis. Este checkout ainda contém em [apps/law/](apps/law/) o MVP sintético personalizado do Fokus Law on demand da 1ª Vara Crime de Ilhéus; ele não é o produto Law comercial e sua separação para um repositório externo permanece pendente de confirmar destino, histórico, dependências e reversão.
+Monorepo corporativo da Fokus. Este checkout contém o aplicativo Greenfield Fokus Law em [apps/law/](apps/law/), a plataforma Fokus Cloud em [apps/cloud/](apps/cloud/) e o Fokus Styles em [packages/styles/](packages/styles/).
 
 ## Fokus Styles
 
@@ -14,11 +14,16 @@ O trusted publisher no npmjs.com é o repositório `jorgewreis/fokus` com o arqu
 
 Passo a passo: [packages/styles/CONTRIBUTING.md](packages/styles/CONTRIBUTING.md#processo-de-release).
 
+## Fokus Cloud
+
+A plataforma [Fokus Cloud](apps/cloud/README.md) (Laravel) mora em [`apps/cloud/`](apps/cloud/). O histórico do antigo repositório `jorgewreis/fokus-cloud` foi importado com os SHAs originais, porque os gates de homologação e deploy dependem deles (REI-315). O código sob `apps/cloud/` segue a [licença proprietária própria](apps/cloud/LICENSE.md).
+
+Até o corte do deploy, a publicação em produção do Cloud continua saindo do `jorgewreis/fokus-cloud`. Neste repositório, os workflows ativos do Cloud ficam em `.github/workflows/cloud-*.yml`, gerados por `apps/cloud/tools/ci/promote-workflows.py` a partir das fontes revisadas em `apps/cloud/.github/workflows/` (que seguem inativas). Os gatilhos automáticos rodam só para mudanças em `apps/cloud/**`; deploy, backup e diagnósticos de produção são apenas manuais e dependem do environment `production`, que só será configurado no corte.
+
 ## Navegação
 
-- [Plano diretor do portfólio Fokus](docs/portfolio/README.md)
-- [Roteiro de implementação do portfólio](docs/portfolio/roadmap.md)
-- [Aplicação Fokus Law on demand — 1ª Vara Crime](apps/law/)
+- [Aplicação Fokus Law](apps/law/)
+- [Plataforma Fokus Cloud](apps/cloud/)
 - [Instalação e execução local](apps/law/README.md)
 - [ADR-0001: arquitetura e fronteiras de ambiente](docs/adr/0001-fokus-law-greenfield-stack-and-boundaries.md)
 - [Dicionário conceitual de Pessoas e Processos](docs/domain/dicionario-dominio.md)
@@ -27,6 +32,8 @@ Passo a passo: [packages/styles/CONTRIBUTING.md](packages/styles/CONTRIBUTING.md
 
 ## Fontes do produto
 
-- Requisitos e decisões do MVP institucional são mantidos nos espaços privados apropriados.
+- [PRD canônico no Notion](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a): requisitos e decisões atuais.
+- [REI-194 no Linear](https://linear.app/reis-developer/issue/REI-194): percurso do MVP.
+- [REI-195 no Linear](https://linear.app/reis-developer/issue/REI-195): arquitetura e fronteiras de ambiente.
 
-Use somente dados sintéticos locais conforme as instruções do aplicativo. Este repositório não autoriza dados institucionais, conexão com produção, homologação ou implantação.
+No [`apps/law/`](apps/law/), use somente dados sintéticos locais conforme as instruções do aplicativo. O `apps/law/` não autoriza dados institucionais, conexão com produção, homologação ou implantação. Essa restrição vale só para o `apps/law/`: o `apps/cloud/` tem pipeline de homologação e produção próprio, descrito na documentação dele.

@@ -1,0 +1,158 @@
+/* Law adapter for the installed Fokus Styles Select component. */
+(() => {
+  const Select = window.FokusStyles?.Select;
+  if (!Select) return;
+
+  const labelsBySelect = new WeakMap();
+  const accessibilityBySelect = new WeakMap();
+  const toggleIds = new WeakMap();
+  const invalidListeners = new WeakSet();
+  let sequence = 0;
+
+  const ariaFields = [
+    ['aria-label', 'ariaLabel'],
+    ['aria-labelledby', 'labelledBy'],
+    ['aria-describedby', 'describedBy'],
+  ];
+  const hasInstanceFocus = (instance) => Boolean(instance && (
+    instance.toggleEl === document.activeElement || instance.menuEl?.contains(document.activeElement)
+  ));
+  const restoreNative = (select, current) => {
+    const labels = labelsBySelect.get(select) || [];
+    const toggleId = toggleIds.get(select);
+    const accessibility = accessibilityBySelect.get(select);
+    const restoreFocus = hasInstanceFocus(current);
+    current?.dispose();
+    labels.forEach((label) => {
+      if (toggleId && label.htmlFor === toggleId) label.htmlFor = select.id;
+    });
+    if (accessibility) ariaFields.forEach(([attribute, key]) => {
+      if (!select.hasAttribute(attribute) && accessibility[key] !== null) select.setAttribute(attribute, accessibility[key]);
+    });
+    labelsBySelect.delete(select);
+    accessibilityBySelect.delete(select);
+    if (restoreFocus && select.isConnected && !select.disabled) select.focus();
+  };
+
+  const copyThemeToMenu = (select, menu) => {
+    const darkMenu = select.dataset.fsSelectTheme === 'dark';
+    menu.classList.toggle('law-select-menu-dark', darkMenu);
+    // Fokus Styles portals the menu to document.body, so this modifier and its
+    // styles must apply to every Law select rather than depend on the form tree.
+    menu.classList.add('law-select-menu-full-width-options');
+    if (darkMenu) return;
+    const computed = getComputedStyle(select);
+    [
+      '--fs-color-primary', '--fs-color-on-primary', '--fs-color-text',
+      '--fs-color-muted', '--fs-color-border', '--fs-color-border-default',
+      '--fs-color-surface', '--fs-color-surface-raised', '--fs-color-subtle',
+      '--fs-control-border-color', '--fs-control-bg', '--fs-control-radius',
+      '--fs-focus-color', '--fs-font-sans',
+    ].forEach((token) => {
+      const value = computed.getPropertyValue(token).trim();
+      if (value) menu.style.setProperty(token, value);
+    });
+  };
+
+  const refresh = (select) => {
+    if (!(select instanceof HTMLSelectElement) || !select.isConnected) return null;
+
+    const current = Select.getInstance(select);
+    // Fokus Styles portals the custom menu to document.body. Modal's outside-click
+    // handler then sees every option click as a backdrop click and closes the dialog.
+    // Keep native selects in dialogs; fs-form-select still supplies the official styling.
+    if (select.closest('.fs-modal')) {
+      restoreNative(select, current);
+      select.classList.add('fs-form-select');
+      select.removeAttribute('data-fs');
+      select.classList.remove('law-native-multiselect');
+      return null;
+    }
+
+    if (select.multiple || select.size > 1) {
+      restoreNative(select, current);
+      select.removeAttribute('data-fs');
+      select.classList.remove('fs-form-select');
+      select.classList.add('law-native-multiselect');
+      return null;
+    }
+
+    select.classList.add('fs-form-select');
+    select.dataset.fs = 'select';
+    const labels = labelsBySelect.get(select) || Array.from(select.labels || []);
+    labelsBySelect.set(select, labels);
+    const accessibility = accessibilityBySelect.get(select) || {
+      ariaLabel: select.getAttribute('aria-label'),
+      labelledBy: select.getAttribute('aria-labelledby'),
+      describedBy: select.getAttribute('aria-describedby'),
+    };
+    // Preserve values supplied by another consumer while the select is custom.
+    ariaFields.forEach(([attribute, key]) => {
+      if (select.hasAttribute(attribute)) accessibility[key] = select.getAttribute(attribute);
+    });
+    accessibilityBySelect.set(select, accessibility);
+    const restoreFocus = hasInstanceFocus(current);
+    current?.dispose();
+
+    const instance = new Select(select);
+    if (select.closest('.lp-builder, .lp-proposal')) instance.wrapperEl.classList.add('fs-u-inline-size-100');
+    const toggle = instance.toggleEl;
+    const toggleId = toggleIds.get(select) || `law-select-control-${++sequence}`;
+    toggleIds.set(select, toggleId);
+    toggle.id = toggleId;
+    instance.menuEl.setAttribute('aria-labelledby', toggleId);
+
+    labels.forEach((label) => {
+      if (select.id && label.htmlFor === select.id) label.htmlFor = toggleId;
+    });
+
+    const labelText = labels.map((label) => label.textContent.trim()).filter(Boolean).join(' ');
+    if (accessibility.labelledBy) toggle.setAttribute('aria-labelledby', accessibility.labelledBy);
+    if (accessibility.ariaLabel) toggle.setAttribute('aria-label', accessibility.ariaLabel);
+    else if (!accessibility.labelledBy && labelText) toggle.setAttribute('aria-label', labelText.replace(/\s+/g, ' '));
+    if (select.required) toggle.setAttribute('aria-required', 'true');
+    if (accessibility.describedBy) toggle.setAttribute('aria-describedby', accessibility.describedBy);
+    select.removeAttribute('aria-label');
+    select.removeAttribute('aria-labelledby');
+    select.removeAttribute('aria-describedby');
+    toggle.disabled = select.disabled;
+    if (restoreFocus && !toggle.disabled) toggle.focus();
+
+    copyThemeToMenu(select, instance.menuEl);
+    if (!invalidListeners.has(select)) {
+      select.addEventListener('invalid', () => Select.getInstance(select)?.toggleEl.focus());
+      invalidListeners.add(select);
+    }
+    return instance;
+  };
+
+  window.FokusLawSelect = { refresh };
+
+  const collectSelects = (node, target) => {
+    if (!(node instanceof Element)) return;
+    if (node.matches('select[data-fs="select"]')) target.add(node);
+    node.querySelectorAll('select[data-fs="select"]').forEach((select) => target.add(select));
+  };
+
+  const observer = new MutationObserver((records) => {
+    const changed = new Set();
+    records.forEach((record) => {
+      if (record.type === 'attributes') {
+        const select = record.target instanceof HTMLSelectElement ? record.target : record.target.closest?.('select');
+        if (select instanceof HTMLSelectElement) changed.add(select);
+      }
+      if (record.type !== 'childList') return;
+      if (record.target instanceof HTMLSelectElement) changed.add(record.target);
+      record.addedNodes.forEach((node) => collectSelects(node, changed));
+    });
+    changed.forEach((select) => refresh(select));
+  });
+
+  observer.observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['disabled', 'multiple', 'size'],
+  });
+  document.querySelectorAll('select[data-fs="select"]').forEach((select) => refresh(select));
+})();

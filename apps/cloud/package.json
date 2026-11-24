@@ -1,0 +1,35 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": "^22.11.0 || ^24.11.0 || >=26.0.0"
+    },
+    "scripts": {
+        "seo:sync": "node tools/sync-seo.mjs",
+        "seo:check": "node tools/sync-seo.mjs --check",
+        "styles:sync": "node tools/sync-fokus-styles.mjs",
+        "styles:cache-bust": "node tools/cache-bust-styles-pages.mjs",
+        "law:assets:prepare": "node tools/generate-fokus-law-assets.mjs",
+        "predev": "npm run styles:sync && npm run law:assets:prepare",
+        "build": "npm run seo:sync && npm run styles:sync && npm run styles:cache-bust && npm run law:assets:prepare && vite build",
+        "dev": "vite",
+        "tokens:check": "node tools/validate-css-tokens.mjs",
+        "backoffice:contract:check": "node tools/check-backoffice-ui-contract.mjs",
+        "backoffice:page:new": "node tools/create-backoffice-page.mjs",
+        "test:backoffice:visual": "playwright test --config=playwright.backoffice.config.mjs",
+        "test:security:homologation": "playwright test --config=playwright.security.config.mjs",
+        "test:law:integration": "node tests/Frontend/law-portfolio-dom.cjs && node tests/Frontend/law-process-confidentiality-dom.cjs && node tests/Frontend/law-process-confidentiality-browser.cjs"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.57.0",
+        "@tailwindcss/vite": "^4.0.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^3.1",
+        "tailwindcss": "^4.0.0",
+        "vite": "^8.0.0"
+    },
+    "dependencies": {
+        "fokus-styles": "^3.0.0"
+    }
+}

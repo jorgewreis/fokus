@@ -1,0 +1,110 @@
+<link data-page-css="products" rel="stylesheet" href="/assets/css/shared/fokus.css?v=20261123-fokus-styles-3-0-0" />
+<link data-page-css="products" rel="stylesheet" href="/backoffice/assets/css/pages/products.css?v=20260922-backoffice-contract-v14" />
+
+<main class="backoffice-products-page backoffice-records-page container-page fs-container-fluid" aria-labelledby="products-page-title">
+    <header class="fs-page-layout">
+        <div class="fs-page-header-display">
+            <span>Catálogo</span>
+            <h1 id="products-page-title">Produtos</h1>
+            <p>Gerencie a identificação, a disponibilidade e a organização dos produtos da plataforma.</p>
+        </div>
+        <button class="fs-btn fs-btn-primary fs-width-300" type="button" id="product-new" data-fs-target="#product-drawer">Novo produto</button>
+    </header>
+
+    <div class="fs-alert" id="products-message" role="status" aria-live="polite" hidden></div>
+
+    <section class="fs-card fs-card-panel" aria-labelledby="product-filter-title">
+        <div class="fs-card-header">
+            <div class="fs-card-header-title">
+                <h2 class="fs-card-title" id="product-filter-title">Filtros</h2>
+                <p class="fs-card-subtitle">Encontre produtos por nome, código ou status.</p>
+            </div>
+        </div>
+        <form class="fs-card-body fs-filter-form" id="product-filter-form">
+            <label class="fs-form-label" for="product-search">
+                <span>Nome ou código</span>
+                <span class="fs-input-group fs-input-group-subtle">
+                    <span class="fs-input-group-text" aria-hidden="true"><img class="fs-input-group-icon" src="/backoffice/assets/icons/Search-Bar--Streamline-Ultimate.png" alt="" /></span>
+                    <input class="fs-form-control fs-width-800" id="product-search" name="q" type="search" placeholder="Nome ou código do produto" autocomplete="off" />
+                </span>
+            </label>
+            <label class="fs-form-label" for="product-status-filter">
+                <span>Status</span>
+                <select class="fs-form-select fs-width-500" id="product-status-filter">
+                    <option value="">Todos os status</option>
+                    <option value="ativo">Ativos</option>
+                    <option value="pausado">Pausados</option>
+                </select>
+            </label>
+            <button class="fs-btn fs-btn-outline-primary fs-width-300 fs-form-action" type="submit">Filtrar</button>
+        </form>
+    </section>
+
+    <section class="fs-card fs-card-panel" aria-labelledby="product-list-title">
+        <div class="fs-card-header">
+            <div class="fs-card-header-title">
+                <h2 class="fs-card-title" id="product-list-title">Produtos cadastrados</h2>
+                <p class="fs-card-subtitle">Consulte os planos vinculados e as ações administrativas disponíveis.</p>
+            </div>
+            <span class="fs-card-header-info" id="product-table-summary">0 registros encontrados</span>
+        </div>
+        <div class="fs-card-body fs-u-p-0">
+            <div class="fs-table-responsive fs-datatable" data-fs="datatable" data-fs-page-size="1000">
+                <table class="fs-table fs-table-records fs-table-hover" aria-label="Produtos do catálogo">
+                    <thead><tr><th class="fs-width-600" scope="col">Produto</th><th class="fs-width-300" scope="col">Status</th><th class="fs-width-300" scope="col">Publicação</th><th class="fs-width-300" scope="col">Versão do catálogo</th><th class="fs-width-400" scope="col">Planos cadastrados</th><th class="fs-width-400" scope="col">Ações</th></tr></thead>
+                    <tbody id="product-list"><tr><td colspan="6">Carregando produtos...</td></tr></tbody>
+                </table>
+                <p data-fs-datatable-empty class="fs-table-empty" hidden>Nenhum produto encontrado com os filtros informados.</p>
+                <p data-fs-datatable-loading class="fs-table-empty" hidden>Carregando produtos...</p>
+                <div data-fs-datatable-error class="fs-alert fs-alert-danger" hidden><span data-fs-datatable-error-message></span></div>
+            </div>
+        </div>
+        <div class="fs-card-footer fs-u-d-flex fs-u-flex-wrap fs-u-align-items-center fs-u-justify-content-between fs-u-gap-3">
+            <span class="fs-u-fs-sm fs-u-color-secondary" id="product-table-footer-summary">Mostrando página 1 de 1 com 0 registros, de um total de 1 páginas.</span>
+            <nav id="product-pagination" aria-label="Paginação de produtos"></nav>
+        </div>
+    </section>
+
+    <aside class="fs-offcanvas fs-offcanvas-end backoffice-records-drawer" id="product-drawer" aria-labelledby="product-drawer-title" tabindex="-1">
+        <div class="fs-offcanvas-header">
+            <div class="fs-u-d-flex fs-u-flex-column fs-u-gap-1">
+                <span class="fs-u-fs-xs fs-u-color-secondary" id="product-drawer-kicker">CATÁLOGO</span>
+                <h2 class="fs-offcanvas-title" id="product-drawer-title">Novo produto</h2>
+                <p class="fs-u-m-0 fs-u-fs-sm fs-u-color-secondary" id="product-drawer-description">Cadastre os dados de identificação e disponibilidade do produto.</p>
+            </div>
+            <button class="fs-btn-close" id="product-drawer-close" type="button" data-fs-dismiss="offcanvas" aria-label="Fechar painel"></button>
+        </div>
+
+        <form class="fs-offcanvas-body fs-form" id="product-form" novalidate>
+            <section class="fs-card fs-card-panel" aria-labelledby="product-data-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="product-data-title">Dados do produto</h3><p class="fs-card-subtitle">Identificação técnica e comercial do produto.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3">
+                    <div class="fs-form-row fs-u-mb-2">
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="product-code"><span class="fs-u-ml-2">Código técnico</span><input class="fs-form-control fs-width-600" id="product-code" name="code" maxlength="64" required /></label></div>
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="product-name"><span class="fs-u-ml-2">Nome do produto</span><input class="fs-form-control fs-width-600" id="product-name" name="name" maxlength="120" required /></label></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="fs-card fs-card-panel" aria-labelledby="product-organization-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="product-organization-title">Organização</h3><p class="fs-card-subtitle">Novos produtos são posicionados automaticamente ao final da lista.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3">
+                    <label class="fs-form-label fs-u-mt-3" id="product-display-order-field" for="product-display-order" hidden><span class="fs-u-ml-2">Ordem de exibição</span><select class="fs-form-select fs-width-400" id="product-display-order" name="display_order" disabled></select></label>
+                    <label class="fs-form-label fs-u-mt-3" for="product-technical-description"><span class="fs-u-ml-2">Descrição técnica</span><textarea class="fs-form-control fs-width-600" id="product-technical-description" name="technical_description" maxlength="2000"></textarea></label>
+                    <label class="fs-form-label fs-u-mt-3" for="product-commercial-content"><span class="fs-u-ml-2">Descrição comercial</span><textarea class="fs-form-control fs-width-600" id="product-commercial-content" name="commercial_content" maxlength="20000"></textarea></label>
+                </div>
+            </section>
+
+            <div class="fs-offcanvas-footer"><button class="fs-btn fs-btn-outline-primary fs-width-300" id="product-form-cancel" type="button">Cancelar</button><button class="fs-btn fs-btn-primary fs-width-400" type="submit" id="product-form-submit">Cadastrar produto</button></div>
+        </form>
+
+        <section class="fs-offcanvas-body fs-u-d-flex fs-u-flex-column fs-u-gap-4 backoffice-records-view-panel" id="product-view-panel" aria-label="Detalhes do produto" hidden>
+            <div class="fs-card"><div class="fs-card-header"><h3 class="fs-card-title">Dados do produto</h3></div><div class="fs-card-body"><dl><div><dt class="fs-form-label">Produto</dt><dd id="product-view-name">-</dd></div><div><dt class="fs-form-label">Código</dt><dd id="product-view-code">-</dd></div><div><dt class="fs-form-label">Status</dt><dd id="product-view-status">-</dd></div><div><dt class="fs-form-label">Versão do catálogo</dt><dd id="product-view-version">—</dd></div><div><dt class="fs-form-label">Publicação</dt><dd id="product-view-publication">—</dd></div><div><dt class="fs-form-label">Planos cadastrados</dt><dd id="product-view-plans">0</dd></div></dl></div></div>
+            <div class="fs-card"><div class="fs-card-header"><h3 class="fs-card-title">Descrição técnica</h3></div><div class="fs-card-body"><p class="fs-u-text-pre-wrap" id="product-view-technical-description">Nenhuma descrição técnica informada.</p></div></div>
+            <div class="fs-card"><div class="fs-card-header"><h3 class="fs-card-title">Descrição comercial</h3></div><div class="fs-card-body"><p class="fs-u-text-pre-wrap" id="product-view-commercial-content">Nenhuma descrição comercial informada.</p></div></div>
+        </section>
+    </aside>
+
+    <button id="product-action-trigger" type="button" data-fs="modal" data-fs-target="#product-action-dialog" hidden></button>
+    <div id="product-action-dialog" class="fs-modal fs-confirmation-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="product-action-title"><div class="fs-modal-dialog"><div class="fs-modal-content"><div class="fs-modal-header"><div class="fs-confirmation-dialog-heading"><span class="fs-confirmation-dialog-kicker">CATÁLOGO</span><h2 class="fs-modal-title" id="product-action-title">Confirmar ação</h2><p class="fs-confirmation-dialog-description" id="product-action-description"></p></div><button class="fs-btn-close" type="button" data-fs-dismiss="modal" aria-label="Fechar"></button></div><form class="fs-form fs-confirmation-dialog-form" id="product-action-form"><div class="fs-modal-body fs-confirmation-dialog-body"><fieldset class="release-choice" id="product-release-choice" hidden><legend>Tipo de atualização</legend><label><input type="radio" name="release_type" value="minor" checked><span><strong>Minor</strong><small>Compatível; por exemplo, 1.00 → 1.01.</small></span></label><label><input type="radio" name="release_type" value="major"><span><strong>Major</strong><small>Incompatível; por exemplo, 1.01 → 2.0. Pode exigir adaptação.</small></span></label></fieldset></div><div class="fs-modal-footer"><button class="fs-btn fs-btn-outline-primary fs-width-300" type="button" data-fs-dismiss="modal">Cancelar</button><button class="fs-btn fs-btn-primary fs-width-400" id="product-action-submit" type="submit">Confirmar</button></div></form></div></div></div>
+</main>
