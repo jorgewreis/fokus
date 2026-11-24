@@ -1,0 +1,47 @@
+# Gerado por apps/cloud/tools/ci/promote-workflows.py a partir de
+# apps/cloud/.github/workflows/datajud-diagnostics.yml. Não edite à mão: altere a fonte
+# revisada e rode o script (o teste test_operational_workflow_promotion.py
+# falha se este arquivo divergir).
+name: Cloud · Diagnose Datajud access
+
+on:
+  workflow_dispatch:
+    inputs:
+      case_number:
+        description: 'Número CNJ público autorizado para consulta sem alterar registros (opcional)'
+        required: false
+        type: string
+
+jobs:
+  diagnose:
+    defaults:
+      run:
+        working-directory: apps/cloud
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - name: Compare Datajud transports without process data
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DATAJUD_CASE_INPUT: ${{ inputs.case_number }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          case_digits="$(printf '%s' "$DATAJUD_CASE_INPUT" | tr -cd '0-9')"
+          if [ -n "$DATAJUD_CASE_INPUT" ] && ! [[ "$case_digits" =~ ^[0-9]{20}$ ]]; then
+            echo 'Número CNJ inválido para o diagnóstico.'
+            exit 1
+          fi
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && DATAJUD_CASE_NUMBER='$case_digits' php" < tools/diagnose-datajud.php
