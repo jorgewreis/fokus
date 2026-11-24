@@ -11,6 +11,7 @@ import urllib.error
 import urllib.request
 
 import github_oidc
+from github_oidc import DEPLOY_WORKFLOW_FILE
 
 
 def require(condition, reason):
@@ -62,13 +63,13 @@ def check(identity, policy, api):
     sha=identity.sha;require(isinstance(sha,str) and re.fullmatch(r'[a-f0-9]{40}',sha),'invalid_identity')
     env_path='/environments/production'; run_path='/actions/runs/'+identity.run_id
     check_path='/check-runs/'+identity.check_run_id; reviews_path=run_path+'/approvals'
-    paths=('/git/ref/heads/main','/actions/workflows/deploy.yml',env_path,run_path,check_path,reviews_path)
+    paths=('/git/ref/heads/main','/actions/workflows/'+DEPLOY_WORKFLOW_FILE,env_path,run_path,check_path,reviews_path)
     first=[api.get(path) for path in paths]
     ref, workflow, environment, run, job, approvals=first
     require(isinstance(ref,dict) and ref.get('ref')=='refs/heads/main' and isinstance(ref.get('object'),dict)
             and ref['object'].get('type')=='commit' and ref['object'].get('sha')==sha,'main_changed')
     require(isinstance(workflow,dict) and type(workflow.get('id')) is int and workflow.get('id')>0
-            and workflow.get('path')=='.github/workflows/deploy.yml' and workflow.get('state')=='active','workflow_mismatch')
+            and workflow.get('path')=='.github/workflows/'+DEPLOY_WORKFLOW_FILE and workflow.get('state')=='active','workflow_mismatch')
     require(isinstance(run,dict) and run.get('id')==int(identity.run_id) and run.get('run_attempt')==1
             and run.get('workflow_id')==workflow['id'] and run.get('head_sha')==sha and run.get('head_branch')=='main'
             and run.get('event')=='workflow_dispatch' and run.get('status')=='in_progress','run_mismatch')

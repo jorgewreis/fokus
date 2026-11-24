@@ -1,3 +1,4 @@
+> **Monorepo.** O código do Fokus Cloud mora em `apps/cloud` no repositório [jorgewreis/fokus](https://github.com/jorgewreis/fokus), com o histórico do antigo `jorgewreis/fokus-cloud` preservado (REI-315). Comandos e caminhos desta documentação são relativos a `apps/cloud`. Até o corte do deploy, a publicação em produção continua saindo do `jorgewreis/fokus-cloud`; os workflows em `apps/cloud/.github/` ficam inativos neste repositório.
 
 ## Estado desta reconstrução
 
@@ -107,7 +108,9 @@ Para iniciar os serviços de desenvolvimento previstos no Composer, use:
 composer run dev
 ```
 
-## Navegação do repositório
+## Navegação do aplicativo
+
+Caminhos relativos a `apps/cloud`.
 
 | Caminho | Conteúdo |
 | --- | --- |
@@ -122,7 +125,7 @@ Para começar pela documentação, consulte o [índice](docs/README.md), a [vis�
 
 ## Licença e uso
 
-O código deste repositório está sob **licença proprietária**. A publicação no GitHub permite consulta e avaliação nos limites descritos em [`LICENSE.md`](LICENSE.md); não concede autorização para uso comercial, redistribuição, hospedagem ou criação de derivados. O Fokus Styles é uma exceção independente e segue a licença MIT de seu próprio repositório.
+O código deste repositório está sob **licença proprietária**. A publicação no GitHub permite consulta e avaliação nos limites descritos em [`LICENSE.md`](LICENSE.md); não concede autorização para uso comercial, redistribuição, hospedagem ou criação de derivados. O Fokus Styles é uma exceção independente e segue a licença MIT própria, em `packages/styles` do monorepo.
 
 ---
 

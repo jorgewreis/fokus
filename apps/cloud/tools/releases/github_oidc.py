@@ -14,6 +14,8 @@ import urllib.error
 import urllib.request
 
 ISSUER = 'https://token.actions.githubusercontent.com'
+# Monorepo jorgewreis/fokus (REI-315): the Cloud deploy workflow is cloud-deploy.yml.
+DEPLOY_WORKFLOW_FILE = 'cloud-deploy.yml'
 JWKS_URL = ISSUER + '/.well-known/jwks'
 MAX_TOKEN = 16384
 CA_BUNDLE = '/etc/ssl/certs/ca-certificates.crt'
@@ -125,7 +127,7 @@ def verify(token, jwks, *, audience, repository, repository_id, sha, now):
     require(isinstance(sha, str) and re.fullmatch(r'[a-f0-9]{40}', sha), 'invalid_sha')
     expected = {'iss': ISSUER, 'aud': audience, 'repository': repository, 'repository_id': repository_id,
                 'sha': sha, 'workflow_sha': sha, 'ref': 'refs/heads/main', 'event_name': 'workflow_dispatch',
-                'environment': 'production', 'workflow_ref': repository + '/.github/workflows/deploy.yml@refs/heads/main',
+                'environment': 'production', 'workflow_ref': repository + '/.github/workflows/' + DEPLOY_WORKFLOW_FILE + '@refs/heads/main',
                 'sub': 'repo:' + repository + ':environment:production'}
     require(all(claims.get(key) == value for key, value in expected.items()), 'claim_mismatch')
     for key in ('run_id', 'run_attempt', 'check_run_id', 'actor_id'):

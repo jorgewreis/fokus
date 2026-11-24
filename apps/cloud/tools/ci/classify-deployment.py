@@ -20,6 +20,26 @@ def git(*args):
     return subprocess.check_output(['git', *args], stderr=subprocess.PIPE)
 
 
+def app_prefix():
+    """App directory relative to the Git root: '' (legacy root layout) or 'apps/cloud/'.
+
+    The monorepo workflow runs from apps/cloud. Paths outside this prefix never
+    qualify as knowledge, and the audited boundary is the app subtree plus the
+    repository-level .github directory, which holds the cloud-* workflows.
+    """
+    prefix = git('rev-parse', '--show-prefix').decode('utf-8').rstrip('\n')
+    if prefix and not prefix.endswith('/'):
+        raise ValueError('unexpected Git prefix')
+    return prefix
+
+
+def app_path(path, prefix):
+    """Path relative to the app, or None when it lies outside the app."""
+    if not prefix:
+        return path
+    return path[len(prefix):] if path.startswith(prefix) else None
+
+
 def commit(value):
     if not isinstance(value, str) or not re.fullmatch(r'[0-9a-f]{40}', value) or value == '0' * 40:
         raise ValueError('missing or invalid commit')
@@ -47,10 +67,20 @@ def audit_digest(ref):
     avoid self-reference. Every other script byte and Git mode remains audited.
     """
     digest = hashlib.sha256()
-    for entry in filter(None, git('ls-tree', '-r', '-z', ref).split(b'\0')):
+    prefix = app_prefix()
+    for entry in filter(None, git('ls-tree', '-r', '-z', '--full-tree', ref).split(b'\0')):
         metadata, raw_path = entry.split(b'\t', 1)
-        path = raw_path.decode('utf-8')
-        if knowledge_path(path):
+        full_path = raw_path.decode('utf-8')
+        path = app_path(full_path, prefix)
+        if path is None:
+            if not full_path.startswith('.github/'):
+                continue
+            # Repository-level CI (cloud-* workflows) stays audited, namespaced
+            # so it can never collide with a path inside the app.
+            raw_path = b':repository:/' + raw_path
+        else:
+            raw_path = path.encode('utf-8')
+        if path is not None and knowledge_path(path):
             continue
         if path == 'tools/ci/classify-deployment.py':
             mode, kind, object_id = metadata.split()
@@ -85,16 +115,20 @@ def classify(event_name, event):
         if any(audit_digest(ref) != AUDIT_DIGEST for ref in (base, head)):
             return False, 'audited source boundary changed; normal deployment retained'
         # Disable rename detection: both deleted source and added destination must qualify.
+        # Paths are repository-relative; anything outside the app prefix (other
+        # apps, packages, root CI) never qualifies as knowledge.
+        prefix = app_prefix()
         raw = git('diff', '--no-ext-diff', '--no-renames', '--name-only', '-z', base, head, '--')
         paths = [p.decode('utf-8') for p in raw.split(b'\0') if p]
         if not paths:
             raise ValueError('empty comparison')
         for path in paths:
-            if not knowledge_path(path):
+            relative = app_path(path, prefix)
+            if relative is None or not knowledge_path(relative):
                 return False, 'application, operational or unaudited path changed'
             # Inspect both trees: symlink/executable/submodule transitions and deletions.
             for ref in (base, head):
-                entries = git('ls-tree', '-z', ref, '--', path).split(b'\0')
+                entries = git('ls-tree', '-z', '--full-tree', ref, '--', path).split(b'\0')
                 for entry in filter(None, entries):
                     metadata, actual = entry.split(b'\t', 1)
                     if actual.decode('utf-8') != path or metadata.split()[:2] != [b'100644', b'blob']:
@@ -164,15 +198,17 @@ def prove_build_equivalence(event_name, event):
     try:
         with tempfile.TemporaryDirectory(prefix='deployment-build-') as directory:
             trees = []
+            prefix = app_prefix()
             for label, ref in (('base', base), ('head', head)):
                 root = Path(directory) / label
                 git('worktree', 'add', '--detach', str(root), ref)
                 worktrees.append(root)
+                app = root / prefix if prefix else root
                 with (Path(directory) / (label + '.log')).open('wb') as log:
                     for command in (['npm', 'ci'], ['npm', 'run', 'build']):
-                        subprocess.run(command, cwd=root, stdout=log, stderr=subprocess.STDOUT,
+                        subprocess.run(command, cwd=app, stdout=log, stderr=subprocess.STDOUT,
                                        check=True, timeout=600)
-                trees.append(snapshot(root))
+                trees.append(snapshot(app))
             if trees[0] != trees[1]:
                 return False, 'build or non-knowledge output differs; normal deployment retained'
             return True, 'regular knowledge files only and identical non-knowledge build output'

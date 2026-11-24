@@ -28,7 +28,7 @@ class OIDC(unittest.TestCase):
         self.sha = 'b'*40
         self.claims = dict(iss=oidc.ISSUER, aud=self.audience, repository='example/project', repository_id='123',
                            sha=self.sha, workflow_sha=self.sha, ref='refs/heads/main', event_name='workflow_dispatch',
-                           environment='production', workflow_ref='example/project/.github/workflows/deploy.yml@refs/heads/main',
+                           environment='production', workflow_ref='example/project/.github/workflows/cloud-deploy.yml@refs/heads/main',
                            sub='repo:example/project:environment:production', run_id='12', run_attempt='1', check_run_id='34', actor_id='22',
                            jti='fixture_token_1234567890', iat=self.now-1, nbf=self.now-1, exp=self.now+120)
     def token(self, claims=None, header=None, key=None):

@@ -12,6 +12,8 @@ from unittest.mock import patch
 import urllib.error
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repository_layout import workflow_path  # noqa: E402
 sys.path.insert(0, str(ROOT / 'deploy'))
 import publication_gate as gate
 
@@ -47,7 +49,7 @@ class FakeAPI:
         if path == '/git/ref/heads/main':
             self.main_reads += 1
             response = dict(ref='refs/heads/main', object=dict(type='commit', sha=SHA))
-        elif path == '/actions/workflows/security-homologation.yml':
+        elif path == '/actions/workflows/cloud-security-homologation.yml':
             response = dict(id=456, path=gate.WORKFLOW_PATH, state='active')
         elif path.startswith('/actions/workflows/456/runs?'):
             self.history_reads += 1
@@ -67,7 +69,7 @@ class PublicationProof(unittest.TestCase):
         self.assertEqual(gate.verify(CTX, api), (102, 1))
         self.assertEqual(api.main_reads, 2)
         self.assertEqual(api.history_reads, 2)
-        self.assertIn('/actions/workflows/security-homologation.yml', api.calls)
+        self.assertIn('/actions/workflows/cloud-security-homologation.yml', api.calls)
         self.assertIn('/actions/runs/102', api.calls)
 
     def test_old_failure_does_not_override_newest_success(self):
@@ -222,7 +224,7 @@ class EntryPoint(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()): self.assertEqual(gate.main(), 1)
 
     def test_concurrency_preserves_main_pr_and_isolates_each_nonmain_dispatch(self):
-        source = (ROOT / '.github/workflows/deploy.yml').read_text()
+        source = workflow_path('deploy.yml').read_text()
         expected = """  group: ${{ github.event_name == 'pull_request' && format('law-validation-pr-{0}', github.event.pull_request.number) || (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && format('law-validation-dispatch-{0}', github.run_id) || 'production-deploy') }}
   cancel-in-progress: false
 
@@ -261,7 +263,7 @@ class EntryPoint(unittest.TestCase):
         self.assertEqual(len(groups), len(set(groups)))
 
     def test_workflow_checks_after_local_preparation_before_ssh_with_no_destination_secrets(self):
-        source = (ROOT / '.github/workflows/deploy.yml').read_text()
+        source = workflow_path('deploy.yml').read_text()
         deploy = source.split('  deploy:\n')[1]
         gate_name = '      - name: Require exact main revision and latest successful Linux validation\n'
         before, after = deploy.split(gate_name)

@@ -8,12 +8,15 @@ import pathlib
 import secrets
 import shutil
 import subprocess
+import sys
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('baseline_gate', ROOT / 'tests/Deployment/baseline-gate.py')
 gate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gate)
+sys.path.insert(0, str(ROOT / 'tests/Deployment'))
+from repository_layout import archive_source_bytes  # noqa: E402
 parser = argparse.ArgumentParser()
 parser.add_argument('--baseline-sha', required=True)
 parser.add_argument('--driver', choices=['sqlite', 'mysql'], default='sqlite')
@@ -41,7 +44,8 @@ with tempfile.TemporaryDirectory(prefix='fokus-upgrade-') as directory:
     baseline = sandbox / 'baseline'
     candidate = sandbox / 'candidate'
     baseline.mkdir()
-    archive = subprocess.check_output(['git', 'archive', args.baseline_sha], cwd=ROOT)
+    # Baseline anterior ao monorepo: o app estava na raiz (REI-315).
+    archive = archive_source_bytes(args.baseline_sha, ROOT)
     subprocess.run(['tar', '-x', '-C', str(baseline)], input=archive, check=True)
     shutil.copytree(ROOT, candidate, ignore=shutil.ignore_patterns('.git', '.env', '.env.*', 'vendor', 'node_modules', 'test-results'))
     for runtime in [baseline, candidate]:

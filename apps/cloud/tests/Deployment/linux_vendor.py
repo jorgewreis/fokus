@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import tarfile
 from linux_release_common import ROOT, BASELINE, safe_extract_source_archive, sha
+from repository_layout import archive_source_bytes, show_source
 
 
 def package_identity(package):
@@ -88,12 +89,13 @@ def setup(destination):
     destination.mkdir(parents=True)
     baseline, candidate = destination / 'baseline', destination / 'candidate'
     baseline.mkdir(); candidate.mkdir()
-    archive = subprocess.check_output(['git', 'archive', BASELINE], cwd=ROOT)
+    # Baseline anterior ao monorepo: o app estava na raiz (REI-315).
+    archive = archive_source_bytes(BASELINE, ROOT)
     with tarfile.open(fileobj=io.BytesIO(archive)) as source:
         safe_extract_source_archive(source, baseline)
     # The exact historical source, not the updated candidate lock, drives install.
     for name in ('composer.json', 'composer.lock'):
-        expected = subprocess.check_output(['git', 'show', BASELINE + ':' + name], cwd=ROOT)
+        expected = show_source(BASELINE, name, ROOT)
         if (baseline / name).read_bytes() != expected:
             raise RuntimeError('Historical dependency source differs from reviewed commit')
     command = ['composer', 'install', '--no-interaction', '--prefer-dist', '--optimize-autoloader', '--no-scripts', '--no-plugins']

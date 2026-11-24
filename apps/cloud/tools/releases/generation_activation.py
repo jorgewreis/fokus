@@ -112,7 +112,7 @@ def load_publication_gate(source):
     gate_path = source / 'deploy' / 'publication_gate.py'
     g.require(gate_path == gate_path.resolve(strict=True) and not gate_path.is_symlink(), 'publication_gate_symlink')
     gate_code = gate_path.read_bytes()
-    g.require(hashlib.sha256(gate_code).hexdigest() == "df85fa42d39a6afa2a5981fe779e8cdfc4e75d049df57fe95b6ab1ab17e7af8d", 'publication_gate_binding')
+    g.require(hashlib.sha256(gate_code).hexdigest() == "4bfe4f7d58b285a58428747970494e089a90dc06cc7cef58a95b78d1f99cb5c8", 'publication_gate_binding')
     # Every consumer receives freshly verified bytes; never trust an ambient module.
     publication_gate = types.ModuleType('publication_gate')
     publication_gate.__file__ = str(gate_path)

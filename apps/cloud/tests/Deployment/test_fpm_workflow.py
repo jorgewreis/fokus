@@ -12,13 +12,15 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repository_layout import workflow_path  # noqa: E402
 sys.path.insert(0, str(ROOT / 'deploy'))
 import fpm_guard_cli as cli
 from fpm_guard import reload_command
 SERVICE = 'php8.4-fpm.service'
 RELOAD = reload_command(SERVICE)
 
-WORKFLOW = ROOT / '.github/workflows/deploy.yml'
+WORKFLOW = workflow_path('deploy.yml')
 PREFLIGHT = 'Preflight selected FPM policy before any remote mutation'
 ACTIVATE = 'Apply explicitly selected PHP-FPM reload policy'
 REPORT = 'Report each publication phase'

@@ -5,10 +5,13 @@ from pathlib import Path
 import os
 import subprocess
 import tempfile
+import sys
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repository_layout import workflow_path  # noqa: E402
 SPEC = importlib.util.spec_from_file_location("summary", ROOT / "tools/ci/summarize-deployment.py")
 SUMMARY = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(SUMMARY)
@@ -64,7 +67,7 @@ class PublicationSummaryTests(unittest.TestCase):
 class WorkflowBoundaryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.workflow = (ROOT / ".github/workflows/deploy.yml").read_text()
+        cls.workflow = workflow_path('deploy.yml').read_text()
         cls.deployment = cls.workflow.split("  deploy:\n", 1)[1]
 
     def test_policy_and_required_application_checks_remain(self):

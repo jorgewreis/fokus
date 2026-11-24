@@ -8,7 +8,10 @@ def module(name,path):
 source=Path(__file__).resolve().parents[2];g=module('g',source/'tools/releases/generation_supervisor.py')
 with tempfile.TemporaryDirectory(prefix='rei26-laravel-') as temp:
     temp=Path(temp);clone=temp/'source'
-    subprocess.run(['git','clone','--quiet','--no-hardlinks',str(source),str(clone)],check=True)
+    # Monorepo (REI-315): clone the whole repository; the app may live in apps/cloud.
+    top=Path(subprocess.check_output(['git','-C',str(source),'rev-parse','--show-toplevel'],text=True).strip()).resolve()
+    subprocess.run(['git','clone','--quiet','--no-hardlinks',str(top),str(clone)],check=True)
+    clone=clone/source.resolve().relative_to(top)
     shutil.copyfile(source/'tests/Fixtures/Generation/console.php',clone/'routes/console.php')
     shutil.copyfile(source/'tests/Fixtures/Generation/GenerationProbe.php.stub',clone/'app/Jobs/GenerationProbe.php')
     subprocess.run(['git','-C',str(clone),'add','.'],check=True)

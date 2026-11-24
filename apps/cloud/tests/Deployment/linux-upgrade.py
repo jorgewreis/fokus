@@ -13,6 +13,7 @@ import tempfile
 from linux_release_common import ROOT, REPORT, BASELINE, guard, environment, php, run, adapt, write, sha, safe_extract_source_archive
 
 from linux_vendor import copy_verified_vendor
+from repository_layout import archive_source
 
 ORIGIN_METADATA = {
     'mysql_version': '8.4.10-10',
@@ -161,7 +162,8 @@ def main():
         base.mkdir()
         archive = sandbox / 'baseline.tar'
         with archive.open('wb') as stream:
-            subprocess.run(['git', 'archive', args.baseline_sha], cwd=ROOT, stdout=stream, check=True)
+            # Baseline anterior ao monorepo: o app estava na raiz (REI-315).
+            archive_source(args.baseline_sha, stream, ROOT)
         with tarfile.open(archive) as stream:
             evidence['baseline_archive_extraction'] = safe_extract_source_archive(stream, base)
         evidence['baseline_archive_sha256'] = sha(archive)

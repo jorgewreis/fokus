@@ -19,7 +19,7 @@ class Evidence(unittest.TestCase):
         self.policy={'repository':'example/project','repository_id':'123','environment_id':55,'reviewer_ids':[77]}
         repo={'id':123,'full_name':'example/project'}
         self.data={'/git/ref/heads/main':{'ref':'refs/heads/main','object':{'type':'commit','sha':self.sha}},
-          '/actions/workflows/deploy.yml':{'id':99,'path':'.github/workflows/deploy.yml','state':'active'},
+          '/actions/workflows/cloud-deploy.yml':{'id':99,'path':'.github/workflows/cloud-deploy.yml','state':'active'},
           '/environments/production':{'id':55,'name':'production','can_admins_bypass':False,'updated_at':'2026-01-01T00:00:00Z',
               'protection_rules':[{'type':'required_reviewers','prevent_self_review':True,'reviewers':[{'type':'User','reviewer':{'id':77}}]}]},
           '/actions/runs/12':{'id':12,'run_attempt':1,'workflow_id':99,'head_sha':self.sha,'head_branch':'main',

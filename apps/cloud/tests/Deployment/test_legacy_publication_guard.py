@@ -7,8 +7,10 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repository_layout import workflow_path  # noqa: E402
 GUARD = ROOT / 'deploy/legacy_publication_guard.py'
-WORKFLOW = ROOT / '.github/workflows/deploy.yml'
+WORKFLOW = workflow_path('deploy.yml')
 
 
 class LegacyPublicationGuard(unittest.TestCase):
