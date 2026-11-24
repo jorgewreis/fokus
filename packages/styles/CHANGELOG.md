@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Changed
+
+- A publicação de `fokus-styles` em `.github/workflows/styles-release.yml`
+  passa a usar npm Trusted Publishing (OIDC): Node 24, npm >= 11.5.1,
+  `id-token: write` e `npm publish --provenance --access public`, sem secret
+  `NPM_TOKEN`.
+
 ## [3.0.0] - 2026-11-22
 
 Publicada no npm em 22/11/2026. O nome do pacote continua `fokus-styles`.

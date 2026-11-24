@@ -3,8 +3,12 @@
 Este checklist deve ser executado antes de qualquer publicação npm a partir
 do monorepo. A 3.0.0 já está no npm desde 22/11/2026. A próxima publicação
 usa a tag `styles-vX.Y.Z` e o workflow `.github/workflows/styles-release.yml`.
-Tags `v*.*.*` não publicam este pacote. Não crie tag nem rode o workflow sem
-autorização.
+A autenticação é npm Trusted Publishing (OIDC): o job `publish` declara
+`id-token: write` e `contents: read`, usa Node 24 com npm >= 11.5.1 e executa
+`npm publish --provenance --access public`. O trusted publisher no npmjs.com é
+`jorgewreis/fokus` + `styles-release.yml`, sem environment e sem secret
+`NPM_TOKEN`. Tags `v*.*.*` não publicam este pacote. Não crie tag nem rode o
+workflow sem autorização.
 
 ## Contrato público
 
