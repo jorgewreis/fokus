@@ -2,7 +2,7 @@
 
 **Estado:** documento derivado para implementação e revisão; não aprova regras novas nem demonstra eventos implementados.
 **Produto:** Fokus Cloud Law — MVP sintético.
-**Fontes:** [PRD canônico](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a), §§3.2, 5.1, 5.2, 6 e 9.3; [REI-199](https://linear.app/reis-developer/issue/REI-199/vara-implementar-auditoria-minima-e-exclusao-controlada); [REI-206](https://app.notion.com/p/41c6af4c510981fe9a7ee9268c630bfe); [REI-223](https://linear.app/reis-developer/issue/REI-223/vara-catalogar-eventos-de-auditoria-e-dados-vedados-em-logs).
+**Fontes:** [PRD canônico](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a), §§3.2, 5.1, 5.2, 6 e 9.3; [REI-199](https://linear.app/reis-developer/issue/REI-199); [REI-206](https://app.notion.com/p/41c6af4c510981fe9a7ee9268c630bfe); [REI-223](https://linear.app/reis-developer/issue/REI-223).
 
 As linhas descrevem apenas campos explicitamente aprovados. Quando a fonte não define a representação do alvo, resultado ou payload, a lacuna permanece pendente; não preencher por conveniência técnica.
 
