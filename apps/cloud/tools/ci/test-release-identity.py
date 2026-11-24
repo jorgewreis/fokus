@@ -114,7 +114,7 @@ def adversarial_samples(module, config):
     # Fault injection wraps actual HTTP responses; production verifier remains unchanged.
     for fault, reason in (('cached', 'release_probe_mismatch'),
                           ('mixed', 'release_samples_inconsistent'),
-                          ('http', 'release_http_not_ok'),
+                          ('http', 'release_http_not_ok status=502'),
                           ('cache_header', 'release_cache_policy_invalid'),
                           ('leak', 'release_contract_invalid')):
         samples = []

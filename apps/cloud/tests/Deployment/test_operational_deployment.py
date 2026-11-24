@@ -145,7 +145,8 @@ class VerificationTests(unittest.TestCase):
 
     def test_release_error_status(self):
         for status in (301, 302, 401, 404, 500):
-            with self.subTest(status=status), self.assertRaisesRegex(VERIFY.VerificationError, 'release_http_not_ok'):
+            with self.subTest(status=status), self.assertRaisesRegex(
+                    VERIFY.VerificationError, r'^release_http_not_ok status=%d$' % status):
                 self.run_probe(self.mutate(status=status))
 
     def html_404(self, url, timeout):
@@ -163,13 +164,14 @@ class VerificationTests(unittest.TestCase):
         self.assertNotIn('SECRET_BODY', '\n'.join(self.outputs))
 
     def test_bootstrap_flag_does_not_accept_404_on_the_candidate_check(self):
-        with self.assertRaisesRegex(VERIFY.VerificationError, 'release_http_not_ok'):
+        with self.assertRaisesRegex(VERIFY.VerificationError, r'^release_http_not_ok status=404$'):
             self.run_probe(self.html_404, probe_current=False, bootstrap=True)
         self.assertNotIn('bootstrap_first_sealed_release=accepted reason=unsealed_release_http_404', self.outputs)
 
     def test_bootstrap_rejects_other_404_shapes_and_mixed_samples(self):
         for headers in ({'content-type': 'application/json'}, {'content-type': 'text/plain'}, {}):
-            with self.subTest(headers=headers), self.assertRaisesRegex(VERIFY.VerificationError, 'release_http_not_ok'):
+            with self.subTest(headers=headers), self.assertRaisesRegex(
+                    VERIFY.VerificationError, r'^release_http_not_ok status=404$'):
                 self.run_probe(self.mutate(status=404, headers=headers), probe_current=True, bootstrap=True)
         count = 0
         def mixed(url, timeout):
@@ -256,7 +258,7 @@ class VerificationTests(unittest.TestCase):
         with self.local_routes(small) as origin:
             config = self.http_config(origin)
             for kwargs in ({}, {'probe_current': True}, {'probe_current': False, 'bootstrap': True}):
-                with self.subTest(body='small', **kwargs), self.assertRaisesRegex(VERIFY.VerificationError, '^release_http_not_ok$'):
+                with self.subTest(body='small', **kwargs), self.assertRaisesRegex(VERIFY.VerificationError, r'^release_http_not_ok status=404$'):
                     self.run_real_probe(config, **kwargs)
                 self.assertNotIn('SECRET_BODY', '\n'.join(self.outputs))
         with self.local_routes(large) as origin:
@@ -312,7 +314,7 @@ class VerificationTests(unittest.TestCase):
             with contextlib.redirect_stderr(error):
                 self.assertEqual(1, VERIFY.main(['verify'], enabled))
             self.assertEqual(calls, [(True, False), (False, False)])
-            self.assertIn('reason=release_http_not_ok', error.getvalue())
+            self.assertIn('reason=release_http_not_ok status=404', error.getvalue())
             self.assertNotIn('SECRET_BODY', error.getvalue())
         for value in ('1', 'yes', 'TRUE', 'force'):
             with self.subTest(value=value), contextlib.redirect_stderr(io.StringIO()) as error:
@@ -459,7 +461,7 @@ class VerificationTests(unittest.TestCase):
 
         cases = (
             ('health_not_ok', lambda url, timeout: (500, {}, b'SECRET')),
-            ('release_http_not_ok', self.mutate(status=404, body=b'SECRET')),
+            ('release_http_not_ok status=404', self.mutate(status=404, body=b'SECRET')),
             ('release_content_type_invalid', self.mutate(headers={'content-type': 'text/plain', 'cache-control': 'no-store'})),
             ('response_too_large', self.mutate(body=b'x' * (VERIFY.MAX_BODY + 1))),
             ('active_release_mismatch', self.mutate(payload={'release': 'b' * 40})),
@@ -478,6 +480,71 @@ class VerificationTests(unittest.TestCase):
                 release_calls = [url for url, _ in self.calls if '?deploy_probe=' in url]
                 self.assertEqual(0 if reason == 'health_not_ok' else 1, len(release_calls))
                 self.assertEqual(1 if reason == 'health_not_ok' else 2, len(self.calls))
+
+    def test_one_release_503_then_success_passes_with_a_fresh_nonce(self):
+        for status in sorted(VERIFY.RETRYABLE_RELEASE_STATUSES):
+            with self.subTest(status=status):
+                self.calls.clear()
+                self.outputs.clear()
+                self.nonces = iter(f'{i:048x}' for i in range(1, 20))
+                release_attempts = []
+
+                def fetch(url, timeout, retry_status=status):
+                    self.calls.append((url, timeout))
+                    if url.endswith('/up'):
+                        return 200, {}, b'healthy'
+                    release_attempts.append(url.split('deploy_probe=', 1)[1])
+                    if len(release_attempts) == 1:
+                        return retry_status, {'content-type': 'application/json'}, b'{"status":"unavailable","release":null,"probe":null}'
+                    return self.release_body(url)
+
+                sleeps = []
+                release_attempts.clear()
+                self.run_probe(fetch, sleeper=sleeps.append)
+                self.assertEqual([
+                    VERIFY.TRANSPORT_BACKOFF_SECONDS,
+                    VERIFY.SAMPLE_INTERVAL, VERIFY.SAMPLE_INTERVAL,
+                ], sleeps)
+                self.assertEqual(self.outputs.count('transport_retry=1 target=release'), 1)
+                self.assertNotIn('transport_retry=1 target=health', self.outputs)
+                self.assertEqual(len(release_attempts), len(set(release_attempts)))
+                self.assertGreaterEqual(len(release_attempts), 2)
+                self.assertEqual('active_release=verified', self.outputs[-1])
+                self.assertNotIn('unavailable', '\n'.join(self.outputs))
+
+    def test_persistent_release_503_fails_with_status_in_the_reason(self):
+        def fetch(url, timeout):
+            self.calls.append((url, timeout))
+            if url.endswith('/up'):
+                return 200, {}, b'healthy'
+            return 503, {'content-type': 'application/json'}, b'{"status":"unavailable","SECRET":true}'
+
+        sleeps = []
+        with self.assertRaisesRegex(VERIFY.VerificationError, r'^release_http_not_ok status=503$'):
+            self.run_probe(fetch, clock=lambda: 0, sleeper=sleeps.append)
+        release_calls = [url for url, _ in self.calls if '?deploy_probe=' in url]
+        self.assertEqual(VERIFY.TRANSPORT_ATTEMPTS, len(release_calls))
+        self.assertEqual(len(release_calls), len(set(release_calls)))
+        self.assertEqual([VERIFY.TRANSPORT_BACKOFF_SECONDS, VERIFY.TRANSPORT_BACKOFF_SECONDS], sleeps)
+        self.assertEqual(['application_health=ok',
+                          'transport_retry=1 target=release',
+                          'transport_retry=2 target=release'], self.outputs)
+        self.assertNotIn('SECRET', '\n'.join(self.outputs))
+
+    def test_non_retryable_release_status_fails_fast_with_status(self):
+        for status in (403, 500):
+            with self.subTest(status=status):
+                self.calls.clear()
+                self.outputs.clear()
+                sleeps = []
+                with self.assertRaisesRegex(
+                        VERIFY.VerificationError, r'^release_http_not_ok status=%d$' % status):
+                    self.run_probe(self.mutate(status=status, body=b'SECRET'), sleeper=sleeps.append)
+                release_calls = [url for url, _ in self.calls if '?deploy_probe=' in url]
+                self.assertEqual(1, len(release_calls))
+                self.assertEqual([], sleeps)
+                self.assertFalse(any(line.startswith('transport_retry=') for line in self.outputs))
+                self.assertNotIn('SECRET', '\n'.join(self.outputs))
 
     def test_release_retries_reject_a_reused_or_stale_nonce(self):
         nonces = iter([f'{1:048x}', f'{1:048x}'])

@@ -28,6 +28,10 @@ SAMPLE_INTERVAL = 2
 # for longer before the same fail-closed result.
 TRANSPORT_ATTEMPTS = 3
 TRANSPORT_BACKOFF_SECONDS = 1
+# Release identity can answer 503 when the verify lock is busy or a snapshot
+# check fails closed. 502/504 are treated the same: a front proxy can surface
+# the same transient unavailability. The health endpoint is not retried this way.
+RETRYABLE_RELEASE_STATUSES = frozenset({502, 503, 504})
 SERVICE_PATTERN = r"(?:clp-php-fpm|php(?:[0-9]+\.[0-9]+)?-fpm)\.service"
 
 
@@ -188,16 +192,17 @@ def verify(config, attempts=3, *, fetcher=None, sleeper=time.sleep,
     def transport_failure(error):
         return isinstance(error, VerificationError) and error.args == ('transport_or_tls_error',)
 
-    def fetch_attempt(url_factory, target):
+    def fetch_attempt(url_factory, target, retryable_statuses=()):
         # url_factory runs once per try. A release retry therefore mints a new
-        # nonce and never resends the nonce whose connection failed.
+        # nonce and never resends the nonce whose connection failed or whose
+        # HTTP status was transient.
         for attempt in range(1, TRANSPORT_ATTEMPTS + 1):
             remaining = deadline - clock()
             if remaining <= 0:
                 raise VerificationError('verification_deadline_exceeded')
             url = url_factory()
             try:
-                return fetcher(url, min(REQUEST_TIMEOUT, remaining))
+                result = fetcher(url, min(REQUEST_TIMEOUT, remaining))
             except VerificationError as error:
                 if not transport_failure(error) or attempt == TRANSPORT_ATTEMPTS:
                     raise
@@ -206,6 +211,16 @@ def verify(config, attempts=3, *, fetcher=None, sleeper=time.sleep,
                     raise VerificationError('verification_deadline_exceeded')
                 report('transport_retry=%d target=%s' % (attempt, target))
                 sleeper(min(TRANSPORT_BACKOFF_SECONDS, remaining))
+                continue
+            status = result[0]
+            if status in retryable_statuses and attempt < TRANSPORT_ATTEMPTS:
+                remaining = deadline - clock()
+                if remaining <= 0:
+                    raise VerificationError('verification_deadline_exceeded')
+                report('transport_retry=%d target=%s' % (attempt, target))
+                sleeper(min(TRANSPORT_BACKOFF_SECONDS, remaining))
+                continue
+            return result
 
     for sample in range(attempts):
         if sample:
@@ -224,12 +239,13 @@ def verify(config, attempts=3, *, fetcher=None, sleeper=time.sleep,
             issued.append(nonce)
             return config.release_url + '?deploy_probe=' + nonce
 
-        status, headers, body = fetch_attempt(release_probe_url, 'release')
+        status, headers, body = fetch_attempt(release_probe_url, 'release',
+            retryable_statuses=RETRYABLE_RELEASE_STATUSES)
         nonce = issued[-1]
         if unsealed_html_404(status, headers):
             # The final candidate check never accepts this 404, even if the flag is set.
             if not (probe_current and bootstrap):
-                raise VerificationError('release_http_not_ok')
+                raise VerificationError('release_http_not_ok status=%d' % status)
             if observed_release not in (None, UNSEALED_HTML_404):
                 raise VerificationError('release_samples_inconsistent')
             observed_release = UNSEALED_HTML_404
@@ -238,7 +254,7 @@ def verify(config, attempts=3, *, fetcher=None, sleeper=time.sleep,
             report('bootstrap_first_sealed_release=accepted reason=unsealed_release_http_404')
             continue
         if status != 200:
-            raise VerificationError('release_http_not_ok')
+            raise VerificationError('release_http_not_ok status=%d' % status)
         if headers.get('content-type', '').split(';', 1)[0].strip().lower() != 'application/json':
             raise VerificationError('release_content_type_invalid')
         directives = {item.strip().lower() for item in headers.get('cache-control', '').split(',')}
