@@ -10,7 +10,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-WORKFLOW_PATH = '.github/workflows/security-homologation.yml'
+# Monorepo jorgewreis/fokus (REI-315): the Cloud workflows are prefixed cloud-*.
+WORKFLOW_FILE = 'cloud-security-homologation.yml'
+WORKFLOW_PATH = '.github/workflows/' + WORKFLOW_FILE
 SHA = re.compile(r'[0-9a-f]{40}')
 REPOSITORY = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*')
 
@@ -176,7 +178,7 @@ def latest_success(runs):
 
 def verify(ctx, api):
     check_main(ctx, api)
-    workflow = api.get('/actions/workflows/security-homologation.yml')
+    workflow = api.get('/actions/workflows/' + WORKFLOW_FILE)
     workflow_id = workflow.get('id')
     require(positive_integer(workflow_id) and workflow.get('path') == WORKFLOW_PATH
             and workflow.get('state') == 'active', 'Expected validation workflow unavailable')

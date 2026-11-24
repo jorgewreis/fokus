@@ -2,19 +2,26 @@
 
 ## Objetivo
 
-Este documento define como os quatro repositorios do ecossistema Fokus se
+Este documento define como os quatro projetos do ecossistema Fokus se
 relacionam. O Fokus Cloud e a plataforma-mae e a porta institucional de entrada;
-os demais repositorios permanecem independentes, com ciclos de desenvolvimento,
-release e deploy proprios.
+os demais projetos permanecem independentes, com ciclos de desenvolvimento,
+release e deploy proprios, mesmo quando compartilham o monorepo.
 
-## Repositorios oficiais
+## Localizacao do codigo
 
-| Repositorio | Codigo | Tipo | Responsabilidade | Dominio canonico |
-| --- | --- | --- | --- | --- |
-| `fokus-cloud` | `cloud` | Plataforma e hub institucional | Marketing, portfolio, identidade, empresas, assinaturas, billing e backoffice | `https://fokuscloud.com.br` |
-| `fokus-styles` | `styles` | Framework CSS open source | Tokens, temas, componentes, acessibilidade, documentacao e pacote npm | `https://styles.fokuscloud.com.br` |
-| `fokus-law` | `law` | SaaS pago | Operacoes juridicas, cartorarias e modulos Law | `https://law.fokuscloud.com.br` |
-| `fokus-lead` | `lead` | SaaS pago | CRM imobiliario, leads, imoveis e automacoes comerciais | `https://lead.fokuscloud.com.br` |
+Desde 24/11/2026 (REI-315), Cloud e Styles ficam no monorepo
+[`jorgewreis/fokus`](https://github.com/jorgewreis/fokus), cada um em seu
+diretorio, com workflows prefixados (`cloud-*`, `styles-*`). O
+historico do antigo `jorgewreis/fokus-cloud` foi importado com os SHAs
+originais. Ate o corte do deploy, a publicacao do Cloud continua saindo do
+`jorgewreis/fokus-cloud`.
+
+| Projeto | Codigo | Local | Tipo | Responsabilidade | Dominio canonico |
+| --- | --- | --- | --- | --- | --- |
+| Fokus Cloud | `cloud` | `jorgewreis/fokus` · `apps/cloud` | Plataforma e hub institucional | Marketing, portfolio, identidade, empresas, assinaturas, billing e backoffice | `https://fokuscloud.com.br` |
+| Fokus Styles | `styles` | `jorgewreis/fokus` · `packages/styles` | Framework CSS open source | Tokens, temas, componentes, acessibilidade, documentacao e pacote npm | `https://styles.fokuscloud.com.br` |
+| Fokus Law | `law` | `fokus-law` | SaaS pago | Operacoes juridicas, cartorarias e modulos Law | `https://law.fokuscloud.com.br` |
+| Fokus Lead | `lead` | `fokus-lead` | SaaS pago | CRM imobiliario, leads, imoveis e automacoes comerciais | `https://lead.fokuscloud.com.br` |
 
 ## Regra de pertencimento
 
@@ -41,7 +48,7 @@ sem alterar esses codigos nem o historico comercial.
 
 O Cloud apresenta os quatro projetos no portfolio institucional. A pagina do
 Cloud pode resumir cada projeto, mas a documentacao e a aplicacao de cada
-produto permanecem em seu repositorio e dominio canonico.
+produto permanecem em seu diretorio ou repositorio e dominio canonico.
 
 | Projeto | Chamada principal |
 | --- | --- |
@@ -51,6 +58,6 @@ produto permanecem em seu repositorio e dominio canonico.
 
 ## Manifesto
 
-Cada repositorio deve possuir `fokus-project.json` com identidade, tipo, versao,
-status, repositorio e URLs. O arquivo e validado no CI e usado para documentacao;
+Cada projeto deve possuir `fokus-project.json` com identidade, tipo, versao,
+status, repositorio, diretorio (`path`, no monorepo) e URLs. O arquivo e validado no CI e usado para documentacao;
 nao e uma dependencia de runtime do Cloud.

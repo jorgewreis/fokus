@@ -1,6 +1,6 @@
 # Fokus
 
-Monorepo corporativo da Fokus. Este checkout contém o aplicativo Greenfield Fokus Law em [apps/law/](apps/law/).
+Monorepo corporativo da Fokus. Este checkout contém o aplicativo Greenfield Fokus Law em [apps/law/](apps/law/), a plataforma Fokus Cloud em [apps/cloud/](apps/cloud/) e o Fokus Styles em [packages/styles/](packages/styles/).
 
 ## Fokus Styles
 
@@ -14,9 +14,16 @@ O trusted publisher no npmjs.com é o repositório `jorgewreis/fokus` com o arqu
 
 Passo a passo: [packages/styles/CONTRIBUTING.md](packages/styles/CONTRIBUTING.md#processo-de-release).
 
+## Fokus Cloud
+
+A plataforma [Fokus Cloud](apps/cloud/README.md) (Laravel) mora em [`apps/cloud/`](apps/cloud/). O histórico do antigo repositório `jorgewreis/fokus-cloud` foi importado com os SHAs originais, porque os gates de homologação e deploy dependem deles (REI-315). O código sob `apps/cloud/` segue a [licença proprietária própria](apps/cloud/LICENSE.md).
+
+Até o corte do deploy, a publicação em produção do Cloud continua saindo do `jorgewreis/fokus-cloud`. Neste repositório, os workflows do Cloud ficam inativos em `apps/cloud/.github/workflows/` e só passam para `.github/workflows/cloud-*.yml` numa etapa posterior, com revisão própria.
+
 ## Navegação
 
 - [Aplicação Fokus Law](apps/law/)
+- [Plataforma Fokus Cloud](apps/cloud/)
 - [Instalação e execução local](apps/law/README.md)
 - [ADR-0001: arquitetura e fronteiras de ambiente](docs/adr/0001-fokus-law-greenfield-stack-and-boundaries.md)
 - [Dicionário conceitual de Pessoas e Processos](docs/domain/dicionario-dominio.md)
@@ -29,4 +36,4 @@ Passo a passo: [packages/styles/CONTRIBUTING.md](packages/styles/CONTRIBUTING.md
 - [REI-194 no Linear](https://linear.app/reis-developer/issue/REI-194/vara-implementar-o-percurso-minimo-do-mvp-institucional): percurso do MVP.
 - [REI-195 no Linear](https://linear.app/reis-developer/issue/REI-195/vara-definir-arquitetura-greenfield-e-fronteiras-dos-ambientes): arquitetura e fronteiras de ambiente.
 
-Use somente dados sintéticos locais conforme as instruções do aplicativo. Este repositório não autoriza dados institucionais, conexão com produção, homologação ou implantação.
+No [`apps/law/`](apps/law/), use somente dados sintéticos locais conforme as instruções do aplicativo. O `apps/law/` não autoriza dados institucionais, conexão com produção, homologação ou implantação. Essa restrição vale só para o `apps/law/`: o `apps/cloud/` tem pipeline de homologação e produção próprio, descrito na documentação dele.
