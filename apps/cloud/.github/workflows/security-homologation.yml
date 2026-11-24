@@ -1,0 +1,198 @@
+name: Isolated Linux release validation (no deploy)
+
+"on":
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Reviewed exact candidate commit, full SHA
+        required: true
+        type: string
+      baseline_sha:
+        description: Reviewed historical baseline, full SHA
+        required: true
+        default: 26daac7c27d246eaef64bb3f0e59499376993f8f
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24.13.0'
+      - name: Require exact source for audit
+        env:
+          EXPECTED_CANDIDATE: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_CANDIDATE" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_CANDIDATE"
+          test "$GITHUB_SHA" = "$EXPECTED_CANDIDATE"
+      - name: Audit locked packages without applying fixes
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/dependency-audit"
+          set +e
+          npm audit --package-lock-only --audit-level=high --json > "$RUNNER_TEMP/dependency-audit/npm-app.json" 2> "$RUNNER_TEMP/dependency-audit/npm-app.stderr"
+          app_status=$?
+          (cd tests/Deployment/styles-qa && npm audit --package-lock-only --audit-level=high --json) > "$RUNNER_TEMP/dependency-audit/npm-qa.json" 2> "$RUNNER_TEMP/dependency-audit/npm-qa.stderr"
+          qa_status=$?
+          docker run --rm --read-only --cpus=1 --memory=512m --tmpfs /tmp:rw,size=128m -e COMPOSER_HOME=/tmp/composer -e COMPOSER_CACHE_DIR=/tmp/composer-cache --mount "type=bind,src=$GITHUB_WORKSPACE,dst=/app,readonly" -w /app composer:2.8.12@sha256:0d264a0f1e5be23ba363447768df7b30c33d542711ea12e37770ed7b13bf4eaa --no-plugins --no-scripts audit --locked --format=json > "$RUNNER_TEMP/dependency-audit/composer.json" 2> "$RUNNER_TEMP/dependency-audit/composer.stderr"
+          composer_status=$?
+          printf '{"npm_app":%s,"npm_qa":%s,"composer":%s}\n' "$app_status" "$qa_status" "$composer_status" > "$RUNNER_TEMP/dependency-audit/status.json"
+          test "$app_status" = 0 && test "$qa_status" = 0 && test "$composer_status" = 0
+      - name: Preserve audit readout even when it blocks release
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: dependency-audit-${{ github.sha }}
+          path: ${{ runner.temp }}/dependency-audit/
+          if-no-files-found: error
+          retention-days: 14
+
+  isolated-linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - runtime: compatibility
+            php: '8.4.27'
+            image: fokus-law-linux-qa:20261107-node2413
+            dockerfile: tests/Deployment/linux-runtime/Dockerfile
+          - runtime: target
+            php: '8.5.7'
+            image: fokus-law-linux-qa:20261107-php857-node2413
+            dockerfile: tests/Deployment/linux-runtime/php85/Dockerfile
+    env:
+      RELEASE_DISPOSABLE_TESTS: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      EXPECTED_CANDIDATE: ${{ inputs.candidate_sha }}
+      EXPECTED_BASELINE: ${{ inputs.baseline_sha }}
+    steps:
+      - name: Checkout exact candidate without persisted credentials
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require exact workflow and candidate identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_CANDIDATE" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$EXPECTED_BASELINE" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_CANDIDATE"
+          test "$GITHUB_SHA" = "$EXPECTED_CANDIDATE"
+          python3 tests/Deployment/baseline-gate.py "$EXPECTED_BASELINE"
+          python3 -m unittest discover -s tests/Deployment -p test_linux_release_harness.py
+          python3 -m unittest discover -s tests/Deployment -p test_legacy_publication_guard.py
+          python3 -m unittest discover -s tests/Deployment -p test_interest_index_guard.py
+          python3 -m unittest discover -s tests/Deployment -p test_upgrade_fixture_guard.py
+          python3 -m unittest discover -s tests/Deployment -p test_linux_package.py
+          python3 -m unittest discover -s tests/Deployment -p test_release_gate.py
+          python3 -m unittest discover -s tests/Deployment/linux-http -p test_readiness.py
+      - name: Set isolated host Node runtime
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24.13.0'
+      - name: Prepare lockfile host browser clients
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x /usr/bin/google-chrome
+          /usr/bin/google-chrome --version
+          npm ci --ignore-scripts
+          npm ci --prefix tests/Deployment/styles-qa --ignore-scripts
+          node --test tests/Deployment/font-cache.test.mjs
+      - name: Validate isolated Linux backend and actual rsync
+        shell: bash
+        run: python3 tests/Deployment/linux-release.py --build --backend-only --profile "${{ matrix.runtime }}" --image "${{ matrix.image }}" --dockerfile "${{ matrix.dockerfile }}" --report "$RUNNER_TEMP/linux-release-evidence"
+      - name: Require sandboxed host browser and aggregate exact source evidence
+        shell: bash
+        run: python3 tests/Deployment/host-browser/run-ci-host.py --backend-report "$RUNNER_TEMP/linux-release-evidence" --report "$RUNNER_TEMP/linux-release-host-browser" --chrome /usr/bin/google-chrome
+      - name: Scan all collected evidence before upload
+        id: canary_scan
+        if: ${{ always() }}
+        shell: bash
+        run: python3 tests/Deployment/scan-release-canaries.py --root "$RUNNER_TEMP/linux-release-evidence" --root "$RUNNER_TEMP/linux-release-host-browser" --output "$RUNNER_TEMP/security-canary-scan.json"
+      - name: Upload synthetic validation evidence
+        if: ${{ always() && steps.canary_scan.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: linux-release-${{ matrix.runtime }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/linux-release-evidence/
+            ${{ runner.temp }}/linux-release-host-browser/
+            !${{ runner.temp }}/**/fixture.json
+            !${{ runner.temp }}/**/http/runtime/**
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve canary scan without raw values
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: canary-scan-${{ matrix.runtime }}-${{ github.sha }}
+          path: ${{ runner.temp }}/security-canary-scan.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Record scope and immutable revision
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          printf 'PHP CLI runtime: %s. FPM/proxy production remains a separate gate.\n' '${{ matrix.php }}' >> "$GITHUB_STEP_SUMMARY"
+          printf 'Validated exact commit: %s\n' "$EXPECTED_CANDIDATE" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Linux synthetic validation only. No deployment, production credentials, production data, backups or diagnostics. HTTPS browser and destination readiness remain separate gates.\n' >> "$GITHUB_STEP_SUMMARY"
+
+  dashboard-synthetic-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          persist-credentials: false
+      - name: Require exact candidate
+        env:
+          EXPECTED_CANDIDATE: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_CANDIDATE" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_CANDIDATE"
+          test "$GITHUB_SHA" = "$EXPECTED_CANDIDATE"
+      - name: Verify isolated dashboard orchestration without Docker
+        run: bash tests/Deployment/test-dashboard-synthetic-isolation.sh
+      - name: Exercise fail-closed guards against isolated synthetic MySQL
+        shell: bash
+        run: bash tests/Deployment/dashboard-synthetic-proof.sh
+
+  release-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    needs: [dependency-audit, isolated-linux, dashboard-synthetic-proof]
+    if: ${{ always() }}
+    steps:
+      - name: Require audit, dashboard proof and both runtime profiles
+        env:
+          AUDIT_RESULT: ${{ needs.dependency-audit.result }}
+          RUNTIME_RESULT: ${{ needs.isolated-linux.result }}
+          DASHBOARD_RESULT: ${{ needs.dashboard-synthetic-proof.result }}
+        run: |
+          test "$AUDIT_RESULT" = success
+          test "$RUNTIME_RESULT" = success
+          test "$DASHBOARD_RESULT" = success
+          echo 'All synthetic CI gates passed. Production HTTPS/FPM/proxy and deployment authorization remain separate.'

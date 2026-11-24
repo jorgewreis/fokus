@@ -1,0 +1,25 @@
+/* DISPLAY */
+.fs-u-d-flex {
+    display: flex;
+}
+.fs-u-d-grid {
+    display: grid;
+}
+.fs-u-d-block {
+    display: block;
+}
+.fs-u-d-inline {
+    display: inline;
+}
+.fs-u-d-inline-block {
+    display: inline-block;
+}
+.d-inline-flex {
+    display: inline-flex;
+}
+.d-inline-grid {
+    display: inline-grid;
+}
+.fs-u-d-none {
+    display: none;
+}

@@ -1,0 +1,492 @@
+<main class="admin-dashboard admin-final-dashboard" aria-labelledby="dashboard-page-title">
+    <section class="admin-final-content">
+        <header class="admin-dashboard-intro fs-page-layout">
+            <div class="fs-page-header-display">
+                <span>BACKOFFICE</span>
+                <h1 id="dashboard-page-title">Dashboard</h1>
+                <p>
+                    Acompanhe o desempenho da sua operação e gerencie empresas,
+                    pessoas e assinaturas em um só lugar.
+                </p>
+            </div>
+        </header>
+        <section class="admin-metrics-grid" aria-label="Métricas da plataforma">
+            <article class="fs-card fs-card-panel fs-card-sm admin-metric-card admin-metric-companies" aria-label="Empresas ativas">
+                <div class="admin-metric-icon">
+                    <img
+                        src="/backoffice/assets/icons/Small-Office-Tall-Building--Streamline-Ultimate.png"
+                        alt=""
+                    />
+                </div>
+                <div class="fs-card-body">
+                    <span>Empresas ativas</span
+                    ><strong id="metric-active-companies">—</strong>
+                    <small>Empresas na plataforma</small>
+                </div>
+            </article>
+            <article class="fs-card fs-card-panel fs-card-sm admin-metric-card admin-metric-people" aria-label="Pessoas ativas">
+                <div class="admin-metric-icon">
+                    <img
+                        src="/backoffice/assets/icons/Single-Neutral-Actions-Check-1--Streamline-Ultimate-Regular.png"
+                        alt=""
+                    />
+                </div>
+                <div class="fs-card-body">
+                    <span>Pessoas ativas</span
+                    ><strong id="metric-active-people">—</strong>
+                    <small>Usuários com acesso</small>
+                </div>
+            </article>
+            <article class="fs-card fs-card-panel fs-card-sm admin-metric-card admin-metric-subscriptions" aria-label="Assinaturas ativas">
+                <div class="admin-metric-icon">
+                    <img
+                        src="/backoffice/assets/icons/Customer-Relationship-Management-List-Document-Share--Streamline-Ultimate.png"
+                        alt=""
+                    />
+                </div>
+                <div class="fs-card-body">
+                    <span>Assinaturas ativas</span
+                    ><strong id="metric-active-subscriptions">—</strong>
+                    <small>Planos em vigência</small>
+                </div>
+            </article>
+            <article class="fs-card fs-card-panel fs-card-sm admin-metric-card admin-metric-mrr" aria-label="Receita recorrente mensal">
+                <div class="admin-metric-icon">
+                    <img
+                        src="/backoffice/assets/icons/Accounting-Coins--Streamline-Ultimate.png"
+                        alt=""
+                    />
+                </div>
+                <div class="fs-card-body">
+                    <span>Receita recorrente (MRR)</span
+                    ><strong id="metric-mrr">—</strong>
+                    <small>Receita mensal consolidada</small>
+                    <p class="admin-metric-context"><b id="metric-mrr-subscriptions">—</b> assinaturas ativas compõem este valor</p>
+                </div>
+            </article>
+        </section>
+        <div class="fs-alert fs-alert-danger" id="dashboard-load-error" role="alert" hidden></div>
+        <section class="admin-dashboard-overview-grid">
+            <article class="fs-card fs-card-panel admin-panel-card admin-subscription-chart-card">
+                <div class="fs-card-header admin-card-heading">
+                    <div class="fs-card-header-title">
+                        <h2 class="fs-card-title">Novas assinaturas ativas</h2>
+                        <p class="fs-card-subtitle">
+                            Assinaturas criadas por mês que permanecem ativas.
+                        </p>
+                    </div>
+                    <span class="fs-card-header-info">Últimos 6 meses</span>
+                </div>
+                <div class="fs-card-body admin-chart-card-body">
+                    <div class="admin-subscription-chart" id="subscription-chart">
+                    <div
+                        class="admin-chart-axis"
+                        id="subscription-chart-axis"
+                    ></div>
+                    <div
+                        class="admin-chart-plot"
+                        id="subscription-chart-plot"
+                        role="img"
+                        aria-label="Gráfico de novas assinaturas ativas"
+                    ></div>
+                    <div
+                        class="admin-chart-labels"
+                        id="subscription-chart-labels"
+                    ></div>
+                    </div>
+                    <p
+                        class="admin-chart-empty"
+                        id="subscription-chart-empty"
+                        hidden
+                    >
+                        Não há assinaturas ativas registradas nos últimos seis
+                        meses.
+                    </p>
+                </div>
+            </article>
+            <aside class="fs-card fs-card-panel admin-panel-card admin-attention-card">
+                <div class="fs-card-header admin-card-heading">
+                    <div class="fs-card-header-title">
+                        <h2 class="fs-card-title">Atenção necessária</h2>
+                        <p class="fs-card-subtitle">Itens que exigem acompanhamento.</p>
+                    </div>
+                </div>
+                <div class="fs-card-body admin-attention-card-body">
+                    <div id="dashboard-alerts" class="admin-attention-list"></div>
+                    <p id="dashboard-alerts-empty" class="admin-panel-empty" hidden>
+                        Nenhum alerta operacional no momento.
+                    </p>
+                </div>
+            </aside>
+        </section>
+        <section class="admin-dashboard-subscriptions-row">
+            <article class="fs-card fs-card-panel admin-subscriptions-card">
+                <div class="fs-card-header fs-u-d-flex fs-u-flex-wrap fs-u-justify-content-between fs-u-align-items-end fs-u-gap-3">
+                    <div class="fs-card-header-title">
+                        <h2 class="fs-card-title">Assinaturas</h2>
+                            <p class="fs-card-subtitle">Cinco assinaturas ativas de maior valor.</p>
+                    </div>
+                    <a class="admin-card-link" href="/backoffice/assinaturas">Ver todas</a>
+                </div>
+                <div class="fs-card-body fs-u-p-0">
+                    <div class="fs-table-responsive fs-datatable" data-fs="datatable" data-fs-page-size="1000">
+                    <table class="fs-table fs-table-records fs-table-hover admin-subscriptions-table" aria-label="Assinaturas recentes">
+                        <thead>
+                            <tr>
+                                <th class="fs-width-600" scope="col">Empresa</th>
+                                <th class="fs-width-500" scope="col">Produto</th>
+                                <th class="fs-width-400" scope="col">Plano</th>
+                                <th class="fs-width-300" scope="col">Status</th>
+                                <th class="fs-width-400" scope="col">Vigência</th>
+                                <th class="fs-width-400" scope="col">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscriptions-table-body"></tbody>
+                    </table>
+                    </div>
+                </div>
+                <div class="fs-card-footer fs-u-d-flex fs-u-flex-wrap fs-u-align-items-center fs-u-justify-content-between fs-u-gap-3">
+                    <span id="subscriptions-table-summary">Carregando assinaturas...</span>
+                    <nav id="subscriptions-pagination" aria-label="Paginação de assinaturas"></nav>
+                </div>
+            </article>
+        </section>
+        <section class="admin-dashboard-activity-row">
+            <article class="fs-card fs-card-panel admin-panel-card admin-recent-activity-card">
+                    <div class="fs-card-header admin-card-heading">
+                        <div class="fs-card-header-title">
+                            <h2 class="fs-card-title">Atividade recente</h2>
+                            <p class="fs-card-subtitle">Eventos registrados na plataforma.</p>
+                        </div>
+                        <a class="admin-card-link" href="/backoffice/seguranca"
+                            >Ver todas</a
+                        >
+                    </div>
+                    <div class="fs-card-body admin-activity-card-body">
+                        <div
+                            id="dashboard-recent-activity"
+                            class="admin-recent-activity-list"
+                        ></div>
+                        <p
+                            id="dashboard-recent-activity-empty"
+                            class="admin-panel-empty"
+                            hidden
+                        >
+                            Nenhuma atividade recente disponível.
+                        </p>
+                    </div>
+            </article>
+            <article class="fs-card fs-card-panel admin-panel-card admin-quick-actions-card">
+                    <div class="fs-card-header admin-card-heading">
+                        <div class="fs-card-header-title"><h2 class="fs-card-title">Ações rápidas</h2></div>
+                    </div>
+                    <div class="fs-card-body admin-quick-actions-body">
+                    <div class="admin-quick-actions-grid">
+                        <a class="fs-btn fs-btn-outline-primary" href="/backoffice/empresas"
+                            ><img
+                                src="/backoffice/assets/icons/Add-Square--Streamline-Ultimate.png"
+                                alt=""
+                            />Nova empresa</a
+                        ><a class="fs-btn fs-btn-outline-primary" href="/backoffice/admins"
+                            ><img
+                                src="/backoffice/assets/icons/Settings-User--Streamline-Ultimate.png"
+                                alt=""
+                            />Convidar administrador</a
+                        ><a class="fs-btn fs-btn-outline-primary" href="/backoffice/assinaturas"
+                            ><img
+                                src="/backoffice/assets/icons/Customer-Relationship-Management-List-Document-Share--Streamline-Ultimate.png"
+                                alt=""
+                            />Ver assinaturas</a
+                        ><a class="fs-btn fs-btn-outline-primary" href="/backoffice/catalogo"
+                            ><img
+                                src="/backoffice/assets/icons/Shopping-Basket-Edit--Streamline-Ultimate.png"
+                                alt=""
+                            />Abrir catálogo</a
+                        >
+                    </div>
+                    </div>
+            </article>
+        </section>
+    </section>
+</main>
+<script>
+    (() => {
+        const mountRoot = document.querySelector('[data-backoffice-mount][data-backoffice-owner^="platform-dashboard-final-"]');
+        const dashboardRoot = mountRoot?.querySelector("main.admin-final-dashboard");
+        const router = window.__backofficeRouter;
+        const navigationId = router?.navigationId;
+        const isDashboardActive = () => dashboardRoot?.isConnected === true && router?.currentRoot === mountRoot && router?.navigationId === navigationId;
+        let B = "/backoffice/assets/icons/",
+            I = {
+                alert: "Single-Man-Actions-Warning--Streamline-Ultimate.png",
+                company: "Small-Office-Tall-Building--Streamline-Ultimate.png",
+                change: "Customer-Relationship-Management-List-Document-Share--Streamline-Ultimate.png",
+                cancellation: "Lock-Unlock--Streamline-Ultimate.png",
+                activity:
+                    "Single-Man-Actions-Information--Streamline-Ultimate.png",
+                actions: "Multiple-Actions-Setting--Streamline-Ultimate.png",
+                dashboard: "Layout-Dashboard--Streamline-Ultimate.png",
+                companies: "Small-Office-Tall-Building--Streamline-Ultimate.png",
+                users: "Multiple-Actions-Setting--Streamline-Ultimate.png",
+                catalog: "Customer-Relationship-Management-List-Document-Share--Streamline-Ultimate.png",
+                subscriptions: "Seo-Search--Streamline-Ultimate.png",
+                payments: "Accounting-Coins--Streamline-Ultimate.png",
+                vouchers: "Tickets--Streamline-Ultimate.png",
+            },
+            notifications = [],
+            N = new Intl.NumberFormat("pt-BR"),
+            C = new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+            }),
+            e = (v) =>
+                String(v ?? "").replace(
+                    /[&<>'"]/g,
+                    (x) =>
+                        ({
+                            "&": "&amp;",
+                            "<": "&lt;",
+                            ">": "&gt;",
+                            "'": "&#039;",
+                            '"': "&quot;",
+                        })[x],
+                ),
+            img = (n, c = "") => `<img class="${c}" src="${B}${I[n]}" alt="">`,
+            date = (v) => {
+                if (!v) return "Sem acesso registrado";
+                const d = new Date(v);
+                return Number.isNaN(d)
+                    ? "Sem acesso registrado"
+                    : new Intl.DateTimeFormat("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "America/Fortaleza",
+                      }).format(d);
+            },
+            status = (v) =>
+                ({
+                    ativa: "Ativa",
+                    suspensa: "Suspensa",
+                    pendente: "Pendente",
+                    encerrando: "Em encerramento",
+                    encerrada: "Encerrada",
+                })[v] || "Sem status";
+        const subscriptionStatus = (v) =>
+            ({
+                aguardando_pagamento: "Aguardando pagamento",
+                ativa: "Ativa",
+                inadimplente: "Inadimplente",
+                suspensa: "Suspensa",
+                cancelamento_agendado: "Cancelamento agendado",
+                encerrada: "Encerrada",
+            })[v] || "Sem status";
+        const sidebarIcon = (area) => {
+            const selectors = {
+                dashboard: '[data-sidebar-item="platform-dashboard-final"] img',
+                companies: '[data-sidebar-item="companies"] img',
+                users: '[data-sidebar-item="users"] img',
+                catalog: '[data-sidebar-group="catalog"] .sidebar-group-toggle img:not(.sidebar-group-chevron)',
+                subscriptions: '[data-sidebar-item="subscriptions"] img',
+                payments: '[data-sidebar-item="payments"] img',
+                vouchers: '[data-sidebar-item="vouchers"] img',
+            };
+            return document.querySelector(selectors[area] || "")?.getAttribute("src") || `${B}${I[area] || I.dashboard}`;
+        };
+        const nameParticles = new Set(["de", "da", "do", "das", "dos", "e"]);
+        const displayName = (value) => {
+            const words = String(value || "Administrador")
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean);
+            const selected = words.slice(0, 2);
+            if (selected[1] && nameParticles.has(selected[1].toLowerCase()) && words[2]) {
+                selected.push(words[2]);
+            }
+            return (selected.join(" ") || "Administrador").slice(0, 25).trim();
+        };
+        const user = (u) => {
+            let a = String(u?.name || "Administrador")
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean),
+                name = displayName(u?.name),
+                f = a[0] || "Administrador";
+            document.querySelector("#dashboard-user-name").textContent =
+                name;
+            document.querySelector("#dashboard-user-role").textContent = String(
+                u?.role || "Administrador",
+            );
+            document.querySelector("#dashboard-user-initials").textContent = a
+                .slice(0, 2)
+                .map((x) => x[0])
+                .join("")
+                .toUpperCase();
+            const greeting = document.querySelector("#dashboard-greeting-name");
+            if (greeting) greeting.textContent = f.toUpperCase();
+        };
+        const searchResults = (groups) => {
+            const panel = document.querySelector("#admin-global-search-results");
+            const results = groups.flatMap((group) => group.items || []);
+            panel.innerHTML = results.length
+                ? groups.filter((group) => group.items?.length).map((group) => `<section><strong>${e(group.label)}</strong>${group.items.map((item) => `<a href="${e(item.href || "#")}"><span>${e(item.title)}</span><small>${e(item.subtitle || "")}</small></a>`).join("")}</section>`).join("")
+                : '<p class="admin-global-search-empty">Nenhum resultado encontrado.</p>';
+            panel.hidden = false;
+        };
+        const chart = (series) => {
+            let v = series.map((x) => +x.value || 0),
+                plot = document.querySelector("#subscription-chart-plot"),
+                axis = document.querySelector("#subscription-chart-axis"),
+                labels = document.querySelector("#subscription-chart-labels"),
+                empty = document.querySelector("#subscription-chart-empty");
+            labels.innerHTML = series
+                .map((x) => `<span>${e(x.label)}</span>`)
+                .join("");
+            if (!v.some(Boolean)) {
+                plot.innerHTML = "";
+                plot.setAttribute("aria-label", "Não há novas assinaturas ativas nos últimos seis meses");
+                axis.innerHTML = "";
+                empty.hidden = false;
+                return;
+            }
+            empty.hidden = true;
+            let W = 720,
+                H = 248,
+                L = 44,
+                R = 18,
+                T = 18,
+                D = 18,
+                max = Math.max(5, Math.ceil(Math.max(...v) / 5) * 5),
+                x = (i) => L + ((W - L - R) * i) / Math.max(v.length - 1, 1),
+                y = (n) => H - D - ((H - T - D) * n) / max,
+                grid = Array.from(
+                    { length: 6 },
+                    (_, i) =>
+                        `<span class="admin-chart-grid-line" style="top:${((T + ((H - T - D) * i) / 5) / H) * 100}%"></span>`,
+                ).join("");
+            axis.innerHTML = Array.from(
+                { length: 6 },
+                (_, i) =>
+                    `<span>${N.format(Math.round(max - (max * i) / 5))}</span>`,
+            ).join("");
+            const points = v.map((n, i) => ({ left: `${(x(i) / W) * 100}%`, top: `${(y(n) / H) * 100}%` }));
+            plot.setAttribute("aria-label", `Novas assinaturas ativas: ${series.map((item, i) => `${item.label}: ${N.format(v[i])}`).join(", ")}`);
+            const line = `<svg class="admin-chart-line" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${v.map((n, i) => `${x(i)},${y(n)}`).join(" ")}" /></svg>`;
+            plot.innerHTML = `${grid}${line}${points.map((point, i) => `<span class="admin-chart-point" style="left:${point.left};top:${point.top}" title="${e(series[i].label)}: ${N.format(v[i])}"></span>`).join("")}`;
+        };
+        const alerts = (a) => {
+            let l = document.querySelector("#dashboard-alerts"),
+                z = document.querySelector("#dashboard-alerts-empty");
+            notifications = a;
+            window.__adminHeaderNotifications = a;
+            document.querySelector(".admin-notifications-button").classList.toggle("has-notifications", a.length > 0);
+            z.hidden = !!a.length;
+            l.innerHTML = a
+                .map(
+                    (x) =>
+                        `<a class="admin-attention-item" href="${e(x.href || "/backoffice/painel")}"><span class="admin-attention-icon admin-attention-${e(x.icon ||"alert")}">${img(x.icon || "alert")}</span><span><strong>${N.format(x.value || 0)} ${e(x.label || "")}</strong><small>${e(x.description || "")}</small></span></a>`,
+                )
+                .join("");
+        };
+        const hideHeaderToast = () => {
+            const toast = document.querySelector("#admin-header-toast");
+            toast.classList.remove("is-visible");
+            window.clearTimeout(showHeaderToast.timer);
+            window.setTimeout(() => { toast.hidden = true; }, 220);
+        };
+        const showHeaderToast = () => {
+            const toast = document.querySelector("#admin-header-toast");
+            const content = document.querySelector("#admin-header-toast-content");
+            content.innerHTML = notifications.length
+                ? `<strong>Notificações</strong><ul>${notifications.map((item) => `<li><b>${e(item.label || "Aviso da plataforma")}</b><span>${e(item.description || "")}</span></li>`).join("")}</ul>`
+                : `<strong>Notificações</strong><p>Você não tem nenhuma notificação.</p>`;
+            toast.hidden = false;
+            window.requestAnimationFrame(() => toast.classList.add("is-visible"));
+            window.clearTimeout(showHeaderToast.timer);
+            showHeaderToast.timer = window.setTimeout(hideHeaderToast, 6000);
+        };
+        const activity = (a) => {
+            let l = document.querySelector("#dashboard-recent-activity"),
+                z = document.querySelector("#dashboard-recent-activity-empty");
+            z.hidden = !!a.length;
+            l.innerHTML = a
+                .map((x) => {
+                    const area = x.icon && I[x.icon] ? x.icon : "dashboard";
+                    const tone = ["creation", "alteration", "pause", "deletion", "publication", "warning"].includes(x.tone) ? x.tone : "alteration";
+                    return `<div class="admin-activity-item admin-activity-${tone}"><span class="admin-activity-marker" aria-hidden="true"></span><span class="admin-activity-symbol"><img src="${e(sidebarIcon(area))}" alt=""></span><span class="admin-activity-copy"><strong>${e(x.title || "Atividade no Dashboard")}</strong><small>${e(x.description || "Detalhes não informados.")}</small></span><time datetime="${e(x.created_at || "")}">${date(x.created_at)}</time></div>`;
+                })
+                .join("");
+        };
+        const subscriptions = (p) => {
+            let b = document.querySelector("#subscriptions-table-body"),
+                a = p.data || [];
+            b.innerHTML = a.length
+                ? a
+                      .map(
+                          (x) =>
+                              `<tr><td class="fs-width-600">${e(x.company_name || "Empresa não informada")}</td><td class="fs-width-500">${e(x.product_name || "Produto não informado")}</td><td class="fs-width-400">${e(x.plan_name || "Plano não informado")}</td><td class="fs-width-300"><span class="fs-badge fs-badge-soft-info">${subscriptionStatus(x.status)}</span></td><td class="fs-width-400">${x.current_period_ends_at ? new Date(x.current_period_ends_at).toLocaleDateString("pt-BR") : "-"}</td><td class="fs-width-400">${C.format(+x.amount || 0)}</td></tr>`,
+                      )
+                      .join("")
+                : '<tr><td colspan="6">Nenhuma assinatura encontrada.</td></tr>';
+            document.querySelector("#subscriptions-table-summary").textContent =
+                p.total
+                    ? `Exibindo ${a.length} de ${p.total} assinaturas ativas por valor.`
+                    : "Nenhuma assinatura ativa encontrada.";
+            document.querySelector("#subscriptions-pagination").replaceChildren();
+            window.refreshFokusDataTables?.(document.querySelector(".admin-final-dashboard"));
+        };
+        const loadSubscriptions = async () => {
+                let p = new URLSearchParams({
+                    dashboard_top_value: "1",
+                    per_page: "5",
+                    status: "ativa",
+                });
+                let r = await fetch(`/api/backoffice/subscriptions?${p}`, {
+                    credentials: "same-origin",
+                });
+                if (!r.ok) throw Error();
+                const data = await r.json();
+                if (isDashboardActive()) subscriptions({ ...data, ...data.meta });
+            },
+            load = async () => {
+                let r = await fetch("/api/backoffice/dashboard", {
+                    credentials: "same-origin",
+                });
+                if (!r.ok) throw Error();
+                let p = await r.json();
+                if (!isDashboardActive()) return;
+                user(p.user);
+                document.querySelector("#metric-active-companies").textContent =
+                    N.format(p.metrics.active_companies || 0);
+                document.querySelector("#metric-active-people").textContent =
+                    N.format(p.metrics.active_people || 0);
+                document.querySelector(
+                    "#metric-active-subscriptions",
+                ).textContent = N.format(p.metrics.active_subscriptions || 0);
+                document.querySelector("#metric-mrr").textContent = C.format(
+                    +p.metrics.mrr || 0,
+                );
+                document.querySelector("#metric-mrr-subscriptions").textContent = N.format(p.metrics.active_subscriptions || 0);
+                chart(p.subscription_registrations_6m || []);
+                alerts(p.alerts || []);
+                activity(p.recent_activity || []);
+            };
+        const showLoadError = () => {
+            if (!isDashboardActive()) return;
+            const error = dashboardRoot.querySelector("#dashboard-load-error");
+            if (!error?.isConnected) return;
+            error.textContent = "Não foi possível carregar os dados do Dashboard. Atualize a página ou entre novamente.";
+            error.hidden = false;
+        };
+        const bootDashboard = () => {
+            Promise.all([load(), loadSubscriptions()]).catch(showLoadError);
+        };
+        if (window.__backofficeAuthorized) {
+            bootDashboard();
+        } else {
+            window.addEventListener("fokus:backoffice-authorized", bootDashboard, { once: true });
+        }
+    })();
+</script>

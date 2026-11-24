@@ -42,7 +42,7 @@
         <main>
             <p class="brand">Fokus Cloud · Law</p>
             <h1>Contatos institucionais</h1>
-            <p class="intro">1ª Vara Criminal de Ilhéus. Esta página reúne os canais públicos divulgados pelo Tribunal de Justiça da Bahia.</p>
+            <p class="intro">Cliente institucional on demand. Esta página reúne canais públicos de demonstração, com dados sintéticos.</p>
 
             <dl>
                 <div class="contact">
@@ -74,7 +74,7 @@
             </dl>
 
             <footer>
-                Fonte: <a href="{{ $contacts['source'] }}" rel="noopener noreferrer">TJBA — contatos da 1ª Vara Criminal de Ilhéus</a>.
+                Fonte: <a href="{{ $contacts['source'] }}" rel="noopener noreferrer">Contatos do cliente institucional on demand</a>.
                 Conferido em {{ $contacts['checkedAt'] }}. O horário permanece pendente porque não consta nessa ficha oficial.
             </footer>
         </main>
