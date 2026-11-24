@@ -96,14 +96,39 @@ try {
   // would change a tracked file the immutable build must keep byte-for-byte.
   gitHistory = false;
 }
+// Monorepo (REI-315): the history was imported with the app moved into
+// apps/cloud by one pure-rename commit. `git log -1 -- <path>` stops at that
+// move, so when the last commit is a pure rename (R100) of this file, continue
+// from its parent with the old path. Otherwise this is exactly `git log -1`.
+const lastContentChange = (rel) => {
+  let pathspec = rel;
+  let range = 'HEAD';
+  const prefix = git(['rev-parse', '--show-prefix']);
+  let full = prefix + rel;
+  for (let depth = 0; depth < 8; depth++) {
+    const found = git(['log', '-1', '--format=%H %cs', range, '--', pathspec]);
+    if (!found) return [];
+    const [hash] = found.split(' ');
+    const renames = git(['diff-tree', '-M', '-r', '--root', '--name-status', '--no-commit-id', hash])
+      .split('\n').map((line) => line.split('\t')).filter((line) => line[0] === 'R100' && line[2] === full);
+    if (renames.length !== 1) return found.split(' ');
+    full = renames[0][1];
+    pathspec = `:(top)${full}`;
+    range = `${hash}^`;
+  }
+  return [];
+};
 if (gitHistory) {
   const pageLastmod = (file) => {
     const rel = `public/${file}`;
     try {
-      const date = git(['log', '-1', '--format=%cs', '--', rel]);
-      const hash = git(['log', '-1', '--format=%H', '--', rel]);
+      // Monorepo (REI-315): the history was imported with the app moved into
+      // apps/cloud. Follow the file across that move and skip pure renames
+      // (R100), which change no page content, so lastmod keeps the date of
+      // the last real edit. In the legacy root layout this equals `log -1`.
+      const [hash = '', date = ''] = lastContentChange(rel);
       const head = git(['rev-parse', 'HEAD']);
-      const changedInHead = git(['diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD']).split('\n').includes(rel);
+      const changedInHead = git(['diff-tree', '--relative', '--no-commit-id', '--name-only', '-r', 'HEAD']).split('\n').includes(rel);
       // The tip commit is not the date of a file it did not change.
       if (/^\d{4}-\d{2}-\d{2}$/.test(date) && (hash !== head || changedInHead)) return date;
     } catch {
