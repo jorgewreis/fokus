@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1b1028" />
+    <title>Recuperar senha | Fokus Cloud</title>
+    <link rel="stylesheet" href="/assets/css/shared/fokus.css?v=20261123-fokus-styles-3-0-0" />
+    <link rel="stylesheet" href="/marketing/products/fokus-law.css?v=20261013-law-horizontal-overflow-v1" />
+    <link rel="stylesheet" href="/auth/checkout.css?v=20261014-shared-register-consent-links-v2" />
+    <link rel="stylesheet" href="/auth/recuperar-senha.css?v=20261014-shared-auth-card-v1" />
+  </head>
+  <body class="shared-register-page law-checkout-page law-recovery-page">
+    <a class="law-recovery-skip" href="#reset-title">Pular para recuperação de senha</a>
+    <main class="checkout-wrap">
+      <section class="auth-card law-login-card law-checkout-card law-recovery-card" aria-labelledby="reset-title">
+        <a class="law-checkout-brand" data-recovery-brand href="/produtos/fokus-law">FOKUS CLOUD <span>LAW</span></a>
+        <div class="card-heading law-login-heading">
+          <p class="section-kicker">SEGURANÇA DA CONTA</p>
+          <h1 class="fs-card-title" id="reset-title">RECUPERE SEU ACESSO.</h1>
+          <p class="card-description">Informe o CPF cadastrado. Se a conta estiver elegível, enviaremos as instruções ao e-mail confirmado.</p>
+        </div>
+        <form id="reset-form" class="law-recovery-form">
+          <label class="form-field" for="reset-cpf">
+            <span class="fs-form-label">CPF</span>
+            <input class="fs-form-control field-size-md" id="reset-cpf" name="cpf" inputmode="numeric" maxlength="14" autocomplete="username" placeholder="000.000.000-00" aria-describedby="message" required />
+          </label>
+          <button class="fs-btn fs-btn-primary law-submit" type="submit">Enviar instruções</button>
+        </form>
+        <p id="message" class="form-message law-recovery-message" role="status" aria-live="polite"></p>
+        <a class="law-recovery-back" data-recovery-back href="/produtos/fokus-law">Voltar ao Fokus Law</a>
+      </section>
+    </main>
+    <script src="/assets/js/api-client.js"></script>
+    <script src="/assets/js/brazilian-documents.js?v=20260930-document-validation-v1"></script>
+    <script>
+      const recoveryProduct = new URLSearchParams(location.search).get('produto') === 'fokus-lead' ? 'fokus-lead' : 'fokus-law';
+      const recoveryProductName = recoveryProduct === 'fokus-lead' ? 'Fokus Lead' : 'Fokus Law';
+      const recoveryProductShortName = recoveryProduct === 'fokus-lead' ? 'LEAD' : 'LAW';
+      document.title = `Recuperar senha | ${recoveryProductName}`;
+      document.querySelector('[data-recovery-brand]').href = `/produtos/${recoveryProduct}`;
+      document.querySelector('[data-recovery-brand]').lastChild.textContent = ` ${recoveryProductShortName}`;
+      document.querySelector('[data-recovery-back]').href = `/produtos/${recoveryProduct}`;
+      document.querySelector('[data-recovery-back]').textContent = `Voltar ao ${recoveryProductName}`;
+
+      const cpfInput = document.querySelector('#reset-cpf');
+      const cpfMask = window.FokusDocuments.bind(cpfInput, 'cpf');
+      cpfInput.addEventListener('input', () => { cpfInput.removeAttribute('aria-invalid'); document.querySelector('#message').textContent = ''; });
+      document.querySelector('#reset-form').onsubmit = async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const submit = form.querySelector('button[type="submit"]');
+        const message = document.querySelector('#message');
+        const cpf = window.FokusDocuments.normalize(cpfInput.value, 'cpf');
+        if (!window.FokusDocuments.cpf(cpf)) {
+          submit.disabled = false;
+          message.dataset.state = 'error';
+          message.textContent = 'Informe um CPF válido, com os dígitos verificadores corretos.';
+          cpfInput.setAttribute('aria-invalid', 'true');
+          cpfInput.focus();
+          return;
+        }
+        cpfInput.removeAttribute('aria-invalid');
+        submit.disabled = true;
+        message.dataset.state = '';
+        message.textContent = 'Enviando instruções…';
+        try {
+          const response = await FokusApi.request('/auth/request-password-reset', { method: 'POST', body: { cpf } });
+          message.dataset.state = 'success';
+          message.textContent = response.message;
+          form.reset();
+        } catch (error) {
+          message.dataset.state = 'error';
+          message.textContent = error.message || 'Não foi possível enviar as instruções.';
+        } finally {
+          submit.disabled = false;
+        }
+      };
+    </script>
+  </body>
+</html>

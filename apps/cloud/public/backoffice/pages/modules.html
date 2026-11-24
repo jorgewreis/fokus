@@ -1,0 +1,138 @@
+<link data-page-css="modules" rel="stylesheet" href="/assets/css/shared/fokus.css?v=20261123-fokus-styles-3-0-0" />
+<link data-page-css="modules" rel="stylesheet" href="/backoffice/assets/css/pages/modules.css?v=20260923-form-edit-guards-v3" />
+
+<main class="backoffice-modules-page backoffice-records-page container-page fs-container-fluid" aria-labelledby="modules-page-title">
+    <header class="fs-page-layout">
+        <div class="fs-page-header-display">
+            <span>Catálogo</span>
+            <h1 id="modules-page-title">Modulos</h1>
+            <p>Gerencie os componentes comerciais, suas funcionalidades e personalizações.</p>
+        </div>
+        <button class="fs-btn fs-btn-primary fs-width-300" id="module-new" type="button" data-fs-target="#module-drawer">Novo módulo</button>
+    </header>
+
+    <div class="fs-alert" id="modules-message" role="status" aria-live="polite" hidden></div>
+
+    <section class="fs-card fs-card-panel" aria-labelledby="module-filter-title">
+        <div class="fs-card-header">
+            <div class="fs-card-header-title">
+                <h2 class="fs-card-title" id="module-filter-title">Filtros</h2>
+                <p class="fs-card-subtitle">Encontre módulos por nome, código, produto, contexto ou situação.</p>
+            </div>
+        </div>
+        <form class="fs-card-body fs-filter-form" id="module-filter-form">
+            <label class="fs-form-label" for="module-query">
+                <span>Nome ou código</span>
+                <span class="fs-input-group fs-input-group-subtle">
+                    <span class="fs-input-group-text" aria-hidden="true"><img class="fs-input-group-icon" src="/backoffice/assets/icons/Search-Bar--Streamline-Ultimate.png" alt="" /></span>
+                    <input class="fs-form-control fs-width-800" id="module-query" type="search" placeholder="Nome ou código do módulo" autocomplete="off" />
+                </span>
+            </label>
+            <label class="fs-form-label" for="module-product-filter"><span>Produto</span><select class="fs-form-select fs-width-500" id="module-product-filter"><option value="">Todos os produtos</option></select></label>
+            <label class="fs-form-label" for="module-status-filter"><span>Status</span><select class="fs-form-select fs-width-500" id="module-status-filter"><option value="">Todos os status</option><option value="ativo">Ativos</option><option value="inativo">Inativos</option><option value="rascunho">Rascunhos</option><option value="pausado">Pausados</option><option value="arquivado">Arquivados</option></select></label>
+            <button class="fs-btn fs-btn-outline-primary fs-width-300 fs-form-action" type="submit">Filtrar</button>
+        </form>
+    </section>
+
+    <section class="fs-card fs-card-panel" aria-labelledby="module-list-title">
+        <div class="fs-card-header">
+            <div class="fs-card-header-title">
+                <h2 class="fs-card-title" id="module-list-title">Módulos cadastrados</h2>
+                <p class="fs-card-subtitle">Consulte funcionalidades, preços, publicação e planos vinculados.</p>
+            </div>
+            <span class="fs-card-header-info" id="module-table-summary">0 registros encontrados</span>
+        </div>
+        <div class="fs-card-body fs-u-p-0">
+            <div class="fs-table-responsive fs-datatable" data-fs="datatable" data-fs-page-size="1000">
+                <table class="fs-table fs-table-records fs-table-hover" aria-label="Módulos cadastrados">
+                    <thead><tr><th class="fs-width-600" scope="col">Produto</th><th class="fs-width-600" scope="col">Módulo e funcionalidade</th><th class="fs-width-300" scope="col">Preço mensal</th><th class="fs-width-300" scope="col">Status</th><th class="fs-width-300" scope="col">Publicação</th><th class="fs-width-300" scope="col">Versão</th><th class="fs-width-400" scope="col">Ações</th></tr></thead>
+                    <tbody id="module-list"><tr><td colspan="7">Carregando módulos...</td></tr></tbody>
+                </table>
+                <p data-fs-datatable-empty class="fs-table-empty" hidden>Nenhum módulo encontrado com os filtros informados.</p>
+                <p data-fs-datatable-loading class="fs-table-empty" hidden>Carregando módulos...</p>
+                <div data-fs-datatable-error class="fs-alert fs-alert-danger" hidden><span data-fs-datatable-error-message></span></div>
+            </div>
+        </div>
+        <div class="fs-card-footer fs-u-d-flex fs-u-flex-wrap fs-u-align-items-center fs-u-justify-content-between fs-u-gap-3">
+            <span class="fs-u-fs-sm fs-u-color-secondary" id="module-table-footer-summary">Mostrando página 1 de 1 com 0 registros, de um total de 1 páginas.</span>
+            <nav id="module-pagination" aria-label="Paginação de módulos"></nav>
+        </div>
+    </section>
+
+    <button id="module-destructive-trigger" type="button" data-fs="modal" data-fs-target="#module-destructive-dialog" hidden></button>
+    <div id="module-destructive-dialog" class="fs-modal fs-confirmation-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="module-dialog-title">
+        <div class="fs-modal-dialog"><div class="fs-modal-content">
+            <div class="fs-modal-header"><div class="fs-confirmation-dialog-heading"><span class="fs-confirmation-dialog-kicker">CATÁLOGO</span><h2 class="fs-modal-title" id="module-dialog-title">Confirmar ação</h2><p class="fs-confirmation-dialog-description" id="module-dialog-description">Informe o motivo para registrar esta ação.</p></div><button class="fs-btn-close" type="button" data-fs-dismiss="modal" aria-label="Fechar"></button></div>
+            <form class="fs-form fs-confirmation-dialog-form" id="module-destructive-form"><div class="fs-modal-body fs-confirmation-dialog-body"><fieldset class="release-choice" id="module-release-choice" hidden><legend>Tipo de atualização</legend><label><input type="radio" name="release_type" value="minor" checked><span><strong>Minor</strong><small>Compatível; por exemplo, 1.00 → 1.01.</small></span></label><label><input type="radio" name="release_type" value="major"><span><strong>Major</strong><small>Incompatível; por exemplo, 1.01 → 2.0. Pode exigir adaptação.</small></span></label></fieldset><label class="fs-form-label fs-confirmation-dialog-field" for="module-dialog-reason"><span>Motivo obrigatório</span><select class="fs-form-select" id="module-dialog-reason" name="reason" required><option value="">Selecione um motivo</option><option>Módulo duplicado ou cadastrado incorretamente.</option><option>Módulo substituído por outra funcionalidade.</option><option>Módulo não faz mais parte do produto.</option><option>Encerramento da oferta comercial do módulo.</option><option>Outro motivo administrativo.</option></select></label></div><div class="fs-modal-footer"><button class="fs-btn fs-btn-outline-primary fs-width-300" type="button" data-fs-dismiss="modal">Cancelar</button><button class="fs-btn fs-btn-danger fs-width-400" type="submit">Confirmar</button></div></form>
+        </div></div>
+    </div>
+
+    <aside class="fs-offcanvas fs-offcanvas-end backoffice-records-drawer" id="module-drawer" aria-labelledby="module-drawer-title" tabindex="-1">
+        <div class="fs-offcanvas-header">
+            <div class="fs-u-d-flex fs-u-flex-column fs-u-gap-1">
+                <span class="fs-u-fs-xs fs-u-color-secondary" id="module-drawer-kicker">CATÁLOGO</span>
+                <h2 class="fs-offcanvas-title" id="module-drawer-title">Novo módulo</h2>
+                <p class="fs-u-m-0 fs-u-fs-sm fs-u-color-secondary" id="module-drawer-description">Cadastre um componente comercial e suas funcionalidades.</p>
+            </div>
+            <button class="fs-btn-close" id="module-drawer-close" type="button" data-fs-dismiss="offcanvas" aria-label="Fechar painel"></button>
+        </div>
+
+        <form class="fs-offcanvas-body fs-form" id="module-form" novalidate>
+            <section class="fs-card fs-card-panel" aria-labelledby="module-main-data-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="module-main-data-title">Dados principais</h3><p class="fs-card-subtitle">O código público, status inicial, ordem e destaque são definidos automaticamente.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3">
+                    <div class="fs-form-row fs-u-mb-2">
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-product"><span class="fs-u-ml-2">Produto</span><select class="fs-form-select fs-width-500" id="module-product" name="product_id" aria-describedby="module-product-help" required></select><small class="fs-form-text" id="module-product-help">Produto ao qual o módulo pertence.</small></label></div>
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-name"><span class="fs-u-ml-2">Nome da funcionalidade</span><input class="fs-form-control fs-width-600" id="module-name" name="name" maxlength="120" required /></label></div>
+                    </div>
+                    <div class="fs-form-row fs-u-mb-2">
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-code-technical"><span class="fs-u-ml-2">Família técnica</span><select class="fs-form-select fs-width-500" id="module-code-technical" name="module_code" required></select></label><div id="module-code-custom-wrap" hidden><input class="fs-form-control fs-width-600 fs-u-mt-2" id="module-code-custom" name="module_code_custom_name" maxlength="120" placeholder="Nome da nova família técnica" /></div></div>
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-segments"><span class="fs-u-ml-2">Segmentos</span><select class="fs-form-select fs-width-500" id="module-segments" name="segments[]" multiple required size="1"></select></label></div>
+                    </div>
+                    <div class="fs-form-row fs-u-mb-2">
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-context"><span class="fs-u-ml-2">Contexto</span><select class="fs-form-select fs-width-500" id="module-context" name="context_code"><option value="">Selecione um contexto</option></select></label></div>
+                        <div class="fs-form-col" id="module-edit-controls" hidden><label class="fs-form-label fs-u-mt-3" for="module-order"><span class="fs-u-ml-2">Ordem de exibição</span><select class="fs-form-select fs-width-300" id="module-order" name="display_order" disabled></select></label><label class="fs-form-label fs-u-mt-3" for="module-featured"><span class="fs-u-ml-2">Destaque</span><select class="fs-form-select fs-width-300" id="module-featured" name="featured"><option value="0">Não</option><option value="1">Sim</option></select></label></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="fs-card fs-card-panel" aria-labelledby="module-content-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="module-content-title">Conteúdo comercial e técnico</h3><p class="fs-card-subtitle">Use descrições que possam ser aproveitadas no catálogo publicado.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3">
+                    <div class="fs-form-row fs-u-mb-2">
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-price"><span class="fs-u-ml-2">Preço mensal</span><span class="fs-input-group"><span class="fs-input-group-text" aria-hidden="true">R$</span><input class="fs-form-control fs-width-400" id="module-price" name="monthly_price" type="text" inputmode="decimal" autocomplete="off" data-currency-input required /></span></label></div>
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-price-estimate"><span class="fs-u-ml-2">Preço estimado</span><select class="fs-form-select fs-width-300" id="module-price-estimate" name="price_is_estimate"><option value="0">Não</option><option value="1">Sim</option></select></label></div>
+                    </div>
+                    <label class="fs-form-label fs-u-mt-3" for="module-technical-description"><span class="fs-u-ml-2">Descrição técnica</span><textarea class="fs-form-control fs-width-600" id="module-technical-description" name="technical_description" maxlength="2000"></textarea></label>
+                    <label class="fs-form-label fs-u-mt-3" for="module-commercial-content"><span class="fs-u-ml-2">Conteúdo comercial</span><textarea class="fs-form-control fs-width-600" id="module-commercial-content" name="commercial_content" maxlength="20000"></textarea></label>
+                </div>
+            </section>
+
+            <section class="fs-card fs-card-panel" aria-labelledby="module-rules-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="module-rules-title">Funcionalidades e regras</h3><p class="fs-card-subtitle">Selecione opções válidas para a família e o produto.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3">
+                    <label class="fs-form-label fs-u-mt-3" for="module-capabilities"><span class="fs-u-ml-2">Funcionalidades oferecidas</span><select class="fs-form-select fs-width-600" id="module-capabilities" name="capability_codes[]" multiple size="1"></select></label>
+                    <div id="module-capabilities-custom-wrap" hidden><input class="fs-form-control fs-width-600 fs-u-mt-2" id="module-capabilities-custom" placeholder="Outra funcionalidade (pressione Enter)" /></div>
+                    <div class="fs-form-row fs-u-mb-2">
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-dependencies"><span class="fs-u-ml-2">Dependências</span><select class="fs-form-select fs-width-500" id="module-dependencies" name="dependency_ids[]" multiple size="1"></select></label></div>
+                        <div class="fs-form-col"><label class="fs-form-label fs-u-mt-3" for="module-incompatibilities"><span class="fs-u-ml-2">Incompatibilidades</span><select class="fs-form-select fs-width-500" id="module-incompatibilities" name="incompatibility_ids[]" multiple size="1"></select></label></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="fs-card fs-card-panel" aria-labelledby="module-personalizations-section-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="module-personalizations-section-title">Personalizações e limites</h3><p class="fs-card-subtitle">Capacidade e uso são personalizações independentes, com faixas e acréscimo mensal.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3"><button class="fs-btn fs-btn-outline-primary fs-width-400" id="module-personalizations-open" type="button" data-fs-target="#module-personalizations-drawer">Configurar personalizações</button><div id="module-personalizations-summary" class="fs-u-mt-2 fs-u-color-secondary">Nenhuma personalização configurada.</div></div>
+            </section>
+
+            <div class="fs-offcanvas-footer"><button class="fs-btn fs-btn-outline-primary fs-width-300" id="module-form-cancel" type="button">Cancelar</button><button class="fs-btn fs-btn-primary fs-width-400" id="module-form-submit" type="submit">Cadastrar módulo</button></div>
+        </form>
+
+        <section class="fs-offcanvas-body fs-u-d-flex fs-u-flex-column fs-u-gap-4 backoffice-records-view-panel" id="module-view-panel" aria-label="Detalhes do módulo" hidden></section>
+
+        <aside class="fs-offcanvas fs-offcanvas-end backoffice-records-drawer" data-backoffice-overlay="personalizations" data-fs-portal="false" id="module-personalizations-drawer" aria-labelledby="module-personalizations-title" tabindex="-1">
+            <div class="fs-offcanvas-header"><div class="fs-u-d-flex fs-u-flex-column fs-u-gap-1"><span class="fs-u-fs-xs fs-u-color-secondary">CATÁLOGO</span><h2 class="fs-offcanvas-title" id="module-personalizations-title">Personalizações</h2><p class="fs-u-m-0 fs-u-fs-sm fs-u-color-secondary">Defina tipos, obrigatoriedade e faixas de preço.</p></div><button class="fs-btn-close" id="module-personalizations-close" type="button" data-fs-dismiss="offcanvas" aria-label="Fechar painel"></button></div>
+            <div class="fs-offcanvas-body fs-form"><div id="personalizations-list"></div><div class="fs-offcanvas-footer"><button class="fs-btn fs-btn-outline-primary fs-width-400" id="personalization-add" type="button">Adicionar personalização</button><button class="fs-btn fs-btn-primary fs-width-400" id="personalizations-save" type="button">Concluir</button></div></div>
+        </aside>
+    </aside>
+</main>

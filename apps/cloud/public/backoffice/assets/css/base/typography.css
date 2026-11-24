@@ -1,0 +1,181 @@
+/* FONTS */
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Bebas+Neue&family=Outfit:wght@100..900&family=Syne+Mono&display=swap");
+
+body {
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+}
+
+/* DISPLAY TEXT */
+.text-display-1 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-display-1);
+    line-height: var(--line-height-display-1);
+    text-transform: uppercase;
+}
+.text-display-2 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-display-2);
+    line-height: var(--line-height-display-2);
+    text-transform: uppercase;
+}
+.text-display-3 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-display-3);
+    line-height: var(--line-height-display-3);
+    text-transform: uppercase;
+}
+.text-display-4 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-display-4);
+    line-height: var(--line-height-display-4);
+    text-transform: uppercase;
+}
+.text-display-5 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-display-5);
+    line-height: var(--line-height-display-5);
+    text-transform: uppercase;
+}
+.text-display-6 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-display-6);
+    line-height: var(--line-height-display-6);
+    text-transform: uppercase;
+}
+
+/* HEADINGS */
+h1,
+.text-heading-1 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-heading-1);
+    line-height: var(--line-height-heading);
+}
+h2,
+.text-heading-2 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-heading-2);
+    line-height: var(--line-height-heading);
+}
+h3,
+.text-heading-3 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-heading-3);
+    line-height: var(--line-height-heading);
+}
+h4,
+.text-heading-4 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-heading-4);
+    line-height: var(--line-height-heading);
+}
+h5,
+.text-heading-5 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-heading-5);
+    line-height: var(--line-height-heading);
+}
+h6,
+.text-heading-6 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-heading-6);
+    line-height: var(--line-height-heading);
+}
+
+/* BODY TEXT */
+.text-body {
+    font-family: var(--font-body);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+}
+
+/* SUBTITLES */
+.text-subtitle {
+    font-family: var(--font-body);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-subtitle);
+    line-height: var(--line-height-body);
+}
+.text-subtitle-sm {
+    font-family: var(--font-body);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-subtitle-sm);
+    line-height: var(--line-height-body);
+}
+
+/* CAPTIONS */
+.text-caption {
+    font-family: var(--font-body);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-caption);
+    line-height: var(--line-height-caption);
+}
+.text-caption-sm {
+    font-family: var(--font-body);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-caption-sm);
+    line-height: var(--line-height-caption);
+}
+.text-overline {
+    font-family: var(--font-ui);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-overline);
+    line-height: var(--line-height-overline);
+    text-transform: uppercase;
+}
+
+/* ALIGNMENT */
+.fs-u-text-start {
+    text-align: left;
+}
+.fs-u-text-center {
+    text-align: center;
+}
+.fs-u-text-end {
+    text-align: right;
+}
+
+/* TRANSFORM */
+.fs-u-text-uppercase {
+    text-transform: uppercase;
+}
+.fs-u-text-lowercase {
+    text-transform: lowercase;
+}
+.fs-u-text-capitalize {
+    text-transform: capitalize;
+}
+
+/* COLOR */
+.fs-u-color-primary {
+    color: var(--text-color-primary, var(--role-color-400, var(--color-blue-400)));
+}
+.fs-u-color-secondary {
+    color: var(--text-color-muted, var(--theme-text-muted, var(--color-gray-700)));
+}
+.fs-u-color-success {
+    color: var(--text-color-success, var(--color-green-700));
+}
+.fs-u-color-danger {
+    color: var(--text-color-danger, var(--color-red-600));
+}
+.fs-u-color-warning {
+    color: var(--text-color-warning, var(--color-yellow-700));
+}
+.fs-u-color-info {
+    color: var(--text-color-info, var(--color-blue-700));
+}

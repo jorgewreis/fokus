@@ -1,0 +1,14 @@
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+    testDir: './tests/browser',
+    testIgnore: '**/security-homologation.spec.mjs',
+    timeout: 30_000,
+    workers: process.env.CI ? 1 : undefined,
+    retries: process.env.CI ? 2 : 0,
+    expect: { timeout: 10_000 },
+    reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
+    snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}{ext}',
+    use: { baseURL: 'http://127.0.0.1:4177', colorScheme: 'light', locale: 'pt-BR', timezoneId: 'America/Bahia' },
+    webServer: { command: 'node tools/serve-backoffice-visual.mjs', url: 'http://127.0.0.1:4177/backoffice/', reuseExistingServer: !process.env.CI },
+});
