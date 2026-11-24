@@ -11,6 +11,8 @@ from unittest.mock import patch
 sys.dont_write_bytecode = True
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repository_layout import repository_root, workflow_path  # noqa: E402
 spec = importlib.util.spec_from_file_location('guard', ROOT / 'tools/ci/classify-deployment.py')
 guard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(guard)
@@ -252,10 +254,15 @@ class AdoptionLifecycle(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(prefix='guard-adoption-')
         self.root = Path(self.temp.name) / 'repo'
         self.previous = Path.cwd()
-        self.fixture_tree = subprocess.check_output(['git', 'write-tree'], cwd=ROOT).decode().strip()
+        # Monorepo (REI-315): the synthetic fixture keeps the app at the Git root,
+        # as in ORIGINAL_MAIN, so audit only the app subtree of the index.
+        repository = repository_root(ROOT)
+        prefix = ROOT.resolve().relative_to(repository).as_posix()
+        write_tree = ['git', 'write-tree'] + ([f'--prefix={prefix}/'] if prefix != '.' else [])
+        self.fixture_tree = subprocess.check_output(write_tree, cwd=repository).decode().strip()
         subprocess.run([*FIXTURE_GIT, 'clone', '--shared', '--no-checkout',
                         *[item for setting in FIXTURE_GIT_CONFIG for item in ('-c', setting)],
-                        str(ROOT), str(self.root)],
+                        str(repository), str(self.root)],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         os.chdir(self.root)
         configure_disposable_git(self.root)
@@ -388,6 +395,111 @@ class AdoptionLifecycle(unittest.TestCase):
         executable = self.change('tools/ci/classify-deployment.py', '')
         with self.assertRaises(ValueError):
             guard.audit_digest(executable)
+
+
+class MonorepoLayout(unittest.TestCase):
+    """REI-315: classifier run from apps/cloud inside the jorgewreis/fokus monorepo."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix='guard-monorepo-')
+        self.root = Path(self.temp.name)
+        self.previous = Path.cwd()
+        self.app = self.root / 'apps/cloud'
+        os.chdir(self.root)
+        self.git('init', '-q')
+        configure_disposable_git(self.root)
+        self.git('config', 'user.email', 'synthetic@example.invalid')
+        self.git('config', 'user.name', 'Synthetic monorepo test')
+        self.write('apps/cloud/app/code.php', '<?php // synthetic')
+        self.write('apps/cloud/docs/engineering/base.md', '# Knowledge')
+        self.write('apps/cloud/.agents/skills/engineering-research/SKILL.md', '# Skill')
+        self.write('packages/styles/package.json', '{}')
+        self.write('docs/engineering/root.md', '# Root knowledge is not Cloud knowledge')
+        self.write('.github/workflows/cloud-deploy.yml', 'name: synthetic')
+        self.base = self.commit()
+        os.chdir(self.app)
+        self.audit_patch = patch.object(guard, 'AUDIT_DIGEST', guard.audit_digest(self.base))
+        self.audit_patch.start()
+
+    def tearDown(self):
+        self.audit_patch.stop()
+        os.chdir(self.previous)
+        self.temp.cleanup()
+
+    def git(self, *args):
+        return subprocess.check_output([*FIXTURE_GIT, *args], stderr=subprocess.PIPE).decode().strip()
+
+    def write(self, path, text='# Synthetic'):
+        target = self.root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text)
+
+    def commit(self):
+        self.git('add', '-A')
+        self.git('commit', '-qm', 'synthetic fixture')
+        return self.git('rev-parse', 'HEAD')
+
+    def classify(self):
+        return guard.classify('push', {'before': self.base, 'after': self.commit()})[0]
+
+    def test_prefix(self):
+        self.assertEqual(guard.app_prefix(), 'apps/cloud/')
+        self.assertEqual(guard.app_path('apps/cloud/docs/engineering/a.md', 'apps/cloud/'), 'docs/engineering/a.md')
+        self.assertIsNone(guard.app_path('docs/engineering/a.md', 'apps/cloud/'))
+        self.assertEqual(guard.app_path('docs/engineering/a.md', ''), 'docs/engineering/a.md')
+
+    def test_app_knowledge_candidate(self):
+        self.write('apps/cloud/docs/engineering/new.md')
+        self.write('apps/cloud/.agents/skills/engineering-research/references/new.md')
+        self.assertTrue(self.classify())
+
+    def test_paths_outside_the_app_never_qualify(self):
+        for path in ('docs/engineering/root.md', 'packages/styles/package.json',
+                     'apps/law/docs/engineering/a.md', '.github/workflows/styles-ci.yml'):
+            with self.subTest(path=path):
+                self.git('checkout', '-q', '--detach', self.base)
+                self.write(path, '# changed')
+                self.assertFalse(self.classify())
+
+    def test_application_change(self):
+        self.write('apps/cloud/app/code.php', 'changed')
+        self.assertFalse(self.classify())
+
+    def test_repository_ci_is_audited(self):
+        before = guard.audit_digest(self.base)
+        self.write('.github/workflows/cloud-deploy.yml', 'name: changed')
+        changed = self.commit()
+        self.assertNotEqual(guard.audit_digest(changed), before)
+        self.write('apps/cloud/docs/engineering/later.md')
+        self.assertFalse(guard.classify('push', {'before': changed, 'after': self.commit()})[0])
+
+    def test_other_packages_do_not_change_the_cloud_digest(self):
+        before = guard.audit_digest(self.base)
+        self.write('packages/styles/package.json', '{"changed": true}')
+        self.write('docs/engineering/root.md', '# changed')
+        self.assertEqual(guard.audit_digest(self.commit()), before)
+
+    def test_digest_matches_the_legacy_root_layout_for_the_same_app(self):
+        legacy_temp = tempfile.TemporaryDirectory(prefix='guard-legacy-')
+        self.addCleanup(legacy_temp.cleanup)
+        legacy = Path(legacy_temp.name)
+        subprocess.run([*FIXTURE_GIT, 'init', '-q'], cwd=legacy, check=True)
+        configure_disposable_git(legacy)
+        for path in ('app/code.php', 'docs/engineering/base.md', '.agents/skills/engineering-research/SKILL.md'):
+            target = legacy / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text((self.app / path).read_text())
+        subprocess.run([*FIXTURE_GIT, 'add', '-A'], cwd=legacy, check=True)
+        tree = subprocess.check_output([*FIXTURE_GIT, 'write-tree'], cwd=legacy).decode().strip()
+        app_tree = self.git('rev-parse', self.base + ':apps/cloud')
+        self.assertEqual(tree, app_tree)
+        os.chdir(legacy)
+        legacy_digest = guard.audit_digest(tree)
+        os.chdir(self.app)
+        # Same app bytes; the monorepo digest additionally covers repository CI.
+        self.assertNotEqual(guard.audit_digest(self.base), legacy_digest)
+        (self.root / '.github/workflows/cloud-deploy.yml').unlink()
+        self.assertEqual(guard.audit_digest(self.commit()), legacy_digest)
 
 
 class WorkflowContract(unittest.TestCase):
@@ -585,11 +697,11 @@ class WorkflowContract(unittest.TestCase):
 
     def test_exact_authorized_composition_and_quality_preserved(self):
         import hashlib
-        self.assert_workflow_preserved((ROOT / '.github/workflows/deploy.yml').read_text())
-        self.assertEqual(hashlib.sha256((ROOT / '.github/workflows/application-quality.yml').read_bytes()).hexdigest(), 'fe48de6b6782bafee12bbc8ef64611a3896c8f19b9655b1c4507d96a42851ff9')
+        self.assert_workflow_preserved(workflow_path('deploy.yml').read_text())
+        self.assertEqual(hashlib.sha256(workflow_path('application-quality.yml').read_bytes()).hexdigest(), 'fe48de6b6782bafee12bbc8ef64611a3896c8f19b9655b1c4507d96a42851ff9')
 
     def test_publish_install_discovers_packages_without_shipping_a_runner_database(self):
-        workflow = (ROOT / '.github/workflows/deploy.yml').read_text()
+        workflow = workflow_path('deploy.yml').read_text()
         validate, deploy = workflow.split('  deploy:\n', 1)
         # Validation may create a disposable file in its own checkout. Publication
         # must not: prepare-release.py seals `git archive` plus vendor, and a
@@ -689,7 +801,7 @@ class WorkflowContract(unittest.TestCase):
                     self.assert_workflow_preserved(candidate.replace(before, after, 1))
 
     def test_derived_law_contract_is_required_in_ci(self):
-        workflow = (ROOT / '.github/workflows/immutable-release-tests.yml').read_text()
+        workflow = workflow_path('immutable-release-tests.yml').read_text()
         self.assertIn('python3 tools/releases/test_immutable.py -v', workflow)
         self.assertIn('python3 tools/releases/test_derived_law_contract.py -v', workflow)
         self.assertNotIn('continue-on-error', workflow)
@@ -698,7 +810,7 @@ class WorkflowContract(unittest.TestCase):
 
     def test_fixture_contract_has_no_git_object_or_checkout_depth_dependency(self):
         with patch.object(subprocess, 'check_output', side_effect=AssertionError('No historical Git reads')):
-            self.assert_workflow_preserved((ROOT / '.github/workflows/deploy.yml').read_text())
+            self.assert_workflow_preserved(workflow_path('deploy.yml').read_text())
 
     def test_production_gate_truth_table(self):
         import itertools
@@ -716,7 +828,7 @@ class WorkflowContract(unittest.TestCase):
         # Checkout on a pull request can be shallow. Test the current workflow
         # against an explicit security contract rather than depending on a
         # historical Git object that may not be available in that checkout.
-        current = (ROOT / '.github/workflows/deploy.yml').read_text()
+        current = workflow_path('deploy.yml').read_text()
 
         def section(text, begin, end):
             return text.split(begin, 1)[1].split(end, 1)[0]
@@ -794,7 +906,7 @@ class WorkflowContract(unittest.TestCase):
 
         # The independent application quality workflow must retain its core
         # test and build gates without requiring an unavailable old Git object.
-        quality = (ROOT / '.github/workflows/application-quality.yml').read_text()
+        quality = workflow_path('application-quality.yml').read_text()
         for command in (
             'composer install --no-interaction --prefer-dist',
             'php artisan test',
