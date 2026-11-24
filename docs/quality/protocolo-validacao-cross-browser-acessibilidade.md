@@ -1,7 +1,7 @@
 # Protocolo de validação cross-browser e acessibilidade
 
 **Estado:** protocolo reutilizável; nenhuma execução, conformidade ou compatibilidade é declarada.
-**Fontes:** [PRD canônico](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a), §§8.1 e 9; [REI-205](https://linear.app/reis-developer/issue/REI-205/vara-validar-percurso-sintetico-e-aceite-interno-do-mvp); [REI-221](https://linear.app/reis-developer/issue/REI-221/vara-definir-protocolo-de-validacao-cross-browser-e-acessibilidade).
+**Fontes:** [PRD canônico](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a), §§8.1 e 9; [REI-205](https://linear.app/reis-developer/issue/REI-205); [REI-221](https://linear.app/reis-developer/issue/REI-221).
 
 ## 1. Plataformas exigidas
 
