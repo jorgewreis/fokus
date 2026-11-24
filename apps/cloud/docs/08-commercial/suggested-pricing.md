@@ -1,0 +1,63 @@
+# Catalogo de precos sugeridos
+
+## Regra de arredondamento
+
+Os precos dos planos sugeridos sao derivados da soma dos modulos incluidos e
+devem ser apresentados com uma regra comercial de arredondamento para baixo:
+
+1. calcular o valor bruto do plano;
+2. reduzir para o multiplo de `R$ 5,00` imediatamente inferior;
+3. aplicar final comercial `,90`.
+
+Exemplos:
+
+- `R$ 146,97` -> `R$ 145,00` -> **R$ 144,90**;
+- `R$ 75,60` -> `R$ 75,00` -> **R$ 74,90**.
+
+O arredondamento nunca pode aumentar o valor bruto calculado.
+
+## Precos mensais sugeridos
+
+| Plano | Valor bruto | Multiplo comercial | Preco mensal sugerido |
+| --- | ---: | ---: | ---: |
+| Fokus Law - Advocacia | R$ 97,92 | R$ 95,00 | **R$ 94,90** |
+| Fokus Law - Cartorio Criminal | R$ 106,56 | R$ 105,00 | **R$ 104,90** |
+| Fokus Law - Cartorio Civel | R$ 88,74 | R$ 85,00 | **R$ 84,90** |
+| Fokus Law - Gestao de Audiencias | R$ 53,37 | R$ 50,00 | **R$ 49,90** |
+| Fokus Law - Gestao de Expedientes | R$ 62,01 | R$ 60,00 | **R$ 59,90** |
+| Fokus Lead One - Essencial | R$ 13,23 | R$ 10,00 | **R$ 9,90** |
+| Fokus Lead One - Profissional | R$ 39,87 | R$ 35,00 | **R$ 34,90** |
+| Fokus Lead One - Avancado | R$ 48,78 | R$ 45,00 | **R$ 44,90** |
+| Fokus Lead One - Premium | R$ 57,69 | R$ 55,00 | **R$ 54,90** |
+| Fokus Lead Team - Team Essencial | R$ 75,60 | R$ 75,00 | **R$ 74,90** |
+| Fokus Lead Team - Team Premium | R$ 146,97 | R$ 145,00 | **R$ 144,90** |
+
+## Precos anuais sugeridos
+
+O ciclo anual utiliza o equivalente a dez mensalidades do plano, o que
+representa economia equivalente a duas mensalidades em relacao ao ciclo mensal.
+
+| Plano | Calculo anual | Valor bruto anual | Preco anual sugerido |
+| --- | ---: | ---: | ---: |
+| Fokus Law - Advocacia | R$ 94,90 x 10 | R$ 949,00 | **R$ 949,00** |
+| Fokus Law - Cartorio Criminal | R$ 104,90 x 10 | R$ 1.049,00 | **R$ 1.049,00** |
+| Fokus Law - Cartorio Civel | R$ 84,90 x 10 | R$ 849,00 | **R$ 849,00** |
+| Fokus Law - Gestao de Audiencias | R$ 49,90 x 10 | R$ 499,00 | **R$ 499,00** |
+| Fokus Law - Gestao de Expedientes | R$ 59,90 x 10 | R$ 599,00 | **R$ 599,00** |
+| Fokus Lead One - Essencial | R$ 9,90 x 10 | R$ 99,00 | **R$ 99,00** |
+| Fokus Lead One - Profissional | R$ 34,90 x 10 | R$ 349,00 | **R$ 349,00** |
+| Fokus Lead One - Avancado | R$ 44,90 x 10 | R$ 449,00 | **R$ 449,00** |
+| Fokus Lead One - Premium | R$ 54,90 x 10 | R$ 549,00 | **R$ 549,00** |
+| Fokus Lead Team - Team Essencial | R$ 74,90 x 10 | R$ 749,00 | **R$ 749,00** |
+| Fokus Lead Team - Team Premium | R$ 144,90 x 10 | R$ 1.449,00 | **R$ 1.449,00** |
+
+## Observacao sobre o calculo anual
+
+Os valores anuais devem ser calculados sobre o mensal sugerido, multiplicado
+por dez, com duas casas decimais. A regra precisa ser implementada com uma
+funcao monetaria centralizada no backend. O frontend deve apenas exibir o
+valor retornado pela API.
+
+Antes da publicacao, os valores dos modulos marcados como estimados devem ser
+validados comercialmente. A tabela nao deve liberar planos enquanto a versao
+estiver em `rascunho`.

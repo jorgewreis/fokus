@@ -98,20 +98,37 @@ function destinationFromCalls(calls) {
 }
 
 describe('release publish gate (offline process boundary)', () => {
-  it('connects the release workflow to the tested release path after all existing gates', async () => {
+  it('connects the release workflow to Trusted Publishing without an npm token', async () => {
     const workflow = await readFile(path.resolve(process.cwd(), '../../.github/workflows/styles-release.yml'), 'utf8');
+    const script = await readFile(path.resolve(process.cwd(), 'scripts/publish-package.mjs'), 'utf8');
     expect(workflow).toContain('styles-v*.*.*');
+    expect(workflow).toContain('styles-release.yml');
     expect(workflow).toContain('working-directory: packages/styles');
     expect(workflow).toContain('https://registry.npmjs.org');
-    expect(workflow).toContain('secrets.NPM_TOKEN');
+    expect(workflow).not.toContain('secrets.NPM_TOKEN');
+    expect(workflow).not.toContain('NODE_AUTH_TOKEN');
+    const job = workflow.slice(workflow.indexOf('\njobs:'));
+    expect(job).toContain('id-token: write');
+    expect(job).toContain('contents: read');
+    expect(job).toContain('node-version: 24');
+    expect(job).toContain('npm install -g npm@latest');
+    expect(job).toContain('11.5.1');
+    expect(job).not.toMatch(/^\s*environment:/m);
+    const npmFloor = job.indexOf('npm install -g npm@latest');
     const publishStep = workflow.indexOf('run: node scripts/publish-package-cli.mjs');
-    expect(publishStep).toBeGreaterThan(-1);
+    expect(npmFloor).toBeGreaterThan(-1);
+    expect(publishStep).toBeGreaterThan(npmFloor);
     for (const gate of ['npm run lint', 'npm run build', 'npm test', 'npm run types:check', 'npm run docs:check', 'npm run contrast:check', 'npm run size:check', 'npm run test:visual', 'npm run test:a11y']) {
       expect(workflow.indexOf(gate)).toBeGreaterThan(-1);
       expect(workflow.indexOf(gate)).toBeLessThan(publishStep);
     }
     expect(workflow).not.toContain('npm view');
     expect(workflow).not.toContain('npm publish');
+    expect(script).toContain("'--provenance'");
+    expect(script).toContain("'--access'");
+    expect(script).toContain("'public'");
+    expect(script).toContain('NODE_AUTH_TOKEN');
+    expect(script).toContain('NPM_TOKEN');
   });
 
   it('publishes the single packed tarball only for a confirmed exact-version E404', async () => {
@@ -124,6 +141,8 @@ describe('release publish gate (offline process boundary)', () => {
     expect(calls[2]).toContain('--ignore-scripts');
     expect(calls[2][1]).toMatch(/fokus-styles-2\.8\.0\.tgz$/);
     expect(calls[2]).toContain('--provenance');
+    expect(calls[2]).toContain('--access');
+    expect(calls[2]).toContain('public');
   });
 
 
@@ -365,7 +384,14 @@ describe('release publish gate (offline process boundary)', () => {
     const { parent, cwd, tempRoot } = await fixture();
     const cli = path.join(process.cwd(), 'scripts/publish-package-cli.mjs');
     let nodeExecutable = process.execPath;
-    const childEnv = { ...process.env, GITHUB_REF_TYPE: 'tag', GITHUB_REF_NAME: `styles-v${version}`, RUNNER_TEMP: tempRoot };
+    const childEnv = {
+      ...process.env,
+      GITHUB_REF_TYPE: 'tag',
+      GITHUB_REF_NAME: `styles-v${version}`,
+      RUNNER_TEMP: tempRoot,
+      NODE_AUTH_TOKEN: 'must-not-reach-npm',
+      NPM_TOKEN: 'must-not-reach-npm',
+    };
 
     if (process.platform === 'win32') {
       const isolatedNode = path.join(parent, 'isolated-node');
@@ -453,6 +479,7 @@ describe('release publish gate (offline process boundary)', () => {
       }
       expect(actualCommands, scenario.name).toEqual(scenario.expected);
       expect(invocations[0]?.resolvedFakeNpm, scenario.name).toBe(true);
+      expect(invocations.every((call) => call.tokenForwarded === false), scenario.name).toBe(true);
       if (scenario.expected.includes('publish')) {
         const packedTarball = invocations[0].tarballPath;
         expect(invocations.at(-1).args[1], scenario.name).toBe(packedTarball);
@@ -478,7 +505,13 @@ import path from 'node:path';
 const args = process.argv.slice(2);
 const callsFile = process.env.FAKE_NPM_CALLS;
 if (!callsFile) throw new Error('FAKE_NPM_CALLS is required; refusing to invoke an unspecified npm');
-const entry = { args, resolvedFakeNpm: import.meta.url.includes('npm-cli.js') || process.argv[1].includes('fake-bin') };
+const tokenForwarded = Boolean(process.env.NODE_AUTH_TOKEN || process.env.NPM_TOKEN);
+const entry = { args, resolvedFakeNpm: import.meta.url.includes('npm-cli.js') || process.argv[1].includes('fake-bin'), tokenForwarded };
+if (tokenForwarded) {
+  process.stderr.write('auth token reached npm\\n');
+  appendFileSync(callsFile, JSON.stringify(entry) + '\\n');
+  process.exit(2);
+}
 if (args[0] === 'pack') {
   const destination = args[args.indexOf('--pack-destination') + 1];
   const bytes = Buffer.from('isolated real-CLI fake npm tarball');

@@ -135,14 +135,17 @@ monorepo.
    `git push origin main --tags`.
 6. O push da tag dispara `.github/workflows/styles-release.yml` na raiz do
    monorepo: reroda a suíte em `packages/styles` e publica exclusivamente
-   `fokus-styles` no npm com `--provenance`, usando o secret `NPM_TOKEN`.
+   `fokus-styles` no npm com `npm publish --provenance --access public`.
+   A autenticação é npm Trusted Publishing (OIDC). O job `publish` declara
+   `id-token: write` e `contents: read`, roda em Node 24 e exige npm >= 11.5.1
+   (`npm install -g npm@latest` no workflow). O trusted publisher no npmjs.com
+   é `jorgewreis/fokus` + o arquivo `styles-release.yml`, sem environment.
    Ícones, CLI e React são subpaths do mesmo pacote e seguem a versão da tag.
    Tags `v*.*.*` não disparam esta publicação. A `3.0.0` já foi publicada em
    22/11/2026; não recrie essa versão.
 
-O secret `NPM_TOKEN` precisa existir em `jorgewreis/fokus`
-(Settings → Secrets and variables → Actions). Ele não é herdado do
-repositório antigo.
+A credencial de publicação é o id-token do job, de curta duração. Este
+repositório não usa o secret `NPM_TOKEN` nem a variável `NODE_AUTH_TOKEN`.
 
 ## Reportando bugs e propondo funcionalidades
 

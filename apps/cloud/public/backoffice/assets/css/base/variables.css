@@ -1,0 +1,98 @@
+:root {
+    /* SPACING */
+    --space-0: 0;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-5: 32px;
+    --space-6: 40px;
+
+    /* COMPONENT FOUNDATIONS */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-pill: 999px;
+    --radius-compact: 4px;
+    --radius-control: 6px;
+    --radius-emphasis: 8px;
+    --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06);
+    --shadow-md: 0 10px 25px rgb(15 23 42 / 0.12);
+    --shadow-lg: 0 20px 50px rgb(15 23 42 / 0.20);
+    --z-dropdown: 30;
+    --z-sticky: 100;
+    --z-modal: 1000;
+    --z-toast: 1100;
+    --z-tooltip: 1200;
+
+    /* FORM CONTROLS */
+    --form-control-height: 40px;
+    --form-control-min-height: 40px;
+    --form-control-padding-x: 12px;
+    --form-control-radius: var(--radius-control);
+    --form-control-border: var(--theme-border-alt);
+    --form-control-focus-border: var(--role-color-400);
+    --form-control-focus-ring: var(--role-color-100);
+    --form-control-disabled-opacity: 0.4;
+    --form-control-gap: 8px;
+    --form-feedback-size: 10px;
+    --form-feedback-error-border: var(--role-color-500);
+    --form-feedback-error-background: var(--role-color-050);
+    --form-feedback-error-text: var(--role-color-800);
+    --form-feedback-success-border: var(--color-green-600);
+    --form-feedback-success-background: var(--color-green-050);
+    --form-feedback-success-text: var(--color-green-800);
+    --form-feedback-warning-border: var(--color-yellow-400);
+    --form-feedback-warning-background: var(--color-yellow-100);
+    --form-feedback-warning-text: var(--color-yellow-950);
+
+    /* BREAKPOINTS */
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1200px;
+
+    /* FONT FAMILIES */
+    --font-body: "Google Sans", sans-serif;
+    --font-display: "Bebas Neue", sans-serif;
+    --font-ui: "Google Sans", sans-serif;
+    --font-mono: "Syne Mono", monospace;
+
+    /* FONT WEIGHTS */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* FONT SIZES */
+    --font-size-display-1: 5rem;
+    --font-size-display-2: 4.5rem;
+    --font-size-display-3: 4rem;
+    --font-size-display-4: 3.5rem;
+    --font-size-display-5: 3rem;
+    --font-size-display-6: 2.5rem;
+    --font-size-heading-1: 3rem;
+    --font-size-heading-2: 2rem;
+    --font-size-heading-3: 1.5rem;
+    --font-size-heading-4: 1.125rem;
+    --font-size-heading-5: 1rem;
+    --font-size-heading-6: 0.875rem;
+    --font-size-body: 0.75rem;
+    --font-size-subtitle: 1rem;
+    --font-size-subtitle-sm: 0.8rem;
+    --font-size-caption: 0.7rem;
+    --font-size-caption-sm: 0.5rem;
+    --font-size-overline: 0.6875rem;
+
+    /* LINE HEIGHTS */
+    --line-height-display-1: 4.375rem;
+    --line-height-display-2: 4.0625rem;
+    --line-height-display-3: 3.75rem;
+    --line-height-display-4: 3.4375rem;
+    --line-height-display-5: 2.8125rem;
+    --line-height-display-6: 2.1875rem;
+    --line-height-heading: 1.2;
+    --line-height-body: 1.5;
+    --line-height-caption: 1.35;
+    --line-height-overline: 1.2;
+}

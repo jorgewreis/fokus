@@ -1,7 +1,10 @@
 # Publica o pacote npm `fokus-styles` a partir de packages/styles.
 # Tag monorepo: styles-vX.Y.Z (ex.: styles-v3.0.1), igual a "styles-v" + version
 # de packages/styles/package.json. Tags v*.*.* não disparam este workflow.
-# Exige o secret de repositório NPM_TOKEN em jorgewreis/fokus.
+# Autenticação: npm Trusted Publishing (OIDC). O trusted publisher no npmjs.com
+# é jorgewreis/fokus + este arquivo (styles-release.yml), sem environment.
+# O job usa Node 24, npm >= 11.5.1, id-token e publica com --provenance
+# e --access public. Não há token de longa duração.
 
 name: Styles release
 
@@ -21,15 +24,18 @@ defaults:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           registry-url: "https://registry.npmjs.org"
           cache: npm
           cache-dependency-path: packages/styles/package-lock.json
@@ -44,8 +50,23 @@ jobs:
             exit 1
           fi
 
-      - name: Record toolchain versions
-        run: node --version && npm --version
+      - name: Ensure npm >= 11.5.1 for Trusted Publishing
+        run: |
+          npm install -g npm@latest
+          node --version
+          npm --version
+          NPM_VERSION="$(npm --version)"
+          MAJOR="${NPM_VERSION%%.*}"
+          REST="${NPM_VERSION#*.}"
+          MINOR="${REST%%.*}"
+          PATCH="${REST#*.}"
+          PATCH="${PATCH%%.*}"
+          if [ "$MAJOR" -gt 11 ] || { [ "$MAJOR" -eq 11 ] && { [ "$MINOR" -gt 5 ] || { [ "$MINOR" -eq 5 ] && [ "$PATCH" -ge 1 ]; }; }; }; then
+            echo "npm ${NPM_VERSION} atende ao Trusted Publishing (>= 11.5.1)."
+          else
+            echo "Trusted Publishing exige npm >= 11.5.1; encontrado ${NPM_VERSION}."
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm ci --engine-strict
@@ -82,18 +103,18 @@ jobs:
 
       # O repositório publica exclusivamente o pacote agregado fokus-styles.
       # Cada publish é idempotente, para permitir reruns seguros do workflow.
+      # O script publica o tarball com --provenance e --access public.
+      # A credencial é o id-token do job (Trusted Publishing). Este passo
+      # não define token.
       - name: Publish fokus-styles
         run: node scripts/publish-package-cli.mjs
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # Corte histórico do rename Clarus, já executado no repositório antigo.
-      # Só voltaria a rodar se alguém enviasse a tag styles-v2.0.0.
+      # Trusted Publishing autentica a publicação do pacote; npm deprecate
+      # fica de fora. Sem token, a tag styles-v2.0.0 não repete aquele corte.
       - name: Deprecate legacy Clarus packages
         if: github.ref_name == 'styles-v2.0.0'
         run: |
-          for PACKAGE in clarus-css clarus-icons clarus-cli clarus-react; do
-            npm deprecate "$PACKAGE" "Este pacote foi descontinuado. Migre para fokus-styles: https://www.npmjs.com/package/fokus-styles"
-          done
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "A tag styles-v2.0.0 ja foi processada no repositorio antigo."
+          echo "Trusted Publishing nao cobre npm deprecate e este fluxo nao usa token."
+          exit 1
