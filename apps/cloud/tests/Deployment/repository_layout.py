@@ -8,9 +8,12 @@ originais. Por isso o mesmo código precisa funcionar em dois layouts:
   container da homologação e o próprio fokus-cloud;
 * monorepo (raiz do app == ``<toplevel>/apps/cloud``).
 
-Os workflows ficam inativos em ``apps/cloud/.github/workflows/<nome>.yml`` até a
-Fase 3, quando passam para ``<toplevel>/.github/workflows/cloud-<nome>.yml``.
-``workflow_path`` aceita os dois lugares e prefere o da raiz.
+As fontes revisadas dos workflows ficam inativas em
+``apps/cloud/.github/workflows/<nome>.yml``. Desde a Fase 3,
+``tools/ci/promote-workflows.py`` deriva delas os workflows ativos em
+``<toplevel>/.github/workflows/cloud-<nome>.yml``. ``workflow_path`` aceita os
+dois lugares e prefere o da raiz; ``reviewed_workflow_path`` devolve sempre a
+fonte revisada, usada pelos testes de bytes exatos.
 
 Somente leitura: nenhuma função aqui escreve no checkout nem acessa a rede.
 """
@@ -40,6 +43,11 @@ def workflow_path(name, app_root=APP_ROOT):
         if promoted.is_file():
             return promoted
     return app_root / '.github/workflows' / name
+
+
+def reviewed_workflow_path(name, app_root=APP_ROOT):
+    """Fonte revisada (inativa) do workflow ``name``, em qualquer layout."""
+    return Path(app_root).resolve() / '.github/workflows' / name
 
 
 def source_treeish(commit, repository):

@@ -12,7 +12,7 @@ sys.dont_write_bytecode = True
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from repository_layout import repository_root, workflow_path  # noqa: E402
+from repository_layout import repository_root, reviewed_workflow_path, workflow_path  # noqa: E402
 spec = importlib.util.spec_from_file_location('guard', ROOT / 'tools/ci/classify-deployment.py')
 guard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(guard)
@@ -697,8 +697,11 @@ class WorkflowContract(unittest.TestCase):
 
     def test_exact_authorized_composition_and_quality_preserved(self):
         import hashlib
-        self.assert_workflow_preserved(workflow_path('deploy.yml').read_text())
-        self.assertEqual(hashlib.sha256(workflow_path('application-quality.yml').read_bytes()).hexdigest(), 'fe48de6b6782bafee12bbc8ef64611a3896c8f19b9655b1c4507d96a42851ff9')
+        # Bytes exatos na fonte revisada; a cópia ativa na raiz do monorepo é
+        # derivada por tools/ci/promote-workflows.py e conferida em
+        # test_operational_workflow_promotion.py.
+        self.assert_workflow_preserved(reviewed_workflow_path('deploy.yml').read_text())
+        self.assertEqual(hashlib.sha256(reviewed_workflow_path('application-quality.yml').read_bytes()).hexdigest(), 'fe48de6b6782bafee12bbc8ef64611a3896c8f19b9655b1c4507d96a42851ff9')
 
     def test_publish_install_discovers_packages_without_shipping_a_runner_database(self):
         workflow = workflow_path('deploy.yml').read_text()
@@ -810,7 +813,7 @@ class WorkflowContract(unittest.TestCase):
 
     def test_fixture_contract_has_no_git_object_or_checkout_depth_dependency(self):
         with patch.object(subprocess, 'check_output', side_effect=AssertionError('No historical Git reads')):
-            self.assert_workflow_preserved(workflow_path('deploy.yml').read_text())
+            self.assert_workflow_preserved(reviewed_workflow_path('deploy.yml').read_text())
 
     def test_production_gate_truth_table(self):
         import itertools
