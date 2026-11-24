@@ -1,0 +1,202 @@
+<link data-page-css="vouchers" rel="stylesheet" href="/assets/css/shared/fokus.css?v=20261123-fokus-styles-3-0-0" />
+
+<main class="backoffice-vouchers-page backoffice-records-page container-page fs-container-fluid" aria-labelledby="vouchers-page-title">
+    <header class="fs-page-layout">
+        <div class="fs-page-header-display">
+            <span>Comercial</span>
+            <h1 id="vouchers-page-title">Vouchers</h1>
+            <p>Gerencie benefícios comerciais, validade e utilização dos códigos promocionais.</p>
+        </div>
+        <button class="fs-btn fs-btn-primary fs-width-300" id="voucher-create" type="button" data-fs-target="#voucher-drawer">Novo voucher</button>
+    </header>
+
+    <div class="fs-alert" id="voucher-message" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+    <p id="voucher-mutation-progress" role="status" aria-live="polite" hidden></p>
+
+    <section class="fs-card fs-card-panel" aria-labelledby="voucher-filter-title">
+        <div class="fs-card-header">
+            <div class="fs-card-header-title">
+                <h2 class="fs-card-title" id="voucher-filter-title">Filtros</h2>
+                <p class="fs-card-subtitle">Encontre vouchers por código, campanha, produto, benefício ou situação.</p>
+            </div>
+        </div>
+        <form class="fs-card-body fs-filter-form" id="voucher-filter-form">
+            <label class="fs-form-label" for="voucher-search">
+                <span>Código ou campanha</span>
+                <span class="fs-input-group fs-input-group-subtle">
+                    <span class="fs-input-group-text" aria-hidden="true"><img class="fs-input-group-icon" src="/backoffice/assets/icons/Search-Bar--Streamline-Ultimate.png" alt="" /></span>
+                    <input class="fs-form-control fs-width-600" id="voucher-search" name="q" type="search" placeholder="Buscar voucher" autocomplete="off" />
+                </span>
+            </label>
+            <label class="fs-form-label" for="voucher-product-filter">
+                <span>Produto</span>
+                <select class="fs-form-select fs-width-400" id="voucher-product-filter" name="product_id"><option value="">Todos os produtos</option></select>
+            </label>
+            <label class="fs-form-label" for="voucher-type-filter">
+                <span>Benefício</span>
+                <select class="fs-form-select fs-width-400" id="voucher-type-filter" name="discount_type">
+                    <option value="">Todos os benefícios</option>
+                    <option value="trial_free">Assinatura gratuita</option>
+                    <option value="percentage">Desconto percentual</option>
+                    <option value="fixed">Desconto fixo</option>
+                    <option value="commercial_credit">Crédito comercial</option>
+                </select>
+            </label>
+            <label class="fs-form-label" for="voucher-status-filter">
+                <span>Status</span>
+                <select class="fs-form-select fs-width-400" id="voucher-status-filter" name="status">
+                    <option value="">Todos os status</option>
+                    <option value="ativa">Ativos</option>
+                    <option value="suspensa">Suspensos</option>
+                    <option value="expirada">Expirados</option>
+                    <option value="encerrada">Encerrados</option>
+                </select>
+            </label>
+            <button class="fs-btn fs-btn-outline-primary fs-width-300 fs-form-action" type="submit">Filtrar</button>
+        </form>
+    </section>
+
+    <section class="fs-card fs-card-panel" aria-labelledby="voucher-list-title">
+        <div class="fs-card-header">
+            <div class="fs-card-header-title">
+                <h2 class="fs-card-title" id="voucher-list-title">Vouchers cadastrados</h2>
+                <p class="fs-card-subtitle">Consulte as regras comerciais e o uso de cada código.</p>
+            </div>
+            <span class="fs-card-header-info" id="voucher-table-summary">Carregando vouchers...</span>
+        </div>
+        <div class="fs-card-body fs-u-p-0">
+            <div class="fs-table-responsive fs-datatable" data-fs="datatable" data-fs-page-size="15" aria-busy="true">
+                <table class="fs-table fs-table-records fs-table-hover" aria-label="Vouchers cadastrados">
+                    <thead>
+                        <tr>
+                            <th class="fs-width-500" scope="col">Voucher</th>
+                            <th class="fs-width-500" scope="col">Produto e plano</th>
+                            <th class="fs-width-500" scope="col">Benefício</th>
+                            <th class="fs-width-300" scope="col">Utilização</th>
+                            <th class="fs-width-400" scope="col">Validade</th>
+                            <th class="fs-width-300" scope="col">Status</th>
+                            <th class="fs-width-500" scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voucher-list"><tr><td colspan="7">Carregando vouchers...</td></tr></tbody>
+                </table>
+                <p data-fs-datatable-empty class="fs-table-empty" hidden>Nenhum voucher encontrado com os filtros informados.</p>
+                <p data-fs-datatable-loading class="fs-table-empty">Carregando vouchers...</p>
+                <div data-fs-datatable-error class="fs-alert fs-alert-danger" role="alert" hidden><span data-fs-datatable-error-message></span></div>
+            </div>
+        </div>
+        <div class="fs-card-footer fs-u-d-flex fs-u-flex-wrap fs-u-align-items-center fs-u-justify-content-between fs-u-gap-3">
+            <span class="fs-u-fs-sm fs-u-color-secondary" id="voucher-table-footer-summary">Carregando resultados...</span>
+            <nav id="voucher-pagination" aria-label="Paginação de vouchers"></nav>
+        </div>
+    </section>
+
+    <aside class="fs-offcanvas fs-offcanvas-end backoffice-records-drawer" id="voucher-drawer" aria-labelledby="voucher-drawer-title" tabindex="-1">
+        <div class="fs-offcanvas-header">
+            <div class="fs-u-d-flex fs-u-flex-column fs-u-gap-1">
+                <span class="fs-u-fs-xs fs-u-color-secondary" id="voucher-drawer-kicker">COMERCIAL</span>
+                <h2 class="fs-offcanvas-title" id="voucher-drawer-title">Novo voucher</h2>
+                <p class="fs-u-m-0 fs-u-fs-sm fs-u-color-secondary" id="voucher-drawer-description">Configure a campanha e o benefício comercial.</p>
+            </div>
+            <button class="fs-btn-close" id="voucher-drawer-close" type="button" data-fs-dismiss="offcanvas" aria-label="Fechar painel"></button>
+        </div>
+
+        <form class="fs-offcanvas-body fs-form" id="voucher-form" novalidate>
+            <section class="fs-card fs-card-panel" aria-labelledby="voucher-identification-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="voucher-identification-title">Identificação</h3><p class="fs-card-subtitle">O código pode ser informado ou gerado a partir do nome da campanha.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3 fs-u-d-flex fs-u-flex-column fs-u-gap-2">
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-name"><span class="fs-u-ml-2">Nome da campanha</span><input class="fs-form-control fs-width-600" id="voucher-name" name="name" type="text" maxlength="120" autocomplete="off" required /></label>
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-code"><span class="fs-u-ml-2">Código do voucher</span><input class="fs-form-control fs-width-500 fs-u-text-uppercase" id="voucher-code" name="code" type="text" maxlength="64" autocomplete="off" required aria-describedby="voucher-code-help" /><span class="fs-u-ml-2 fs-u-fs-sm fs-u-color-secondary" id="voucher-code-help">Use apenas letras e números. A unicidade será confirmada pelo servidor.</span></label>
+                </div>
+            </section>
+
+            <section class="fs-card fs-card-panel" aria-labelledby="voucher-eligibility-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="voucher-eligibility-title">Elegibilidade</h3><p class="fs-card-subtitle">Defina o produto e os planos em que o benefício poderá ser usado.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3 fs-u-d-flex fs-u-flex-column fs-u-gap-2">
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-product"><span class="fs-u-ml-2">Produto</span><select class="fs-form-select fs-width-600" id="voucher-product" name="product_id" required><option value="">Carregando produtos...</option></select></label>
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-plan"><span class="fs-u-ml-2">Plano aplicável</span><select class="fs-form-select fs-width-600" id="voucher-plan" name="plan_id" required disabled><option value="">Selecione um produto</option></select></label>
+                </div>
+            </section>
+
+            <section class="fs-card fs-card-panel" aria-labelledby="voucher-benefit-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="voucher-benefit-title">Benefício</h3><p class="fs-card-subtitle">Os valores finais e a elegibilidade são recalculados pela API.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3 fs-u-d-flex fs-u-flex-column fs-u-gap-2">
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-discount-type"><span class="fs-u-ml-2">Tipo de benefício</span><select class="fs-form-select fs-width-600" id="voucher-discount-type" name="discount_type" required><option value="">Selecione um benefício</option><option value="trial_free">Assinatura gratuita</option><option value="percentage">Desconto percentual</option><option value="fixed">Desconto em valor fixo</option><option value="commercial_credit">Crédito na primeira cobrança</option></select></label>
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-duration"><span class="fs-u-ml-2">Duração do benefício</span><select class="fs-form-select fs-width-400" id="voucher-duration" name="benefit_duration" required><option value="">Selecione a duração</option><option value="d7">7 dias</option><option value="m1">1 mês</option><option value="m3">3 meses</option><option value="m6">6 meses</option><option value="a1">1 ano</option></select></label>
+                    <label class="fs-form-label fs-u-mt-3" id="voucher-base-field" for="voucher-base-value"><span class="fs-u-ml-2">Valor-base do benefício</span><span class="fs-input-group"><span class="fs-input-group-text" aria-hidden="true">R$</span><input class="fs-form-control fs-width-400" id="voucher-base-value" name="base_amount" type="text" inputmode="decimal" autocomplete="off" data-currency-input readonly aria-describedby="voucher-base-help" /></span><span class="fs-u-ml-2 fs-u-fs-sm fs-u-color-secondary" id="voucher-base-help">Referência calculada a partir do preço atual do plano e da duração.</span></label>
+                    <label class="fs-form-label fs-u-mt-3" id="voucher-percent-field" for="voucher-discount-percent"><span class="fs-u-ml-2">Desconto percentual</span><span class="fs-input-group"><input class="fs-form-control fs-width-300" id="voucher-discount-percent" name="discount_percent" type="number" min="0.01" max="100" step="0.01" inputmode="decimal" required disabled /><span class="fs-input-group-text">%</span></span></label>
+                    <label class="fs-form-label fs-u-mt-3" id="voucher-amount-field" for="voucher-discount-amount"><span class="fs-u-ml-2" id="voucher-amount-label">Valor do benefício</span><span class="fs-input-group"><span class="fs-input-group-text" aria-hidden="true">R$</span><input class="fs-form-control fs-width-400" id="voucher-discount-amount" name="discount_amount" type="text" inputmode="decimal" autocomplete="off" data-currency-input required disabled /></span></label>
+                    <p class="fs-u-fs-sm fs-u-color-secondary" id="voucher-benefit-help">Selecione o produto, o plano e a duração para consultar o valor-base.</p>
+                </div>
+            </section>
+
+            <section class="fs-card fs-card-panel" aria-labelledby="voucher-limits-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="voucher-limits-title">Validade e limites</h3><p class="fs-card-subtitle">A janela de validade controla o resgate; a duração começa na ativação do benefício.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3 fs-u-d-flex fs-u-flex-column fs-u-gap-2">
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-start-date"><span class="fs-u-ml-2">Início da validade</span><input class="fs-form-control fs-width-400" id="voucher-start-date" name="starts_at" type="date" required /></label>
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-end-date"><span class="fs-u-ml-2">Fim da validade</span><input class="fs-form-control fs-width-400" id="voucher-end-date" name="ends_at" type="date" required /></label>
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-total"><span class="fs-u-ml-2">Limite total de resgates</span><input class="fs-form-control fs-width-300" id="voucher-total" name="redemption_limit" type="number" min="1" step="1" required /></label>
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-company-limit"><span class="fs-u-ml-2">Limite por empresa</span><input class="fs-form-control fs-width-300" id="voucher-company-limit" name="redemption_limit_per_company" type="number" min="1" step="1" value="1" required /></label>
+                </div>
+            </section>
+
+            <section class="fs-card fs-card-panel" aria-labelledby="voucher-campaign-title">
+                <div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="voucher-campaign-title">Contexto interno</h3><p class="fs-card-subtitle">Registre a origem e as observações da campanha para consulta operacional.</p></div></div>
+                <div class="fs-card-body fs-u-mx-2 fs-u-mt-2 fs-u-mb-3 fs-u-d-flex fs-u-flex-column fs-u-gap-2">
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-origin"><span class="fs-u-ml-2">Campanha ou origem</span><input class="fs-form-control fs-width-600" id="voucher-origin" name="origin" type="text" maxlength="120" /></label>
+                    <label class="fs-form-label fs-u-mt-3" for="voucher-notes"><span class="fs-u-ml-2">Observações internas</span><textarea class="fs-form-control fs-width-600" id="voucher-notes" name="notes" maxlength="2000" rows="4"></textarea></label>
+                </div>
+            </section>
+
+            <div class="fs-alert fs-alert-danger" id="voucher-form-error" role="alert" hidden></div>
+            <div class="fs-offcanvas-footer">
+                <button class="fs-btn fs-btn-outline-primary fs-width-300" id="voucher-form-cancel" type="button">Cancelar</button>
+                <button class="fs-btn fs-btn-primary fs-width-400" id="voucher-form-submit" type="submit">Cadastrar voucher</button>
+            </div>
+        </form>
+
+        <div class="fs-offcanvas-body fs-u-d-flex fs-u-flex-column fs-u-gap-3 backoffice-records-view-panel" id="voucher-view-panel" aria-label="Detalhes do voucher" hidden>
+            <div class="fs-alert fs-alert-info" id="voucher-detail-loading" role="status" aria-live="polite" hidden>Carregando detalhes do voucher...</div>
+            <div class="fs-alert fs-alert-danger" id="voucher-detail-error" role="alert" hidden></div>
+            <div id="voucher-detail-sections" class="fs-u-d-flex fs-u-flex-column fs-u-gap-3" hidden>
+                <section class="fs-card" aria-labelledby="voucher-detail-commercial-title">
+                    <div class="fs-card-header"><h3 class="fs-card-title" id="voucher-detail-commercial-title">Dados comerciais</h3></div>
+                    <div class="fs-card-body"><dl class="fs-detail-list" id="voucher-detail-commercial"></dl></div>
+                </section>
+                <section class="fs-card" aria-labelledby="voucher-detail-usage-title">
+                    <div class="fs-card-header"><h3 class="fs-card-title" id="voucher-detail-usage-title">Utilização</h3></div>
+                    <div class="fs-card-body"><dl class="fs-detail-list" id="voucher-detail-usage"></dl></div>
+                </section>
+                <section class="fs-card" aria-labelledby="voucher-detail-redemptions-title">
+                    <div class="fs-card-header"><h3 class="fs-card-title" id="voucher-detail-redemptions-title">Resgates confirmados</h3></div>
+                    <div class="fs-card-body fs-u-d-flex fs-u-flex-column fs-u-gap-2" id="voucher-detail-redemptions"></div>
+                </section>
+                <section class="fs-card" aria-labelledby="voucher-detail-reservations-title">
+                    <div class="fs-card-header"><h3 class="fs-card-title" id="voucher-detail-reservations-title">Reservas de checkout</h3></div>
+                    <div class="fs-card-body fs-u-d-flex fs-u-flex-column fs-u-gap-2" id="voucher-detail-reservations"></div>
+                </section>
+            </div>
+        </div>
+        <div class="fs-offcanvas-footer" id="voucher-view-footer" hidden>
+            <button class="fs-btn fs-btn-outline-primary fs-width-300" type="button" data-fs-dismiss="offcanvas">Fechar</button>
+            <button class="fs-btn fs-btn-primary fs-width-400" id="voucher-view-edit" type="button" hidden>Editar voucher</button>
+        </div>
+    </aside>
+
+    <button id="voucher-action-trigger" type="button" data-fs="modal" data-fs-target="#voucher-action-dialog" aria-label="Confirmar ação sobre voucher" hidden></button>
+    <div class="fs-modal fs-confirmation-dialog" id="voucher-action-dialog" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="voucher-action-title" aria-describedby="voucher-action-description">
+        <div class="fs-modal-dialog"><div class="fs-modal-content">
+            <div class="fs-modal-header">
+                <div class="fs-confirmation-dialog-heading"><span class="fs-confirmation-dialog-kicker">GESTÃO DE VOUCHERS</span><h2 class="fs-modal-title" id="voucher-action-title">Confirmar ação</h2><p class="fs-confirmation-dialog-description" id="voucher-action-description"></p></div>
+                <button class="fs-btn-close" type="button" data-fs-dismiss="modal" aria-label="Fechar confirmação"></button>
+            </div>
+            <form class="fs-form fs-confirmation-dialog-form" id="voucher-action-form" novalidate>
+                <div class="fs-confirmation-dialog-body">
+                    <label class="fs-confirmation-dialog-field" for="voucher-action-reason"><span>Motivo obrigatório</span><textarea class="fs-form-control" id="voucher-action-reason" name="reason" maxlength="1000" required aria-describedby="voucher-action-error"></textarea></label>
+                    <div class="fs-alert fs-alert-danger" id="voucher-action-error" role="alert" hidden></div>
+                </div>
+                <div class="fs-modal-footer"><button class="fs-btn fs-btn-outline-primary fs-width-300" type="button" data-fs-dismiss="modal">Cancelar</button><button class="fs-btn fs-btn-danger fs-width-400" id="voucher-action-submit" type="submit">Confirmar</button></div>
+            </form>
+        </div></div>
+    </div>
+</main>
