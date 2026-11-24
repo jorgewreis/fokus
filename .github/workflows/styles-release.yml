@@ -1,0 +1,120 @@
+# Publica o pacote npm `fokus-styles` a partir de packages/styles.
+# Tag monorepo: styles-vX.Y.Z (ex.: styles-v3.0.1), igual a "styles-v" + version
+# de packages/styles/package.json. Tags v*.*.* não disparam este workflow.
+# Autenticação: npm Trusted Publishing (OIDC). O trusted publisher no npmjs.com
+# é jorgewreis/fokus + este arquivo (styles-release.yml), sem environment.
+# O job usa Node 24, npm >= 11.5.1, id-token e publica com --provenance
+# e --access public. Não há token de longa duração.
+
+name: Styles release
+
+on:
+  push:
+    tags:
+      - "styles-v*.*.*"
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    working-directory: packages/styles
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+          cache-dependency-path: packages/styles/package-lock.json
+
+      - name: Verify tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#styles-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_REF_NAME" != "styles-v${PKG_VERSION}" ] || [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME (versao $TAG_VERSION) nao bate com packages/styles/package.json (versao $PKG_VERSION)."
+            echo "A tag esperada e styles-v${PKG_VERSION}."
+            exit 1
+          fi
+
+      - name: Ensure npm >= 11.5.1 for Trusted Publishing
+        run: |
+          npm install -g npm@latest
+          node --version
+          npm --version
+          NPM_VERSION="$(npm --version)"
+          MAJOR="${NPM_VERSION%%.*}"
+          REST="${NPM_VERSION#*.}"
+          MINOR="${REST%%.*}"
+          PATCH="${REST#*.}"
+          PATCH="${PATCH%%.*}"
+          if [ "$MAJOR" -gt 11 ] || { [ "$MAJOR" -eq 11 ] && { [ "$MINOR" -gt 5 ] || { [ "$MINOR" -eq 5 ] && [ "$PATCH" -ge 1 ]; }; }; }; then
+            echo "npm ${NPM_VERSION} atende ao Trusted Publishing (>= 11.5.1)."
+          else
+            echo "Trusted Publishing exige npm >= 11.5.1; encontrado ${NPM_VERSION}."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci --engine-strict
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Types check
+        run: npm run types:check
+
+      - name: Documentation check
+        run: npm run docs:check
+
+      - name: Contrast check (WCAG AA)
+        run: npm run contrast:check
+
+      - name: Size budgets
+        run: npm run size:check
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Visual tests
+        run: npm run test:visual
+
+      - name: A11y tests (axe)
+        run: npm run test:a11y
+
+      # O repositório publica exclusivamente o pacote agregado fokus-styles.
+      # Cada publish é idempotente, para permitir reruns seguros do workflow.
+      # O script publica o tarball com --provenance e --access public.
+      # A credencial é o id-token do job (Trusted Publishing). Este passo
+      # não define token.
+      - name: Publish fokus-styles
+        run: node scripts/publish-package-cli.mjs
+
+      # Corte histórico do rename Clarus, já executado no repositório antigo.
+      # Trusted Publishing autentica a publicação do pacote; npm deprecate
+      # fica de fora. Sem token, a tag styles-v2.0.0 não repete aquele corte.
+      - name: Deprecate legacy Clarus packages
+        if: github.ref_name == 'styles-v2.0.0'
+        run: |
+          echo "A tag styles-v2.0.0 ja foi processada no repositorio antigo."
+          echo "Trusted Publishing nao cobre npm deprecate e este fluxo nao usa token."
+          exit 1

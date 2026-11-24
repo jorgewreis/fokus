@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Command Palette</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/components.css">
+    <link rel="stylesheet" href="../../dist/css/forms.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <style>
+        .theme-panel {
+            padding: 24px;
+        }
+
+        html[data-theme="dark"] .theme-panel {
+            color: var(--fs-color-text);
+            background-color: var(--fs-color-surface);
+        }
+
+        section {
+            max-width: 320px;
+            margin-bottom: 24px;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+
+    <div class="theme-panel">
+<section>
+            <p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-1">Command Palette — clique ou pressione Ctrl+K / Cmd+K</p>
+            <button type="button" class="fs-btn fs-btn-primary" data-fs="command-palette" data-fs-target="#paleta-claro" data-fs-shortcut="mod+k">
+                Comandos (Ctrl+K)
+            </button>
+
+            <div class="fs-command-palette" id="paleta-claro">
+                <div class="fs-command-palette-dialog">
+                    <input type="text" class="fs-command-palette-input" placeholder="Digite um comando…">
+                    <ul class="fs-command-palette-list">
+                        <li class="fs-dropdown-header">Arquivo</li>
+                        <li class="fs-dropdown-item" data-value="new-file">Novo arquivo</li>
+                        <li class="fs-dropdown-item" data-value="open-file">Abrir arquivo…</li>
+                        <li class="fs-dropdown-header">Ver</li>
+                        <li class="fs-dropdown-item" data-value="toggle-theme">Alternar tema claro/escuro</li>
+                        <li class="fs-dropdown-item" data-value="open-settings">Abrir configurações</li>
+                        <li class="fs-dropdown-item is-disabled" data-value="disabled">Comando indisponível</li>
+                        <li class="fs-dropdown-item is-disabled" data-fs-empty hidden>Nenhum comando encontrado.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    
+
+    <!-- SCRIPTS IMPORT -->
+    <script src="../../dist/js/fokus.js"></script>
+
+</body>
+</html>

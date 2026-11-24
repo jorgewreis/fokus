@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup - Nested Menu</title>
+
+    <!-- STYLES IMPORT -->
+    <link rel="stylesheet" href="../../dist/css/fonts.css">
+    <link rel="stylesheet" href="../../dist/css/components.css">
+    <link rel="stylesheet" href="../../dist/css/helpers.css">
+    <style>
+        .theme-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            min-height: 240px;
+            padding: 24px;
+        }
+
+        html[data-theme="dark"] .theme-panel {
+            color: var(--fs-color-text);
+            background-color: var(--fs-color-surface);
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/example-theme.css">
+    <script src="../assets/example-theme.js"></script>
+</head>
+<body>
+
+    <div class="theme-panel">
+<p class="fs-u-fs-sm fs-u-fw-medium fs-u-mb-0">Submenus recursivos — hover, clique ou setas (→ abre, ← fecha)</p>
+
+        <button type="button" class="fs-btn fs-dropdown-toggle" data-fs="nested-menu" data-fs-target="#menu-claro">Ações</button>
+        <div class="fs-dropdown-menu" id="menu-claro">
+            <a href="#" class="fs-dropdown-item">Novo arquivo</a>
+            <a href="#" class="fs-dropdown-item">Abrir…</a>
+            <div class="fs-dropdown-submenu">
+                <button type="button" class="fs-dropdown-item fs-dropdown-item-submenu">Compartilhar</button>
+                <div class="fs-dropdown-menu">
+                    <a href="#" class="fs-dropdown-item">Copiar link</a>
+                    <a href="#" class="fs-dropdown-item">E-mail</a>
+                    <div class="fs-dropdown-submenu">
+                        <button type="button" class="fs-dropdown-item fs-dropdown-item-submenu">Redes sociais</button>
+                        <div class="fs-dropdown-menu">
+                            <a href="#" class="fs-dropdown-item">Twitter / X</a>
+                            <a href="#" class="fs-dropdown-item">LinkedIn</a>
+                            <a href="#" class="fs-dropdown-item">Facebook</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="fs-dropdown-submenu">
+                <button type="button" class="fs-dropdown-item fs-dropdown-item-submenu">Exportar como</button>
+                <div class="fs-dropdown-menu">
+                    <a href="#" class="fs-dropdown-item">PDF</a>
+                    <a href="#" class="fs-dropdown-item">PNG</a>
+                    <a href="#" class="fs-dropdown-item is-disabled">SVG (em breve)</a>
+                </div>
+            </div>
+            <hr class="fs-dropdown-divider">
+            <a href="#" class="fs-dropdown-item">Excluir</a>
+        </div>
+    </div>
+
+    
+
+    <!-- SCRIPTS IMPORT -->
+    <script src="../../dist/js/fokus.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+{
+  "name": "fokus-styles",
+  "version": "3.0.0",
+  "description": "Fokus Styles is a complete CSS framework with components, utilities, vanilla JavaScript, icons, React wrappers, and a CLI.",
+  "keywords": [
+    "css",
+    "framework",
+    "css-framework",
+    "ui",
+    "ui-components",
+    "frontend",
+    "html",
+    "vanilla-js",
+    "vanilla-javascript",
+    "design-system",
+    "components",
+    "component-library",
+    "css-utilities",
+    "sass",
+    "scss",
+    "react",
+    "icons",
+    "cli",
+    "dark-mode",
+    "theming",
+    "accessibility",
+    "responsive-design",
+    "fokus",
+    "fokus-styles",
+    "fokus-cloud"
+  ],
+  "homepage": "https://styles.fokuscloud.com.br/",
+  "documentation": "https://styles.fokuscloud.com.br/",
+  "bugs": {
+    "url": "https://github.com/jorgewreis/fokus/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jorgewreis/fokus.git",
+    "directory": "packages/styles"
+  },
+  "license": "MIT",
+  "author": "Jorge Reis",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "sideEffects": [
+    "*.css",
+    "dist/**/*.css",
+    "packages/fokus-js/js/*.js",
+    "packages/fokus-react/src/*.js",
+    "packages/fokus-icons/icons/*.js",
+    "dist/js/*.js"
+  ],
+  "main": "dist/css/fokus.css",
+  "style": "dist/css/fokus.css",
+  "types": "packages/fokus-js/js/fokus.d.ts",
+  "unpkg": "dist/css/fokus.min.css",
+  "jsdelivr": "dist/css/fokus.min.css",
+  "exports": {
+    ".": "./dist/css/fokus.css",
+    "./scss": "./scss/fokus.scss",
+    "./scss/*": "./scss/*",
+    "./layout.css": "./dist/css/layout.css",
+    "./forms.css": "./dist/css/forms.css",
+    "./components.css": "./dist/css/components.css",
+    "./helpers.css": "./dist/css/helpers.css",
+    "./helpers-only.css": "./dist/css/fokus-helpers.css",
+    "./core": "./dist/css/fokus-core.css",
+    "./components": "./dist/css/fokus-components.css",
+    "./utilities": "./dist/css/fokus-utilities.css",
+    "./themes": "./dist/css/fokus-dark.css",
+    "./rtl.css": "./dist/css/fokus-rtl.css",
+    "./config": "./packages/fokus-core/scss/settings/_config.scss",
+    "./js/theme": {
+      "types": "./packages/fokus-js/js/theme.d.ts",
+      "default": "./packages/fokus-js/js/theme.js"
+    },
+    "./js/focus-trap": {
+      "types": "./packages/fokus-js/js/focus-trap.d.ts",
+      "default": "./packages/fokus-js/js/focus-trap.js"
+    },
+    "./fonts.css": "./dist/css/fonts.css",
+    "./js": {
+      "types": "./packages/fokus-js/js/fokus.d.ts",
+      "default": "./packages/fokus-js/js/fokus.js"
+    },
+    "./js/*": "./packages/fokus-js/js/*",
+    "./icons": "./packages/fokus-icons/index.js",
+    "./icons/*.js": "./packages/fokus-icons/icons/*.js",
+    "./svg/*": "./packages/fokus-icons/svg/*",
+    "./react": {
+      "types": "./packages/fokus-react/src/index.d.ts",
+      "default": "./packages/fokus-react/src/index.js"
+    },
+    "./cli": "./packages/fokus-cli/lib/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "fokus": "packages/fokus-cli/bin/fokus.mjs"
+  },
+  "files": [
+    "assets/fonts",
+    "dist/css/*.css",
+    "dist/js/*.js",
+    "scss/**/*.scss",
+    "packages/fokus-core/scss",
+    "packages/fokus-components/scss",
+    "packages/fokus-utilities/scss",
+    "packages/fokus-fonts/scss",
+    "packages/fokus-js/js/**/*.js",
+    "packages/fokus-js/js/**/*.d.ts",
+    "packages/fokus-icons/index.js",
+    "packages/fokus-icons/icons/**/*.js",
+    "packages/fokus-icons/svg/**/*.svg",
+    "packages/fokus-icons/LICENSE",
+    "packages/fokus-icons/LICENSE-LUCIDE.txt",
+    "packages/fokus-react/src/**/*.js",
+    "packages/fokus-react/src/**/*.d.ts",
+    "packages/fokus-cli/bin/**/*.mjs",
+    "packages/fokus-cli/lib/**/*.mjs",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": "^22.11.0 || ^24.11.0 || >=26.0.0"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && node scripts/build.mjs",
+    "build:icons": "node scripts/build-icons.mjs",
+    "watch": "node scripts/watch.mjs",
+    "lint:scss": "stylelint \"scss/**/*.scss\" \"packages/*/scss/**/*.scss\"",
+    "lint": "npm run lint:scss",
+    "test": "vitest run",
+    "test:visual": "playwright test tests/visual",
+    "test:visual:update": "playwright test tests/visual --update-snapshots",
+    "test:a11y": "playwright test tests/a11y",
+    "size": "node scripts/size.mjs",
+    "size:check": "node scripts/size.mjs --check",
+    "contrast": "node scripts/contrast.mjs",
+    "contrast:check": "node scripts/contrast.mjs --strict",
+    "docs:check": "node scripts/check-docs.mjs && node scripts/check-runtime-doc-contracts.mjs",
+    "types:check": "tsc --noEmit -p tsconfig.types.json",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "autoprefixer": "^10.5.2",
+    "cssnano": "^8.0.2",
+    "postcss": "^8.5.16",
+    "sass": "^1.101.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1",
+    "chokidar": "^5.0.0",
+    "esbuild": "^0.28.1",
+    "js-yaml": "^4.3.2",
+    "jsdom": "^29.1.1",
+    "lucide-static": "^1.23.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "rimraf": "^6.1.3",
+    "stylelint": "^17.14.0",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

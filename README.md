@@ -2,6 +2,18 @@
 
 Monorepo corporativo planejado como fonte central de código, documentação e páginas do Fokus Cloud, Admin, Law comercial, Lead, Styles e Jarvis. Este checkout ainda contém em [apps/law/](apps/law/) o MVP sintético personalizado do Fokus Law on demand da 1ª Vara Crime de Ilhéus; ele não é o produto Law comercial e sua separação para um repositório externo permanece pendente de confirmar destino, histórico, dependências e reversão.
 
+## Fokus Styles
+
+O [Fokus Styles](packages/styles/README.md) reúne framework, catálogo, documentação, exemplos e testes. O código sob [`packages/styles/`](packages/styles/) mantém sua [licença MIT](packages/styles/LICENSE), separada da licença da raiz. O pacote npm continua `fokus-styles`. Este monorepo é a fonte do código e da publicação.
+
+### Publicar o Fokus Styles
+
+A publicação sai de `packages/styles` pela tag `styles-vX.Y.Z`, em que `X.Y.Z` é a versão de `packages/styles/package.json` (exemplo: `styles-v3.0.1`). O workflow [`.github/workflows/styles-release.yml`](.github/workflows/styles-release.yml) roda a suíte nesse diretório e publica em `https://registry.npmjs.org` por npm Trusted Publishing (OIDC). O job `publish` declara `id-token: write` e `contents: read`, usa Node 24 com npm >= 11.5.1 e executa `npm publish --provenance --access public`. Tags `v*.*.*` não publicam este pacote.
+
+O trusted publisher no npmjs.com é o repositório `jorgewreis/fokus` com o arquivo `styles-release.yml`, sem environment. A credencial é o OIDC de curta duração do job; o repositório não usa secret `NPM_TOKEN` nem `NODE_AUTH_TOKEN`. A 3.0.0 já está no npm desde 22/11/2026 e não deve ser republicada por uma tag nova.
+
+Passo a passo: [packages/styles/CONTRIBUTING.md](packages/styles/CONTRIBUTING.md#processo-de-release).
+
 ## Navegação
 
 - [Plano diretor do portfólio Fokus](docs/portfolio/README.md)
