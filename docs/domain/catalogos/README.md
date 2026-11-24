@@ -8,4 +8,4 @@ O arquivo [cnj-mpm-competencias-2025-04.csv](cnj-mpm-competencias-2025-04.csv) r
 - A tabela é uma referência de vocabulário; não identifica as competências atribuídas à Vara, nem mapeia classes SGT, nem concede acesso. A configuração e os grants exigem as decisões e controles do PRD.
 - Antes de usar em configuração operacional, conferir fonte vigente, política de atualização e tratamento de códigos retirados; não atribuir automaticamente o código `999`.
 
-Rastreamento: [REI-232](https://linear.app/reis-developer/issue/REI-232/vara-definir-competencia-e-escopo-de-acesso-a-processos-sinteticos).
+Rastreamento: [REI-232](https://linear.app/reis-developer/issue/REI-232).

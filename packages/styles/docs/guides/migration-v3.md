@@ -65,7 +65,11 @@ Antes de autorizar publicação, confirme versão livre no registry, CI e smoke
 no SHA final, conteúdo e integridade do tarball e o dist-tag pretendido.
 No monorepo, o push de uma tag `styles-v*.*.*` dispara
 [`.github/workflows/styles-release.yml`](../../../../.github/workflows/styles-release.yml).
-A tag é `styles-v` mais a versão de `packages/styles/package.json`
+Esse workflow publica com npm Trusted Publishing (OIDC): o job `publish` tem
+`id-token: write` e `contents: read`, Node 24, npm >= 11.5.1 e
+`npm publish --provenance --access public`. O trusted publisher no npmjs.com é
+`jorgewreis/fokus` + `styles-release.yml`, sem environment e sem secret
+`NPM_TOKEN`. A tag é `styles-v` mais a versão de `packages/styles/package.json`
 (`styles-v3.0.1` para a versão `3.0.1`). Tags `v*.*.*` não publicam este
 pacote a partir daqui. Não reutilize `v2.7.0` nem a `v3.0.0` já publicada.
 Não altere tags históricas.

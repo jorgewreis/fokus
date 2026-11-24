@@ -1,0 +1,79 @@
+name: Styles showcase QA (no deploy)
+on:
+  pull_request:
+    paths:
+      - 'public/styles/**'
+      - 'public/assets/css/modules/styles-*/**'
+      - 'public/assets/css/modules/styles-*.css'
+      - 'public/assets/css/modules/styles-showcase.css'
+      - 'public/assets/js/styles-*.js'
+      - 'tools/styles-showcase/**'
+      - 'public/portal/assets/fokus-law-select.js'
+      - 'public/portal/assets/law-record-ui.js'
+      - 'public/portal/assets/fokus-law-processes.js'
+      - 'public/portal/assets/fokus-law-shell.js'
+      - 'resources/views/portal/fokus-law.blade.php'
+      - 'public/backoffice/assets/js/modules-page.js'
+      - 'public/backoffice/assets/js/records-drawer.js'
+      - 'public/backoffice/assets/js/backoffice-router.js'
+      - 'public/backoffice/index.html'
+      - 'public/backoffice/pages/modules.html'
+      - 'tests/Frontend/cloud-modules-pagination.test.mjs'
+      - 'tests/Frontend/law-history-pagination.test.mjs'
+      - 'tests/Frontend/law-notifications-label.test.mjs'
+      - 'tools/cache-bust-styles-pages.mjs'
+      - 'routes/web.php'
+      - 'resources/seo/pages.json'
+      - 'tools/generate-fokus-law-assets.mjs'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/styles-showcase-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: styles-showcase-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  static-browser-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Install isolated QA dependencies
+        run: |
+          mkdir -p /tmp/styles-qa
+          npm install --prefix /tmp/styles-qa --ignore-scripts @playwright/test@1.57.0 jsdom@26.1.0 @axe-core/playwright@4.10.2
+          ln -s /tmp/styles-qa/node_modules node_modules
+          ./node_modules/.bin/playwright install --with-deps chromium
+      - name: Static and DOM contracts
+        run: |
+          node --test tools/styles-showcase/deployment.test.mjs
+          node tools/styles-showcase/test-dom.mjs
+          node --test tools/styles-showcase/documentation.test.mjs
+          node --test tools/styles-showcase/visual-coherence.test.mjs
+          node --test tools/styles-showcase/catalog.test.mjs
+          node tools/styles-showcase/catalog.dom.mjs
+          node --test --test-isolation=none tools/styles-showcase/law-select.test.mjs tools/styles-showcase/law-pagination.test.mjs tests/Frontend/law-history-pagination.test.mjs tests/Frontend/cloud-modules-pagination.test.mjs tools/styles-showcase/cloud-datatable.test.mjs tools/styles-showcase/cloud-offcanvas.test.mjs tools/styles-showcase/confirmation-modal.test.mjs tools/styles-showcase/law-select-pattern.test.mjs tools/styles-showcase/law-preferences.test.mjs
+          node --test tests/Frontend/law-notifications-label.test.mjs
+          node --test tools/styles-showcase/law-notifications.test.mjs
+          node tools/sync-seo.mjs --check
+          python tools/styles-showcase/build-examples.py
+          git diff --exit-code -- public/styles/examples/fokus-styles-examples.zip
+      - name: Next catalog browser contracts
+        run: node tools/styles-showcase/catalog.browser.mjs
+      - name: Browser, screenshots and accessibility
+        run: ./node_modules/.bin/playwright test --config tools/styles-showcase/playwright.config.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: styles-showcase-evidence
+          path: |
+            tools/styles-showcase/test-results/
+            tools/styles-showcase/playwright-report/
+            test-results/
+            playwright-report/
+          retention-days: 14

@@ -1,0 +1,98 @@
+# Criterios de aceite da release 0.1
+
+## Aceite funcional
+
+- Backoffice acessivel pelo cartão administrativo da home (`/?acesso=administrativo`) com MFA por e-mail.
+- Conta cliente nao acessa `/backoffice` nem `/api/backoffice`.
+- Conta interna nao autentica no portal do cliente.
+- Superadministrador gerencia usuarios internos, seguranca, publicacao,
+  auditoria completa, override e conciliacao.
+- Administrador comercial cria e edita dados comerciais permitidos, mas nao
+  executa acoes exclusivas de superadministrador.
+- Catalogo publico e checkout usam somente dados publicados, ativos, completos
+  e comercializaveis do backend.
+- Empresas podem ser consultadas e geridas comercialmente sem edicao de dados
+  cadastrais ou pessoais.
+- Assinaturas podem ser pausadas, reativadas, canceladas, alteradas e
+  auditadas conforme regra de billing.
+- Vouchers/cupons funcionam com validade, limite, tipo, elegibilidade e
+  snapshot de resgate.
+- Dashboard exibe indicadores, riscos e alertas com origem clara dos dados.
+
+## Aceite financeiro
+
+- Mercado Pago sandbox cria checkout/preapproval com sucesso.
+- Falha do Mercado Pago nao persiste assinatura nem pagamento.
+- Webhook valido atualiza pagamento e assinatura.
+- Webhook invalido nao altera dados comerciais.
+- Evento duplicado nao duplica pagamento, assinatura, voucher ou auditoria.
+- Divergencia entre dados internos e Mercado Pago cria alerta.
+- Correcao de divergencia exige revisao manual e superadministrador.
+
+## Aceite de auditoria e seguranca
+
+- Toda acao sensivel gera auditoria.
+- Acoes que afetam cliente, cobranca ou disponibilidade publica exigem motivo.
+- Auditoria registra valores antes/depois mascarados quando houver alteracao.
+- Logs, auditoria e comentarios nao armazenam senhas, tokens, codigo MFA, CPF,
+  CNPJ ou payload sensivel completo.
+- Eventos de auditoria possuem retencao de 180 dias.
+- Alertas e comentarios operacionais possuem retencao de 90 dias.
+
+## Aceite tecnico
+
+- Migrations novas rodam em banco limpo.
+- Seeders criam dados minimos de catalogo e superadministrador de homologacao
+  por fluxo seguro.
+- Testes automatizados obrigatorios passam.
+- Interfaces reais nao dependem de dados mockados quando autenticadas.
+- Endpoints retornam erros controlados e mensagens operacionais claras.
+
+## Aceite de homologacao
+
+- O roteiro de [homologacao](homologation-script.md) deve ser executado em
+  ambiente de homologacao.
+- Cada falha deve ser classificada como bloqueante ou nao bloqueante.
+- A release so pode ser marcada como pronta se nao houver falha bloqueante.
+
+## Aceite da release documental 0.0.1
+
+- A [matriz de rastreabilidade](traceability-matrix.md) cobre os oito marcos.
+- A [Definition of Done](definition-of-done.md) separa o pronto documental da
+  implementacao funcional dos marcos seguintes.
+- O [checklist de revisao documental](documentation-review-checklist.md) esta
+  preenchido.
+- As notas da release registram a `0.0.1` como release documental.
+- O commit documental e a tag anotada `v0.0.1` estao sincronizados no remoto.
+
+## Aceite do Marco 2 - 0.0.2
+
+- `platform_admins` permanece separado de `users` e usa guard `platform`.
+- Login interno exige senha e MFA por e-mail, com expiracao, limite de
+  tentativas e reenvio controlado.
+- RBAC bloqueia no backend acoes de seguranca para `administrador_comercial`.
+- Bloqueio temporario e manual seguem as janelas definidas e deixam auditoria.
+- Convite de ativacao nao envia senha; a ultima conta ativa de
+  superadministrador permanece protegida.
+- Mudancas de acesso revogam sessoes e registram before/after mascarados com
+  retencao de 180 dias.
+
+## Aceite do Marco 3 - 0.0.3
+
+- Produtos, funcionalidades e planos sao geridos por endpoints de catalogo do
+  Backoffice.
+- Administrador comercial cria e edita rascunhos, mas nao publica, pausa ou
+  arquiva itens de disponibilidade publica.
+- Superadministrador publica catalogo com motivo, auditoria e snapshot
+  versionado em `catalog_publications`.
+- Publicacao invalida e recusada quando ha plano sem composicao, item
+  arquivado, preco invalido, dependencia ausente ou incompatibilidade.
+- Catalogo publico retorna contrato `0.0.3` e checkout valida a selecao contra
+  a ultima versao publicada.
+## Marco 4 - Vouchers e exclusões
+
+- Voucher é reservado no checkout e só vira resgate após aprovação; falha, cancelamento e expiração liberam a reserva.
+- commercial_credit é limitado à primeira cobrança e o snapshot preserva o contexto completo.
+- Regras comerciais ficam bloqueadas após resgate; pausa, reativação e encerramento permanecem possíveis.
+- Exclusão física sem dependência funciona; dependência retorna 422 explicativo; publicação atual retorna à anterior e histórico não pode ser removido.
+- Formulários exibem validação, erro de API, carregamento e edição limpa.

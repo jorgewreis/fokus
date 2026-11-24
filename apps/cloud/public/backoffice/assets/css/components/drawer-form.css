@@ -1,0 +1,522 @@
+/* Reusable compact drawer anatomy shared by backoffice create/edit panels. */
+.create-drawer {
+    box-sizing: border-box;
+    padding: 26px;
+    background: var(--color-background, #f5ffff);
+}
+
+/* Reusable records-page anatomy shared by Backoffice management pages. */
+.backoffice-records-page { color: #252525; font-family: "Google Sans", sans-serif; }
+
+/* Universal shell contract: dynamically loaded pages must keep natural card
+   height instead of being compressed by the legacy viewport container. */
+.admin-shell-content > #page-content > .container-page,
+.admin-shell-content > #page-content > [data-backoffice-mount] > .container-page {
+    box-sizing: border-box;
+    height: auto;
+    min-height: calc(100vh - 80px);
+    overflow: visible;
+    flex: 0 0 auto;
+}
+.admin-shell-content > #page-content > .container-page > *,
+.admin-shell-content > #page-content > [data-backoffice-mount] > .container-page > * { flex-shrink: 0; }
+
+.backoffice-records-page > .backoffice-page-card { width: calc(100% - 20px); margin: 10px; }
+.backoffice-records-drawer.fs-offcanvas-end,
+body > .backoffice-records-drawer.fs-offcanvas-end { width: 480px; max-width: calc(100vw - 16px); z-index: 2001 !important; }
+.fs-offcanvas-backdrop { z-index: 2000 !important; }
+.backoffice-records-drawer .fs-invalid-feedback { margin: 5px; padding: 2px 10px; }
+.backoffice-records-page .fs-page-layout > .fs-btn-primary { color: var(--fs-color-on-primary); border-color: var(--fs-color-primary); background-color: var(--fs-color-primary); }
+.fs-confirmation-dialog .fs-modal-dialog { width: min(480px, calc(100vw - 32px)); }
+.fs-confirmation-dialog .fs-modal-content { overflow: hidden; }
+.fs-confirmation-dialog .fs-modal-header { align-items: flex-start; gap: 16px; padding: 20px; }
+.fs-confirmation-dialog-heading { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; }
+.fs-confirmation-dialog-kicker { color: var(--color-secondary, #ff6000); font-family: "Bebas Neue", sans-serif; font-size: .875rem; font-weight: 400; letter-spacing: 1.5px; line-height: 1; }
+.fs-confirmation-dialog .fs-modal-title { margin: 4px 0 0; color: var(--color-text, #252525); font-family: "Bebas Neue", sans-serif; font-size: 1.5rem; font-weight: 500; letter-spacing: 1px; line-height: 1.05; }
+.fs-confirmation-dialog-description { margin: 8px 0 0; color: var(--color-muted, #58758a); font: 400 .8rem/1.4 "Google Sans", sans-serif; }
+.fs-confirmation-dialog-form { display: flex; flex-direction: column; min-height: 0; }
+.fs-confirmation-dialog .fs-confirmation-dialog-body { display: flex; flex-direction: column; gap: 12px; padding: 20px; overflow: visible; }
+.fs-confirmation-dialog-field { display: flex; flex-direction: column; gap: 6px; width: 100%; margin: 0; color: var(--color-muted, #58758a); font: 400 .75rem/1.2 "Google Sans", sans-serif; }
+.fs-confirmation-dialog-field .fs-form-select { box-sizing: border-box; flex: 0 0 38px; width: 100%; min-height: 38px; height: 38px; margin: 0; }
+.fs-confirmation-dialog-field .fs-form-text { min-height: 0; margin: 0; padding: 0; }
+.fs-confirmation-dialog .fs-modal-footer { justify-content: flex-end; gap: 10px; padding: 16px 20px; }
+.fs-confirmation-dialog .fs-modal-footer .fs-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 120px; min-height: 38px; padding: 0 16px; }
+.fs-confirmation-dialog .fs-modal-footer .fs-btn-outline-primary { color: var(--fs-alert-primary-text) !important; border: var(--fs-border-width, 1px) solid var(--fs-color-primary) !important; background: transparent !important; }
+.fs-confirmation-dialog .fs-modal-footer .fs-btn-danger { color: var(--fs-color-on-danger) !important; border: var(--fs-border-width, 1px) solid var(--fs-color-danger) !important; background: var(--fs-color-danger) !important; }
+@media (max-width: 520px) { .fs-confirmation-dialog .fs-modal-footer { align-items: flex-start; flex-direction: column-reverse; } .fs-confirmation-dialog .fs-modal-footer .fs-btn { width: auto; max-width: 100%; min-width: 0; } }
+.backoffice-records-page .fs-card-body dl { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.backoffice-records-page .fs-card-body dl > div { display: flex; flex-direction: column; gap: 2px; }
+@media (max-width: 680px) { .backoffice-records-page { padding-bottom: 36px; } }
+
+.create-drawer .painel-header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 0;
+    border: 0;
+}
+
+.create-drawer .painel-header-title,
+.create-drawer .painel-form .form-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.create-drawer .painel-header-section {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    line-height: 1;
+    color: var(--color-secondary, #ff6000);
+}
+
+.create-drawer .painel-header-text {
+    margin: 5px 0 0 -1px;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    line-height: 1.05;
+    color: var(--color-text, #252525);
+}
+
+.create-drawer .painel-header-description,
+.create-drawer .section-description,
+.create-drawer .form-text {
+    font-family: "Google Sans", sans-serif;
+    font-size: .8rem;
+    font-weight: 400;
+    line-height: 1.35;
+    color: var(--color-muted, #58758a);
+}
+
+.create-drawer .painel-header-button {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.create-drawer .drawer-close {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 2px solid var(--color-border, #bed0d3);
+    border-radius: 6px;
+    background: var(--color-background, #f5ffff);
+    color: var(--color-secondary, #ff6000);
+    font: 400 1rem/1 "Google Sans", sans-serif;
+    cursor: pointer;
+}
+
+.create-drawer .drawer-close:hover,
+.create-drawer .drawer-close:focus-visible {
+    border-color: var(--color-secondary, #ff6000);
+    background: var(--color-secondary, #ff6000);
+    color: var(--color-background, #f5ffff);
+}
+
+.create-drawer .painel-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 0;
+    padding: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.create-drawer .painel-form .form-section {
+    justify-content: center;
+    margin: 20px 0 10px;
+}
+
+.create-drawer .painel-form .section-title {
+    margin: 0;
+    font: 600 1rem/1.25 "Google Sans", sans-serif;
+    color: var(--color-text, #252525);
+}
+
+.create-drawer .painel-form .form-line-duo {
+    margin-top: 20px;
+}
+
+.create-drawer .painel-form :is(.form-label, .fs-form-label) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    margin: 0;
+}
+
+.create-drawer .painel-form :is(.form-label, .fs-form-label) > .label {
+    z-index: 1;
+    margin: 0 0 -1px 10px;
+    padding: 2px 5px;
+    font: 400 .725rem/1 "Google Sans", sans-serif;
+    color: var(--color-muted, #58758a);
+    background: var(--color-background, #f5ffff);
+}
+
+.create-drawer .painel-form :is(.input-label, .fs-form-control),
+.create-drawer .painel-form :is(.form-select, .fs-form-select) {
+    box-sizing: border-box;
+    height: 38px;
+    min-height: 38px;
+    margin: 0;
+    padding: 0 15px;
+    border: 1px solid var(--color-border, #bed0d3);
+    border-radius: 6px;
+    background: var(--color-background, #f5ffff);
+    color: var(--color-text, #252525);
+    font: 500 .85rem/1 "Google Sans", sans-serif;
+}
+
+.create-drawer .painel-form :is(.form-select, .fs-form-select) { padding: 0 10px; }
+.create-drawer .painel-form :is(.input-label, .fs-form-control)::placeholder { color: var(--color-muted, #58758a); opacity: .4; }
+.create-drawer .painel-form :is(.input-label, .fs-form-control):disabled,
+.create-drawer .painel-form :is(.form-select, .fs-form-select):disabled { background: var(--color-surface-light, #edf7f7); color: var(--color-muted, #58758a); }
+
+.create-drawer .painel-form .form-line { margin-bottom: 10px; }
+.create-drawer .painel-form .fs-width-400 { width: 180px !important; }
+.create-drawer .painel-form .fs-width-600 { width: 300px !important; }
+
+.create-drawer .painel-form .check-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    margin: 0 0 4px;
+    font: 400 .8rem/1.35 "Google Sans", sans-serif;
+    color: var(--color-text, #252525);
+}
+
+.create-drawer .painel-form .check-field .fs-check-input { margin: 0; }
+.create-drawer .painel-form .form-text { margin: 3px 0 0 3px; }
+
+.create-drawer .painel-form .drawer-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 0;
+    border: 0;
+}
+
+.create-drawer .painel-form .drawer-actions .fs-width-300 { width: 120px !important; }
+.create-drawer .painel-form .drawer-actions .fs-width-400 { width: 180px !important; }
+
+/* Restore the Fokus Styles button tokens inside reusable drawer actions. */
+.create-drawer .painel-form .drawer-actions .fs-btn-primary {
+    color: var(--fs-color-on-primary);
+    border-color: var(--fs-color-primary);
+    background-color: var(--fs-color-primary);
+}
+
+.create-drawer .painel-form .drawer-actions .fs-btn-outline-primary {
+    color: var(--fs-alert-primary-text);
+    border: var(--fs-border-width, 1px) solid var(--fs-color-primary);
+    background-color: transparent;
+}
+
+.create-drawer .painel-form .drawer-actions .fs-btn-outline-primary:hover,
+.create-drawer .painel-form .drawer-actions .fs-btn-outline-primary:active {
+    color: var(--fs-color-on-primary);
+    background-color: var(--fs-color-primary);
+}
+
+@media (max-width: 520px) {
+    .create-drawer { padding: 20px; }
+    .create-drawer .painel-form .fs-width-400,
+    .create-drawer .painel-form .fs-width-600,
+    .create-drawer .painel-form .drawer-actions .fs-width-300,
+    .create-drawer .painel-form .drawer-actions .fs-width-400 { width: auto !important; max-width: 100% !important; }
+    .create-drawer .painel-form .drawer-actions { flex-wrap: wrap; }
+}
+
+/* Shared card/filter/table anatomy used by the companies mockup and page. */
+:is(.admin-company-page, .backoffice-records-page) .card-page,
+.backoffice-records-page .backoffice-page-card {
+    width: calc(100% - 20px);
+    margin: 20px 10px;
+    border: 1px solid #cbcbcb;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px 2px #cbcbcb60;
+    background: #fefefe;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-page .card-header,
+.backoffice-records-page .backoffice-page-card .card-header {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 20px;
+    border-radius: 8px 8px 0 0;
+    background: #efefef;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-page .card-header-title,
+.backoffice-records-page .backoffice-page-card .card-header-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-header-title .header-title-name {
+    margin: 0 0 4px;
+    font: 600 1rem/1.25 "Google Sans", sans-serif;
+    color: #252525;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-header-title .header-title-description,
+:is(.admin-company-page, .backoffice-records-page) .card-header-info {
+    margin: 0;
+    color: #909090;
+    font: 400 .8rem/1.35 "Google Sans", sans-serif;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-page .card-content,
+.backoffice-records-page .backoffice-page-card .card-content {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 20px;
+    border-radius: 0 0 8px 8px;
+    background: #fefefe;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-content.content-filter {
+    padding: 20px;
+    justify-content: flex-end;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-content .form-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    width: auto;
+    margin: 0;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-content .form-label > .label {
+    margin: 0 0 0 10px;
+    padding: 2px 5px;
+    color: #909090;
+    background: #fefefe;
+    font: 400 .725rem/1 "Google Sans", sans-serif;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-content .input-label,
+:is(.admin-company-page, .backoffice-records-page) .card-content .form-select {
+    box-sizing: border-box;
+    height: 38px;
+    min-height: 38px;
+    margin: 0;
+    border: 1px solid #cbcbcb;
+    border-radius: 7px;
+    color: #252525;
+    background: #fefefe;
+    font: 500 .85rem/1 "Google Sans", sans-serif;
+}
+
+.backoffice-records-page .card-content .input-label, .admin-company-page .card-content .input-label { padding: 0 15px; }
+.backoffice-records-page .card-content .form-select, .admin-company-page .card-content .form-select { padding: 0 10px; }
+.backoffice-records-page .card-content .input-label::placeholder, .admin-company-page .card-content .input-label::placeholder { font-weight: 400; opacity: .4; }
+
+:is(.admin-company-page, .backoffice-records-page) .card-content .input-group {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-content .input-group .fs-input-group-text {
+    min-width: 38px;
+    height: 38px;
+    box-sizing: border-box;
+    flex: 0 0 38px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #cbcbcb;
+    border-right: 0;
+    border-radius: 8px 0 0 8px;
+    background: #eeeeee;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-content .input-group .fs-input-group-text img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+:is(.admin-company-page, .backoffice-records-page) .card-content .input-group .input-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Composição universal para prefixos e controles em drawers de registros. */
+.create-drawer .painel-form .fs-input-group {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+}
+
+.create-drawer .painel-form .fs-input-group > .fs-input-group-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: 38px;
+    height: 38px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid var(--color-border, #cbcbcb);
+    border-right: 0;
+    border-radius: 6px 0 0 6px;
+    background: var(--surface-subtle, #eef8f8);
+    color: var(--color-text-secondary, #55717a);
+    font: 500 .75rem/1 "Google Sans", sans-serif;
+    white-space: nowrap;
+}
+
+.create-drawer .painel-form .fs-input-group > .fs-form-control {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    border-radius: 0 6px 6px 0;
+}
+
+.backoffice-records-page .card-content .fs-width-800, .admin-company-page .card-content .fs-width-800 { width: 420px !important; }
+.backoffice-records-page .card-content .fs-width-500, .admin-company-page .card-content .fs-width-500 { width: 240px !important; }
+.backoffice-records-page .card-content .fs-width-300, .admin-company-page .card-content .fs-width-300 { width: 120px !important; }
+
+:is(.admin-company-page, .backoffice-records-page) .fs-table-records.card-table { width: 100%; }
+:is(.admin-company-page, .backoffice-records-page) .fs-table-records .fs-badge-width-80 {
+    box-sizing: border-box;
+    width: 80px;
+    min-height: 22px;
+    padding: 2px 8px;
+    border: 0;
+    border-radius: 4px;
+    font: 600 .7rem/1 "Google Sans", sans-serif;
+}
+
+.create-drawer .painel-form .form-label > .label { margin-bottom: 0; }
+.create-drawer .painel-form .check-field .fs-check-input {
+    position: static;
+    display: block;
+    flex: 0 0 13px;
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    border: 1px solid #58758a;
+    visibility: visible;
+    opacity: 1;
+    appearance: auto;
+    accent-color: #18478f;
+}
+
+.create-drawer .painel-form > .form-section:not(#company-legal-section) > .section-description {
+    margin-bottom: 20px;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-header {
+    padding: 0;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-header .fs-card-title {
+    padding: 10px;
+    font-family: "Google Sans", sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-text, #252525);
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-body {
+    padding: 10px;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-body dl {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+}
+
+.create-drawer .backoffice-records-view-panel {
+    box-sizing: border-box;
+    min-height: 0;
+    gap: 24px;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.create-drawer .backoffice-records-view-panel[hidden] {
+    display: none !important;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card {
+    flex: 0 0 auto;
+    width: 100%;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-body dl > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-body dt,
+.create-drawer .backoffice-records-view-panel .fs-card-body .fs-form-label {
+    margin: 0;
+    color: var(--color-muted, #58758a);
+    font: 400 .725rem/1.35 "Google Sans", sans-serif;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-body dd {
+    margin: 0;
+    color: var(--color-text, #252525);
+    font: 400 .8rem/1.35 "Google Sans", sans-serif;
+    overflow-wrap: anywhere;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-body h4 {
+    margin: 12px 0 4px;
+    color: var(--color-text, #252525);
+    font: 600 .8rem/1.25 "Google Sans", sans-serif;
+}
+
+.create-drawer .backoffice-records-view-panel .fs-card-body h4:first-child { margin-top: 0; }
+.create-drawer .backoffice-records-view-panel .fs-card-body ul { margin: 0 0 8px; padding-inline-start: 18px; }
+.create-drawer .backoffice-records-view-panel .fs-card-body p { margin: 0; }
+.create-drawer .backoffice-records-view-panel .fs-badge { align-self: flex-start; }
+
+.create-drawer .backoffice-records-view-panel .fs-badge {
+    padding: 2px 8px !important;
+}

@@ -36,8 +36,11 @@ Este README é a **visão geral** do projeto. Para aprender a usar cada recurso 
 detalhe, com exemplos completos, consulte a **[documentação completa](docs/README.md)**.
 
 > O código-fonte deste pacote é [`packages/styles`](https://github.com/jorgewreis/fokus/tree/main/packages/styles)
-> no monorepo `jorgewreis/fokus`. A próxima publicação usa a tag `styles-vX.Y.Z`.
-> Consulte o [guia de migração para v3](docs/guides/migration-v3.md).
+> no monorepo `jorgewreis/fokus`. A próxima publicação usa a tag `styles-vX.Y.Z`
+> e o workflow `styles-release.yml`, com npm Trusted Publishing (OIDC): Node 24,
+> npm >= 11.5.1 e `npm publish --provenance --access public`, sem secret de token.
+> Consulte o [guia de migração para v3](docs/guides/migration-v3.md) e o
+> [processo de release](CONTRIBUTING.md#processo-de-release).
 
 ## Compatibilidade Node
 

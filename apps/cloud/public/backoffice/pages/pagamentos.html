@@ -1,0 +1,92 @@
+<link data-page-css="pagamentos" rel="stylesheet" href="/backoffice/assets/css/pages/pagamentos.css?v=20260924-tabs-actions-v1" />
+
+<main class="backoffice-records-page container-page fs-container-fluid" aria-labelledby="billing-page-title">
+    <header class="fs-page-layout">
+        <div class="fs-page-header-display">
+            <span>Financeiro</span>
+            <h1 id="billing-page-title">Pagamentos</h1>
+            <p>Consulte pagamentos, divergências de conciliação e solicitações de reembolso.</p>
+        </div>
+    </header>
+
+    <div id="billing-message" class="fs-alert" role="status" aria-live="polite" hidden></div>
+
+    <nav class="fs-tabs" data-fs="tabs" aria-label="Operações financeiras" id="billing-tabs">
+        <button class="fs-nav-link is-active" type="button" data-fs-target="#billing-payments-panel">Pagamentos</button>
+        <button class="fs-nav-link" type="button" data-fs-target="#billing-reconciliation-panel" id="billing-reconciliation-tab">Conciliação</button>
+        <button class="fs-nav-link" type="button" data-fs-target="#billing-refunds-panel" id="billing-refunds-tab">Reembolsos</button>
+    </nav>
+
+    <section class="fs-u-d-flex fs-u-flex-column fs-u-gap-3" id="billing-payments-panel" aria-labelledby="billing-payments-title">
+        <section class="fs-card fs-card-panel" aria-labelledby="billing-payments-filter-title">
+            <div class="fs-card-header"><div class="fs-card-header-title"><h2 class="fs-card-title" id="billing-payments-filter-title">Filtros</h2><p class="fs-card-subtitle">Busque por empresa, pagamento, assinatura ou período.</p></div></div>
+            <form class="fs-card-body fs-filter-form" id="billing-payments-filter-form">
+                <label class="fs-form-label" for="billing-payments-query"><span>Busca</span><input class="fs-form-control fs-width-700" id="billing-payments-query" name="q" type="search" placeholder="Empresa ou identificador" autocomplete="off" /></label>
+                <label class="fs-form-label" for="billing-payments-status"><span>Status</span><select class="fs-form-select fs-width-500" id="billing-payments-status" name="status"><option value="">Todos os status</option><option value="aguardando_pagamento">Aguardando pagamento</option><option value="aprovado">Aprovado</option><option value="recusado">Recusado</option><option value="cancelado">Cancelado</option><option value="estornado">Estornado</option><option value="em_disputa">Em disputa</option></select></label>
+                <label class="fs-form-label" for="billing-payments-from"><span>Registrado desde</span><input class="fs-form-control fs-width-400" id="billing-payments-from" name="date_from" type="date" /></label>
+                <label class="fs-form-label" for="billing-payments-to"><span>Registrado até</span><input class="fs-form-control fs-width-400" id="billing-payments-to" name="date_to" type="date" /></label>
+                <button class="fs-btn fs-btn-outline-primary fs-width-300 fs-form-action" type="submit">Filtrar</button>
+            </form>
+        </section>
+        <section class="fs-card fs-card-panel" aria-labelledby="billing-payments-title">
+            <div class="fs-card-header"><div class="fs-card-header-title"><h2 class="fs-card-title" id="billing-payments-title">Pagamentos</h2><p class="fs-card-subtitle">Status financeiro normalizado pela aplicação com base no Mercado Pago.</p></div><span class="fs-card-header-info" id="billing-payments-summary">—</span></div>
+            <div class="fs-card-body fs-u-p-0"><div class="fs-table-responsive fs-datatable" id="billing-payments-table" aria-busy="false">
+                <table class="fs-table fs-table-records fs-table-hover" aria-label="Pagamentos"><thead><tr><th class="fs-width-600" scope="col">Empresa</th><th class="fs-width-400" scope="col">Valor</th><th class="fs-width-400" scope="col">Status</th><th class="fs-width-500" scope="col">Período</th><th class="fs-width-300" scope="col">Ações</th></tr></thead><tbody id="billing-payments-list"></tbody></table>
+                <p data-fs-datatable-loading class="fs-table-empty" hidden>Carregando pagamentos...</p><p data-fs-datatable-empty class="fs-table-empty" hidden>Nenhum pagamento encontrado com os filtros informados.</p><div data-fs-datatable-error class="fs-alert fs-alert-danger" role="alert" hidden></div>
+            </div></div>
+            <div class="fs-card-footer fs-u-d-flex fs-u-flex-wrap fs-u-align-items-center fs-u-justify-content-between fs-u-gap-3"><span class="fs-u-fs-sm fs-u-color-secondary" id="billing-payments-page-summary">—</span><nav id="billing-payments-pagination" aria-label="Paginação de pagamentos"></nav></div>
+        </section>
+    </section>
+
+    <section class="fs-u-d-flex fs-u-flex-column fs-u-gap-3" id="billing-reconciliation-panel" aria-labelledby="billing-reconciliation-title" hidden>
+        <section class="fs-card fs-card-panel" aria-labelledby="billing-reconciliation-filter-title">
+            <div class="fs-card-header"><div class="fs-card-header-title"><h2 class="fs-card-title" id="billing-reconciliation-filter-title">Filtros</h2><p class="fs-card-subtitle">Localize divergências por empresa, pagamento, assinatura, situação ou período.</p></div></div>
+            <form class="fs-card-body fs-filter-form" id="billing-reconciliation-filter-form">
+                <label class="fs-form-label" for="billing-reconciliation-query"><span>Busca</span><input class="fs-form-control fs-width-700" id="billing-reconciliation-query" name="q" type="search" placeholder="Empresa ou identificador" autocomplete="off" /></label>
+                <label class="fs-form-label" for="billing-reconciliation-status"><span>Situação</span><select class="fs-form-select fs-width-500" id="billing-reconciliation-status" name="status"><option value="">Todas as situações</option><option value="aberta">Aberta</option><option value="em_revisao">Em revisão</option><option value="corrigida">Corrigida</option><option value="descartada">Descartada</option></select></label>
+                <label class="fs-form-label" for="billing-reconciliation-impact"><span>Impacto</span><select class="fs-form-select fs-width-400" id="billing-reconciliation-impact" name="impact"><option value="">Todos os impactos</option><option value="alto">Alto</option><option value="medio">Médio</option><option value="baixo">Baixo</option></select></label>
+                <label class="fs-form-label" for="billing-reconciliation-from"><span>Aberta desde</span><input class="fs-form-control fs-width-400" id="billing-reconciliation-from" name="date_from" type="date" /></label>
+                <label class="fs-form-label" for="billing-reconciliation-to"><span>Aberta até</span><input class="fs-form-control fs-width-400" id="billing-reconciliation-to" name="date_to" type="date" /></label>
+                <button class="fs-btn fs-btn-outline-primary fs-width-300 fs-form-action" type="submit">Filtrar</button>
+            </form>
+        </section>
+        <section class="fs-card fs-card-panel" aria-labelledby="billing-reconciliation-title">
+            <div class="fs-card-header"><div class="fs-card-header-title"><h2 class="fs-card-title" id="billing-reconciliation-title">Divergências</h2><p class="fs-card-subtitle">A correção é manual, auditada e restrita ao superadministrador.</p></div><span class="fs-card-header-info" id="billing-reconciliation-summary">—</span></div>
+            <div class="fs-card-body fs-u-p-0"><div class="fs-table-responsive fs-datatable" id="billing-reconciliation-table" aria-busy="false">
+                <table class="fs-table fs-table-records fs-table-hover" aria-label="Divergências de conciliação"><thead><tr><th class="fs-width-600" scope="col">Empresa</th><th class="fs-width-400" scope="col">Tipo</th><th class="fs-width-400" scope="col">Status local</th><th class="fs-width-500" scope="col">Mercado Pago</th><th class="fs-width-300" scope="col">Impacto</th><th class="fs-width-300" scope="col">Ações</th></tr></thead><tbody id="billing-reconciliation-list"></tbody></table>
+                <p data-fs-datatable-loading class="fs-table-empty" hidden>Carregando divergências...</p><p data-fs-datatable-empty class="fs-table-empty" hidden>Nenhuma divergência encontrada com os filtros informados.</p><div data-fs-datatable-error class="fs-alert fs-alert-danger" role="alert" hidden></div>
+            </div></div>
+            <div class="fs-card-footer fs-u-d-flex fs-u-flex-wrap fs-u-align-items-center fs-u-justify-content-between fs-u-gap-3"><span class="fs-u-fs-sm fs-u-color-secondary" id="billing-reconciliation-page-summary">—</span><nav id="billing-reconciliation-pagination" aria-label="Paginação de divergências"></nav></div>
+        </section>
+    </section>
+
+    <section class="fs-u-d-flex fs-u-flex-column fs-u-gap-3" id="billing-refunds-panel" aria-labelledby="billing-refunds-title" hidden>
+        <section class="fs-card fs-card-panel" aria-labelledby="billing-refunds-filter-title">
+            <div class="fs-card-header"><div class="fs-card-header-title"><h2 class="fs-card-title" id="billing-refunds-filter-title">Filtros</h2><p class="fs-card-subtitle">Busque por empresa, pagamento, solicitação ou período.</p></div></div>
+            <form class="fs-card-body fs-filter-form" id="billing-refunds-filter-form">
+                <label class="fs-form-label" for="billing-refunds-query"><span>Busca</span><input class="fs-form-control fs-width-700" id="billing-refunds-query" name="q" type="search" placeholder="Empresa ou identificador" autocomplete="off" /></label>
+                <label class="fs-form-label" for="billing-refunds-status"><span>Status</span><select class="fs-form-select fs-width-500" id="billing-refunds-status" name="status"><option value="">Todos os status</option><option value="solicitado">Solicitado</option><option value="aprovado">Aprovado</option><option value="executado">Executado</option><option value="recusado">Recusado</option></select></label>
+                <label class="fs-form-label" for="billing-refunds-from"><span>Solicitado desde</span><input class="fs-form-control fs-width-400" id="billing-refunds-from" name="date_from" type="date" /></label>
+                <label class="fs-form-label" for="billing-refunds-to"><span>Solicitado até</span><input class="fs-form-control fs-width-400" id="billing-refunds-to" name="date_to" type="date" /></label>
+                <button class="fs-btn fs-btn-outline-primary fs-width-300 fs-form-action" type="submit">Filtrar</button>
+            </form>
+        </section>
+        <section class="fs-card fs-card-panel" aria-labelledby="billing-refunds-title">
+            <div class="fs-card-header"><div class="fs-card-header-title"><h2 class="fs-card-title" id="billing-refunds-title">Solicitações de reembolso</h2><p class="fs-card-subtitle">Solicitação, aprovação e execução registradas com auditoria.</p></div><span class="fs-card-header-info" id="billing-refunds-summary">—</span></div>
+            <div class="fs-card-body fs-u-p-0"><div class="fs-table-responsive fs-datatable" id="billing-refunds-table" aria-busy="false">
+                <table class="fs-table fs-table-records fs-table-hover" aria-label="Solicitações de reembolso"><thead><tr><th class="fs-width-600" scope="col">Empresa</th><th class="fs-width-400" scope="col">Pagamento</th><th class="fs-width-400" scope="col">Valor</th><th class="fs-width-500" scope="col">Caso</th><th class="fs-width-300" scope="col">Status</th><th class="fs-width-300" scope="col">Ações</th></tr></thead><tbody id="billing-refunds-list"></tbody></table>
+                <p data-fs-datatable-loading class="fs-table-empty" hidden>Carregando reembolsos...</p><p data-fs-datatable-empty class="fs-table-empty" hidden>Nenhum reembolso encontrado com os filtros informados.</p><div data-fs-datatable-error class="fs-alert fs-alert-danger" role="alert" hidden></div>
+            </div></div>
+            <div class="fs-card-footer fs-u-d-flex fs-u-flex-wrap fs-u-align-items-center fs-u-justify-content-between fs-u-gap-3"><span class="fs-u-fs-sm fs-u-color-secondary" id="billing-refunds-page-summary">—</span><nav id="billing-refunds-pagination" aria-label="Paginação de reembolsos"></nav></div>
+        </section>
+    </section>
+
+    <button id="billing-drawer-trigger" type="button" data-fs="offcanvas" data-fs-target="#billing-drawer" aria-label="Abrir detalhes financeiros" hidden></button>
+    <aside class="fs-offcanvas fs-offcanvas-end backoffice-records-drawer" id="billing-drawer" aria-labelledby="billing-drawer-title" tabindex="-1">
+        <div class="fs-offcanvas-header"><div class="fs-u-d-flex fs-u-flex-column fs-u-gap-1"><span class="fs-u-fs-xs fs-u-color-secondary" id="billing-drawer-kicker">FINANCEIRO</span><h2 class="fs-offcanvas-title" id="billing-drawer-title">Detalhes</h2><p class="fs-u-m-0 fs-u-fs-sm fs-u-color-secondary" id="billing-drawer-description">Consulte os dados financeiros.</p></div><button class="fs-btn-close" id="billing-drawer-close" type="button" data-fs-dismiss="offcanvas" aria-label="Fechar painel"></button></div>
+        <div class="fs-offcanvas-body fs-u-d-flex fs-u-flex-column fs-u-gap-3" id="billing-drawer-body" aria-busy="false"><div class="fs-alert fs-alert-info" id="billing-detail-loading" role="status" aria-live="polite" hidden>Carregando detalhes...</div><div class="fs-alert fs-alert-danger" id="billing-detail-error" role="alert" hidden></div><div id="billing-detail-sections" class="fs-u-d-flex fs-u-flex-column fs-u-gap-3" hidden></div></div>
+    </aside>
+
+    <button id="billing-action-trigger" type="button" data-fs="modal" data-fs-target="#billing-action-modal" aria-label="Confirmar ação financeira" hidden></button>
+    <div class="fs-modal" id="billing-action-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="billing-action-title" aria-describedby="billing-action-description" aria-hidden="true"><div class="fs-modal-dialog fs-modal-sm"><div class="fs-modal-content"><form id="billing-action-form"><div class="fs-modal-header"><h2 class="fs-modal-title" id="billing-action-title">Confirmar ação</h2><button class="fs-btn-close" type="button" data-fs-dismiss="modal" aria-label="Fechar"></button></div><div class="fs-modal-body"><p id="billing-action-description"></p><label class="fs-form-label" for="billing-action-reason"><span>Motivo</span><textarea class="fs-form-control" id="billing-action-reason" name="reason" maxlength="1000" required></textarea></label><div class="fs-alert fs-alert-danger" id="billing-action-error" role="alert" hidden></div></div><div class="fs-modal-footer"><button class="fs-btn fs-btn-outline-primary" type="button" data-fs-dismiss="modal">Voltar</button><button class="fs-btn fs-btn-primary" id="billing-action-submit" type="submit">Confirmar</button></div></form></div></div></div>
+</main>

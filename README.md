@@ -1,6 +1,6 @@
 # Fokus
 
-Monorepo corporativo da Fokus. Este checkout contém o aplicativo Greenfield Fokus Law em [apps/law/](apps/law/).
+Monorepo corporativo da Fokus. Este checkout contém o aplicativo Greenfield Fokus Law em [apps/law/](apps/law/), a plataforma Fokus Cloud em [apps/cloud/](apps/cloud/) e o Fokus Styles em [packages/styles/](packages/styles/).
 
 ## Fokus Styles
 
@@ -8,15 +8,22 @@ O [Fokus Styles](packages/styles/README.md) reúne framework, catálogo, documen
 
 ### Publicar o Fokus Styles
 
-A publicação sai de `packages/styles` pela tag `styles-vX.Y.Z`, em que `X.Y.Z` é a versão de `packages/styles/package.json` (exemplo: `styles-v3.0.1`). O workflow [`.github/workflows/styles-release.yml`](.github/workflows/styles-release.yml) roda a suíte nesse diretório e publica em `https://registry.npmjs.org` com `NPM_TOKEN`. Tags `v*.*.*` não publicam este pacote.
+A publicação sai de `packages/styles` pela tag `styles-vX.Y.Z`, em que `X.Y.Z` é a versão de `packages/styles/package.json` (exemplo: `styles-v3.0.1`). O workflow [`.github/workflows/styles-release.yml`](.github/workflows/styles-release.yml) roda a suíte nesse diretório e publica em `https://registry.npmjs.org` por npm Trusted Publishing (OIDC). O job `publish` declara `id-token: write` e `contents: read`, usa Node 24 com npm >= 11.5.1 e executa `npm publish --provenance --access public`. Tags `v*.*.*` não publicam este pacote.
 
-O repositório `jorgewreis/fokus` precisa do secret de Actions `NPM_TOKEN` (token npm com permissão de publicar `fokus-styles`). Esse secret não vem do repositório antigo `fokus-styles`; ele tem de ser criado em Settings → Secrets and variables → Actions. A 3.0.0 já está no npm desde 22/11/2026 e não deve ser republicada por uma tag nova.
+O trusted publisher no npmjs.com é o repositório `jorgewreis/fokus` com o arquivo `styles-release.yml`, sem environment. A credencial é o OIDC de curta duração do job; o repositório não usa secret `NPM_TOKEN` nem `NODE_AUTH_TOKEN`. A 3.0.0 já está no npm desde 22/11/2026 e não deve ser republicada por uma tag nova.
 
 Passo a passo: [packages/styles/CONTRIBUTING.md](packages/styles/CONTRIBUTING.md#processo-de-release).
+
+## Fokus Cloud
+
+A plataforma [Fokus Cloud](apps/cloud/README.md) (Laravel) mora em [`apps/cloud/`](apps/cloud/). O histórico do antigo repositório `jorgewreis/fokus-cloud` foi importado com os SHAs originais, porque os gates de homologação e deploy dependem deles (REI-315). O código sob `apps/cloud/` segue a [licença proprietária própria](apps/cloud/LICENSE.md).
+
+Até o corte do deploy, a publicação em produção do Cloud continua saindo do `jorgewreis/fokus-cloud`. Neste repositório, os workflows ativos do Cloud ficam em `.github/workflows/cloud-*.yml`, gerados por `apps/cloud/tools/ci/promote-workflows.py` a partir das fontes revisadas em `apps/cloud/.github/workflows/` (que seguem inativas). Os gatilhos automáticos rodam só para mudanças em `apps/cloud/**`; deploy, backup e diagnósticos de produção são apenas manuais e dependem do environment `production`, que só será configurado no corte.
 
 ## Navegação
 
 - [Aplicação Fokus Law](apps/law/)
+- [Plataforma Fokus Cloud](apps/cloud/)
 - [Instalação e execução local](apps/law/README.md)
 - [ADR-0001: arquitetura e fronteiras de ambiente](docs/adr/0001-fokus-law-greenfield-stack-and-boundaries.md)
 - [Dicionário conceitual de Pessoas e Processos](docs/domain/dicionario-dominio.md)
@@ -26,7 +33,7 @@ Passo a passo: [packages/styles/CONTRIBUTING.md](packages/styles/CONTRIBUTING.md
 ## Fontes do produto
 
 - [PRD canônico no Notion](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a): requisitos e decisões atuais.
-- [REI-194 no Linear](https://linear.app/reis-developer/issue/REI-194/vara-implementar-o-percurso-minimo-do-mvp-institucional): percurso do MVP.
-- [REI-195 no Linear](https://linear.app/reis-developer/issue/REI-195/vara-definir-arquitetura-greenfield-e-fronteiras-dos-ambientes): arquitetura e fronteiras de ambiente.
+- [REI-194 no Linear](https://linear.app/reis-developer/issue/REI-194): percurso do MVP.
+- [REI-195 no Linear](https://linear.app/reis-developer/issue/REI-195): arquitetura e fronteiras de ambiente.
 
-Use somente dados sintéticos locais conforme as instruções do aplicativo. Este repositório não autoriza dados institucionais, conexão com produção, homologação ou implantação.
+No [`apps/law/`](apps/law/), use somente dados sintéticos locais conforme as instruções do aplicativo. O `apps/law/` não autoriza dados institucionais, conexão com produção, homologação ou implantação. Essa restrição vale só para o `apps/law/`: o `apps/cloud/` tem pipeline de homologação e produção próprio, descrito na documentação dele.
