@@ -6,6 +6,12 @@ from unittest.mock import patch
 spec=importlib.util.spec_from_file_location('derived',Path(__file__).with_name('derived_assets.py'));d=importlib.util.module_from_spec(spec);spec.loader.exec_module(d)
 SOURCE=Path(os.environ.get('FOKUS_TEST_SOURCE',Path(__file__).resolve().parents[2]))
 
+def clone_source(destination):
+    # Monorepo (REI-315): clone the whole repository and return the app directory.
+    top=Path(subprocess.check_output(['git','-C',str(SOURCE),'rev-parse','--show-toplevel'],text=True).strip()).resolve()
+    subprocess.run(['git','clone','--quiet','--no-hardlinks',str(top),str(destination)],check=True)
+    return destination/Path(SOURCE).resolve().relative_to(top)
+
 class RealBuildTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -57,11 +63,11 @@ class RealBuildTests(unittest.TestCase):
         with self.assertRaises(ValueError):self.verify()
     def test_source_change_rejected(self):
         # Separate clone, never mutate the canonical checkout or reset source changes.
-        clone=Path(self.tmp.name)/'source';subprocess.run(['git','clone','--quiet','--no-hardlinks',str(SOURCE),str(clone)],check=True)
+        clone=clone_source(Path(self.tmp.name)/'source')
         (clone/'package.json').write_text('{}')
         with self.assertRaisesRegex(ValueError,'dirty_source'):d.source_snapshot(clone)
     def test_tracked_private_content_rejected(self):
-        clone=Path(self.tmp.name)/'source';subprocess.run(['git','clone','--quiet','--no-hardlinks',str(SOURCE),str(clone)],check=True)
+        clone=clone_source(Path(self.tmp.name)/'source')
         (clone/'.env').write_text('SYNTHETIC_SECRET=not-real')
         subprocess.run(['git','-C',str(clone),'add','-f','.env'],check=True)
         subprocess.run(['git','-C',str(clone),'-c','user.name=Test','-c','user.email=test@example.invalid','commit','-qm','synthetic private fixture'],check=True)
