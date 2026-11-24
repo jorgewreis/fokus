@@ -6,12 +6,15 @@ application-quality.yml stay pinned elsewhere and are not modified here.
 from pathlib import Path
 import re
 import subprocess
+import sys
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DIAGNOSTIC = ROOT / '.github/workflows/server-readonly-diagnostics.yml'
-DEPLOY = ROOT / '.github/workflows/deploy.yml'
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repository_layout import workflow_path  # noqa: E402
+DIAGNOSTIC = workflow_path('server-readonly-diagnostics.yml')
+DEPLOY = workflow_path('deploy.yml')
 SSH_STEP = '      - name: Configure SSH\n'
 
 
