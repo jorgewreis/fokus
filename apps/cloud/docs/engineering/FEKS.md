@@ -11,7 +11,7 @@ ou autorização para alterar um produto. Este PR adiciona somente este document
 
 | Local | Papel | O que não inferir |
 | --- | --- | --- |
-| [GitHub Fokus Cloud](https://github.com/jorgewreis/fokus-cloud) | Fonte canônica dos artefatos FEKS, Skills, código, testes, PRs e evidências versionadas. | Arquivo em PR não está integrado; CI de outro SHA não valida o atual. |
+| [GitHub Fokus Cloud](https://github.com/jorgewreis/fokus/tree/main/apps/cloud) (monorepo `jorgewreis/fokus`, `apps/cloud`; histórico até 24/11/2026 em `jorgewreis/fokus-cloud`) | Fonte canônica dos artefatos FEKS, Skills, código, testes, PRs e evidências versionadas. | Arquivo em PR não está integrado; CI de outro SHA não valida o atual. |
 | [Linear: Fokus Cloud / P-REI-3](https://linear.app/reis-developer/project/fokus-cloud-f279b0530261) | Uma tarefa oficial por entrega, responsável, estado, aceite, bloqueios e checkpoints com links. | Não duplicar backlog no GitHub, Notion ou neste índice. |
 | Notion | Conhecimento durável, decisões e resumos com links para artefatos e tarefas, quando o acesso estiver autorizado. | Não é código canônico, executor nem prova de sincronização ou de instrução vigente. |
 
