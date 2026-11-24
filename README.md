@@ -18,7 +18,7 @@ Passo a passo: [packages/styles/CONTRIBUTING.md](packages/styles/CONTRIBUTING.md
 
 A plataforma [Fokus Cloud](apps/cloud/README.md) (Laravel) mora em [`apps/cloud/`](apps/cloud/). O histórico do antigo repositório `jorgewreis/fokus-cloud` foi importado com os SHAs originais, porque os gates de homologação e deploy dependem deles (REI-315). O código sob `apps/cloud/` segue a [licença proprietária própria](apps/cloud/LICENSE.md).
 
-Até o corte do deploy, a publicação em produção do Cloud continua saindo do `jorgewreis/fokus-cloud`. Neste repositório, os workflows do Cloud ficam inativos em `apps/cloud/.github/workflows/` e só passam para `.github/workflows/cloud-*.yml` numa etapa posterior, com revisão própria.
+Até o corte do deploy, a publicação em produção do Cloud continua saindo do `jorgewreis/fokus-cloud`. Neste repositório, os workflows ativos do Cloud ficam em `.github/workflows/cloud-*.yml`, gerados por `apps/cloud/tools/ci/promote-workflows.py` a partir das fontes revisadas em `apps/cloud/.github/workflows/` (que seguem inativas). Os gatilhos automáticos rodam só para mudanças em `apps/cloud/**`; deploy, backup e diagnósticos de produção são apenas manuais e dependem do environment `production`, que só será configurado no corte.
 
 ## Navegação
 

@@ -53,13 +53,12 @@ async function requiredAssets() {
 // Cloudflare purge only. The gate, environment, sealed publisher and FPM
 // policy are unchanged.
 const reviewedWorkflowSha256 = 'edafe8fa0aa7f91901314c60b70b96a41120345337ade95452a7363dc7c7679d';
-// Monorepo jorgewreis/fokus (REI-315): from Phase 3 the workflow lives at the
-// Git root as cloud-deploy.yml; until then it stays inactive under apps/cloud.
-const promotedWorkflowPath = path.join(repositoryRoot, '..', '..', '.github/workflows/cloud-deploy.yml');
-const deployWorkflowPath = path.basename(path.dirname(repositoryRoot)) === 'apps'
-  && await stat(promotedWorkflowPath).then((entry) => entry.isFile(), () => false)
-  ? promotedWorkflowPath
-  : path.join(repositoryRoot, '.github/workflows/deploy.yml');
+// Monorepo jorgewreis/fokus (REI-315): the reviewed bytes stay in the inactive
+// source apps/cloud/.github/workflows/deploy.yml. The active root workflow
+// .github/workflows/cloud-deploy.yml is derived from it by
+// tools/ci/promote-workflows.py and checked by
+// tests/Deployment/test_operational_workflow_promotion.py.
+const deployWorkflowPath = path.join(repositoryRoot, '.github/workflows/deploy.yml');
 const reviewedWorkflow = await readFile(deployWorkflowPath, 'utf8');
 function assertReviewedWorkflow(workflow) {
   assert.equal(digest(workflow.replaceAll('\r\n', '\n')), reviewedWorkflowSha256,

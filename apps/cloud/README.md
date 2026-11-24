@@ -1,4 +1,4 @@
-> **Monorepo.** O código do Fokus Cloud mora em `apps/cloud` no repositório [jorgewreis/fokus](https://github.com/jorgewreis/fokus), com o histórico do antigo `jorgewreis/fokus-cloud` preservado (REI-315). Comandos e caminhos desta documentação são relativos a `apps/cloud`. Até o corte do deploy, a publicação em produção continua saindo do `jorgewreis/fokus-cloud`; os workflows em `apps/cloud/.github/` ficam inativos neste repositório.
+> **Monorepo.** O código do Fokus Cloud mora em `apps/cloud` no repositório [jorgewreis/fokus](https://github.com/jorgewreis/fokus), com o histórico do antigo `jorgewreis/fokus-cloud` preservado (REI-315). Comandos e caminhos desta documentação são relativos a `apps/cloud`. Até o corte do deploy, a publicação em produção continua saindo do `jorgewreis/fokus-cloud`; as fontes revisadas dos workflows ficam inativas em `apps/cloud/.github/workflows/`, e as cópias ativas em `.github/workflows/cloud-*.yml` são geradas por `tools/ci/promote-workflows.py` (não edite as cópias à mão).
 
 ## Estado desta reconstrução
 
