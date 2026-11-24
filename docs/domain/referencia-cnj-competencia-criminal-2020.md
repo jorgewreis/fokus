@@ -17,15 +17,15 @@ Na página 7, o CNJ informa oito competências consideradas para identificar uni
 | Tribunal do Júri |
 | Violência Doméstica |
 
-A lista descreve o critério da pesquisa; não traz códigos de catálogo nem estabelece que qualquer item pertence à 1ª Vara Crime de Ilhéus. Não usar como seed, grant, mapa de classes ou configuração automática. A seleção da Vara e o vínculo com classes seguem as decisões do PRD e dependem de catálogo oficial verificável.
+A lista descreve o critério da pesquisa; não traz códigos de catálogo nem estabelece que qualquer item pertence à unidade do cliente institucional on demand. Não usar como seed, grant, mapa de classes ou configuração automática. A seleção da unidade e o vínculo com classes seguem as decisões do PRD e dependem de catálogo oficial verificável.
 
 ## Informações das tabelas e anexos relevantes
 
-- A Tabela 3 (p. 9) apresenta, para o TJBA, 203 comarcas em dezembro de 2018, 200 localidades com varas ativas em novembro de 2019, 123 localidades com juízo único, 60 com apenas uma vara criminal e 20 com mais de uma vara criminal. São contagens históricas, não configuração de unidades atuais.
-- O Anexo I (pp. 19–65) lista localidades com vara única por segmento, tribunal e UF. Ilhéus aparece na linha da **Justiça Federal, TRF1, BA** (p. 61); essa entrada não identifica a Vara estadual do projeto.
+- A Tabela 3 (p. 9) apresenta, para um dos tribunais estaduais do estudo, contagens históricas de comarcas, localidades com varas ativas, juízo único e varas criminais. São contagens históricas, não configuração de unidades atuais.
+- O Anexo I (pp. 19–65) lista localidades com vara única por segmento, tribunal e UF. Uma localidade citada nesse anexo não identifica a unidade estadual do cliente institucional on demand.
 - O Anexo II (pp. 66–74) lista localidades com apenas uma vara criminal, exceto varas únicas, também por segmento, tribunal e UF. São listas de localidades, não tabela de competências por unidade ou relação classe–competência.
 - A seção de estatísticas (p. 16) registra que um Processo pode ter vários assuntos; isso é compatível com a multiplicidade já prevista no dicionário, sem substituir o catálogo SGT ou as regras aprovadas do produto.
 
 ## Uso no projeto
 
-Guardar as denominações acima como referência de pesquisa e procurar a lista MPM pertinente e suas versões/códigos antes de montar o catálogo. Não derivar autorização, jurisdição atual, lotação da Vara ou correspondência de classes desses dados. A [REI-232](https://linear.app/reis-developer/issue/REI-232/vara-definir-competencia-e-escopo-de-acesso-a-processos-sinteticos) acompanha a obtenção do catálogo e sua implementação.
+Guardar as denominações acima como referência de pesquisa e procurar a lista MPM pertinente e suas versões/códigos antes de montar o catálogo. Não derivar autorização, jurisdição atual, lotação da Vara ou correspondência de classes desses dados. A [REI-232](https://linear.app/reis-developer/issue/REI-232) acompanha a obtenção do catálogo e sua implementação.

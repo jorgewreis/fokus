@@ -1,0 +1,342 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Services\LawUsageMeter;
+use App\Services\PrefixedUlid;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
+
+class LawShellTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $user;
+
+    private string $companyId;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed();
+
+        $this->user = User::create([
+            'id' => PrefixedUlid::make('USR'), 'name' => 'Érica Menezes', 'cpf' => '11144477735',
+            'email' => 'erica@example.test', 'password' => Hash::make('SenhaSegura!2026'),
+            'status' => 'ativa', 'email_verified_at' => now(),
+        ]);
+        $this->companyId = PrefixedUlid::make('COM');
+        DB::table('companies')->insert([
+            'id' => $this->companyId, 'document_type' => 'cpf', 'document_number' => '11144477735',
+            'legal_name' => 'Érica Menezes Advocacia', 'status' => 'ativa', 'version' => 1,
+            'created_by' => $this->user->id, 'updated_by' => $this->user->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $adminRoleId = DB::table('roles')->where('code', 'admin')->value('id');
+        DB::table('company_memberships')->insert([
+            'id' => PrefixedUlid::make('MEM'), 'company_id' => $this->companyId, 'user_id' => $this->user->id,
+            'role_id' => $adminRoleId, 'status' => 'ativo', 'version' => 1,
+            'created_by' => $this->user->id, 'updated_by' => $this->user->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    public function test_shell_route_requires_verified_user_and_active_company(): void
+    {
+        $this->get('/portal/fokus-law')->assertRedirect('/?acesso=cliente');
+
+        $unverified = User::findOrFail($this->user->id);
+        $unverified->forceFill(['email_verified_at' => null])->save();
+        $this->actingAs($unverified)->get('/portal/fokus-law')->assertRedirect('/verificar-email');
+
+        $unverified->forceFill(['email_verified_at' => now()])->save();
+        $this->actingAs($unverified)->get('/portal/fokus-law')->assertRedirect('/portal/empresas');
+    }
+
+    public function test_shell_view_is_served_only_after_context_checks(): void
+    {
+        $response = $this->actingAs($this->user)->withSession(['active_company_id' => $this->companyId])->get('/portal/fokus-law');
+
+        $response->assertOk()->assertViewIs('portal.fokus-law');
+        $this->assertTrue($response->headers->hasCacheControlDirective('private'));
+        $this->assertTrue($response->headers->hasCacheControlDirective('no-store'));
+        $this->assertStringContainsString('Fokus Law', $response->getContent());
+        $this->get('/portal/fokus-law.html')->assertNotFound();
+    }
+
+    public function test_company_profile_page_and_api_require_company_admin(): void
+    {
+        $session = ['active_company_id' => $this->companyId];
+        $this->actingAs($this->user)->withSession($session)
+            ->get('/portal/fokus-law/empresa')->assertOk()->assertSee('data-initial-page="company"', false);
+        $this->actingAs($this->user)->withSession($session)
+            ->getJson('/api/law/company-profile')->assertOk()->assertJsonPath('company.legal_name', 'Érica Menezes Advocacia');
+
+        $manager = User::create([
+            'id' => PrefixedUlid::make('USR'), 'name' => 'Gestor', 'cpf' => '11144477736',
+            'email' => 'gestor@example.test', 'password' => Hash::make('SenhaSegura!2026'),
+            'status' => 'ativa', 'email_verified_at' => now(),
+        ]);
+        DB::table('company_memberships')->insert([
+            'id' => PrefixedUlid::make('MEM'), 'company_id' => $this->companyId, 'user_id' => $manager->id,
+            'role_id' => DB::table('roles')->where('code', 'gestor')->value('id'), 'status' => 'ativo', 'version' => 1,
+            'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->actingAs($manager)->withSession($session)
+            ->get('/portal/fokus-law/empresa')->assertForbidden();
+        $this->actingAs($manager)->withSession($session)
+            ->getJson('/api/law/company-profile')->assertForbidden();
+        $this->actingAs($manager)->withSession($session)
+            ->patchJson('/api/law/company-profile', ['version' => 1, 'legal_name' => 'Alteração indevida'])->assertForbidden();
+    }
+
+    public function test_company_admin_can_update_institutional_profile_and_audit_changes_with_version_check(): void
+    {
+        $session = ['active_company_id' => $this->companyId];
+        $payload = [
+            'version' => 1,
+            'legal_name' => 'Érica Menezes Advocacia Atualizada',
+            'display_name' => 'Escritório Menezes',
+            'contact_email' => 'contato@example.test',
+            'contact_phone' => '(71) 3333-2222',
+            'website' => 'https://example.test',
+            'address_postal_code' => '40000-000',
+            'address_street' => 'Rua Exemplo',
+            'address_number' => '10',
+            'address_complement' => 'Sala 2',
+            'address_district' => 'Centro',
+            'address_city' => 'Salvador',
+            'address_state' => 'BA',
+        ];
+
+        $this->actingAs($this->user)->withSession($session)
+            ->patchJson('/api/law/company-profile', $payload)
+            ->assertOk()->assertJsonPath('company.version', 2)->assertJsonPath('company.display_name', 'Escritório Menezes');
+        $this->assertDatabaseHas('companies', [
+            'id' => $this->companyId, 'legal_name' => $payload['legal_name'], 'display_name' => 'Escritório Menezes',
+            'contact_email' => 'contato@example.test', 'address_city' => 'Salvador', 'address_state' => 'BA', 'version' => 2,
+        ]);
+        $this->assertDatabaseHas('audit_events', [
+            'company_id' => $this->companyId, 'entity_type' => 'company_profile', 'operation' => 'update', 'actor_user_id' => $this->user->id,
+        ]);
+
+        $this->actingAs($this->user)->withSession($session)
+            ->patchJson('/api/law/company-profile', ['version' => 1, 'legal_name' => 'Versão antiga'])
+            ->assertConflict();
+        $this->assertDatabaseHas('companies', ['id' => $this->companyId, 'legal_name' => $payload['legal_name'], 'version' => 2]);
+    }
+
+    public function test_subscription_management_page_is_admin_only_and_legacy_route_redirects_into_law(): void
+    {
+        $session = ['active_company_id' => $this->companyId];
+        $this->actingAs($this->user)->withSession($session)
+            ->get('/portal/fokus-law/assinatura')->assertOk()->assertSee('data-initial-page="subscription"', false);
+        $this->get('/portal/assinaturas')->assertRedirect('/portal/fokus-law/assinatura');
+
+        $manager = User::create([
+            'id' => PrefixedUlid::make('USR'), 'name' => 'Gestor', 'cpf' => '11144477736',
+            'email' => 'gestor-assinatura@example.test', 'password' => Hash::make('SenhaSegura!2026'),
+            'status' => 'ativa', 'email_verified_at' => now(),
+        ]);
+        DB::table('company_memberships')->insert([
+            'id' => PrefixedUlid::make('MEM'), 'company_id' => $this->companyId, 'user_id' => $manager->id,
+            'role_id' => DB::table('roles')->where('code', 'gestor')->value('id'), 'status' => 'ativo', 'version' => 1,
+            'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->actingAs($manager)->withSession($session)->get('/portal/fokus-law/assinatura')->assertForbidden();
+        $this->actingAs($manager)->withSession($session)->getJson('/api/law/subscription')->assertForbidden();
+    }
+
+    public function test_company_user_management_route_uses_the_law_shell_and_api_requires_a_law_membership(): void
+    {
+        $session = ['active_company_id' => $this->companyId];
+        $this->get('/portal/usuarios')->assertRedirect('/?acesso=cliente');
+        $this->actingAs($this->user)->withSession($session)
+            ->get('/portal/usuarios')
+            ->assertOk()->assertViewIs('portal.fokus-law')
+            ->assertSee('data-initial-page="users"', false)
+            ->assertSee('law-topbar', false);
+
+        $manager = User::create([
+            'id' => PrefixedUlid::make('USR'), 'name' => 'Gestor', 'cpf' => '11144477736',
+            'email' => 'gestor-users@example.test', 'password' => Hash::make('SenhaSegura!2026'),
+            'status' => 'ativa', 'email_verified_at' => now(),
+        ]);
+        DB::table('company_memberships')->insert([
+            'id' => PrefixedUlid::make('MEM'), 'company_id' => $this->companyId, 'user_id' => $manager->id,
+            'role_id' => DB::table('roles')->where('code', 'gestor')->value('id'), 'status' => 'ativo', 'version' => 1,
+            'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->actingAs($manager)->withSession($session)->get('/portal/usuarios')->assertOk()->assertSee('data-initial-page="users"', false);
+        $this->actingAs($manager)->withSession($session)->getJson('/api/portal/users')->assertForbidden();
+        $this->get('/portal/users.html')->assertNotFound();
+    }
+
+    public function test_contact_capacity_meter_notifies_once_on_each_crossing_of_seventy_percent(): void
+    {
+        $product = DB::table('products')->whereIn('code', ['law', 'fokus-law'])->firstOrFail();
+        $module = DB::table('modules')->where('product_id', $product->id)->where('module_code', 'contatos')->firstOrFail();
+        $subscriptionId = PrefixedUlid::make('ASS');
+        DB::table('subscriptions')->insert([
+            'id' => $subscriptionId, 'company_id' => $this->companyId, 'product_id' => $product->id,
+            'status' => 'ativa', 'open_company_product' => $this->companyId.'-'.$product->id,
+            'public_name' => 'Érica Menezes',
+            'commercial_snapshot' => json_encode(['items' => [['module_id' => $module->id, 'conditions' => ['personalizations' => [['type_code' => 'contatos_cadastrados', 'value' => 10]]]]]]),
+            'version' => 1, 'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $contactIds = [];
+        for ($index = 0; $index < 8; $index++) {
+            $id = PrefixedUlid::make('LCO');
+            $contactIds[] = $id;
+            DB::table('law_contacts')->insert([
+                'id' => $id, 'company_id' => $this->companyId, 'display_name' => 'Contato '.$index,
+                'contact_type' => 'person', 'status' => $index === 0 ? 'inativo' : 'ativo',
+                'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        $meter = app(LawUsageMeter::class);
+        $metric = $meter->contacts($this->companyId);
+        $this->assertSame(8, $metric['used']);
+        $this->assertSame(10, $metric['limit']);
+        $this->assertTrue($metric['over_threshold']);
+        $this->assertDatabaseCount('law_notifications', 1);
+        $meter->contacts($this->companyId);
+        $this->assertDatabaseCount('law_notifications', 1);
+
+        DB::table('law_contacts')->whereIn('id', [$contactIds[0], $contactIds[1]])->update(['deleted_at' => now()]);
+        $this->assertFalse($meter->contacts($this->companyId)['over_threshold']);
+        DB::table('law_contacts')->insert([
+            'id' => PrefixedUlid::make('LCO'), 'company_id' => $this->companyId, 'display_name' => 'Contato novo A', 'contact_type' => 'person', 'status' => 'ativo', 'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('law_contacts')->insert([
+            'id' => PrefixedUlid::make('LCO'), 'company_id' => $this->companyId, 'display_name' => 'Contato novo B', 'contact_type' => 'person', 'status' => 'ativo', 'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $meter->contacts($this->companyId);
+        $this->assertDatabaseCount('law_notifications', 2);
+    }
+
+    public function test_profile_opens_inside_the_law_shell_and_legacy_route_redirects_there(): void
+    {
+        $response = $this->actingAs($this->user)->withSession(['active_company_id' => $this->companyId])
+            ->get('/portal/fokus-law/perfil');
+
+        $response->assertOk()->assertViewIs('portal.fokus-law')
+            ->assertSee('data-initial-page="profile"', false)
+            ->assertSee('law-topbar', false)
+            ->assertSee('law-profile-template', false);
+
+        $this->get('/portal/perfil')->assertRedirect('/portal/fokus-law/perfil');
+    }
+
+    public function test_process_settings_and_authorization_pages_open_inside_the_law_shell(): void
+    {
+        $session = ['active_company_id' => $this->companyId];
+
+        $this->actingAs($this->user)->withSession($session)
+            ->get('/portal/fokus-law/processos/configuracoes')
+            ->assertOk()->assertViewIs('portal.fokus-law')
+            ->assertSee('data-initial-page="processes-settings"', false);
+
+        $this->actingAs($this->user)->withSession($session)
+            ->get('/portal/fokus-law/processos/autorizacoes')
+            ->assertOk()->assertViewIs('portal.fokus-law')
+            ->assertSee('data-initial-page="processes-access"', false);
+    }
+
+    public function test_shell_context_returns_empty_modules_without_active_law_entitlements(): void
+    {
+        $this->actingAs($this->user)->withSession(['active_company_id' => $this->companyId])
+            ->getJson('/api/law/shell-context')
+            ->assertOk()
+            ->assertJsonPath('company.name', 'Érica Menezes Advocacia')
+            ->assertJsonPath('permissions.manage_company_users', true)
+            ->assertJsonPath('subscription', null)
+            ->assertJsonCount(0, 'modules');
+    }
+
+    public function test_seed_has_no_advocacy_hearing_offer_and_preserves_judicial_variants(): void
+    {
+        $this->assertDatabaseMissing('modules', ['code' => 'audiencias-advocacia']);
+        $this->assertDatabaseMissing('plans', ['code' => 'law-audiencias-advocacia']);
+        foreach (['vara-criminal', 'vara-civel', 'juizado', 'orgao-publico', 'externo'] as $variant) {
+            $this->assertDatabaseHas('modules', ['code' => 'audiencias-'.$variant]);
+        }
+        $this->assertDatabaseHas('plans', ['code' => 'law-audiencias-setor-publico']);
+    }
+
+    public function test_legacy_advocacy_hearing_menu_is_hidden_without_deleting_it_or_judicial_module(): void
+    {
+        $judicial = DB::table('modules')->where('code', 'audiencias-vara-criminal')->firstOrFail();
+        $legacy = (array) $judicial;
+        $legacy['id'] = PrefixedUlid::make('MOD');
+        $legacy['code'] = 'audiencias-advocacia';
+        $legacy['name'] = 'Oferta legada sintética';
+        $legacy['context_code'] = 'escritorio';
+        $legacy['display_order'] = 0;
+        DB::table('modules')->insert($legacy);
+        // Repeating a non-production seed must not erase pre-existing contracts.
+        $this->seed();
+        $this->assertDatabaseHas('modules', ['id' => $legacy['id']]);
+        DB::table('modules')->whereIn('id', [$judicial->id, $legacy['id']])->update(['status' => 'ativo', 'publication_state' => 'publicado']);
+
+        $subscriptionId = PrefixedUlid::make('ASS');
+        DB::table('subscriptions')->insert([
+            'id' => $subscriptionId, 'company_id' => $this->companyId, 'product_id' => $judicial->product_id,
+            'status' => 'ativa', 'open_company_product' => $this->companyId.'-'.$judicial->product_id,
+            'commercial_snapshot' => json_encode(['segment' => 'setor_publico']), 'version' => 1,
+            'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        foreach ([$legacy, (array) $judicial] as $module) {
+            DB::table('subscription_items')->insert([
+                'id' => PrefixedUlid::make('ITM'), 'company_id' => $this->companyId, 'subscription_id' => $subscriptionId,
+                'module_id' => $module['id'], 'name_snapshot' => $module['name'], 'quantity' => 1,
+                'unit_price_snapshot' => $module['monthly_price'], 'version' => 1,
+                'created_by' => $this->user->id, 'updated_by' => $this->user->id, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        $this->actingAs($this->user)->withSession(['active_company_id' => $this->companyId])
+            ->getJson('/api/law/shell-context')->assertOk()->assertJsonCount(1, 'modules')
+            ->assertJsonPath('modules.0.code', 'audiencias-vara-criminal');
+        $this->assertDatabaseHas('subscription_items', ['module_id' => $legacy['id']]);
+        $this->assertDatabaseHas('modules', ['id' => $legacy['id']]);
+    }
+
+    public function test_shell_context_lists_only_contracted_published_modules(): void
+    {
+        $product = DB::table('products')->whereIn('code', ['law', 'fokus-law'])->firstOrFail();
+        $contacts = DB::table('modules')->where('product_id', $product->id)->where('module_code', 'contatos')->firstOrFail();
+        $processes = DB::table('modules')->where('product_id', $product->id)->where('module_code', 'processos')->firstOrFail();
+        DB::table('modules')->whereIn('id', [$contacts->id, $processes->id])->update(['status' => 'ativo', 'publication_state' => 'publicado']);
+
+        $subscriptionId = PrefixedUlid::make('ASS');
+        DB::table('subscriptions')->insert([
+            'id' => $subscriptionId, 'company_id' => $this->companyId, 'product_id' => $product->id,
+            'status' => 'ativa', 'open_company_product' => $this->companyId.'-'.$product->id,
+            'public_name' => 'Érica Menezes', 'commercial_snapshot' => json_encode(['plan_name' => 'Essencial']),
+            'version' => 1, 'created_by' => $this->user->id, 'updated_by' => $this->user->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        foreach ([$contacts, $processes] as $module) {
+            DB::table('subscription_items')->insert([
+                'id' => PrefixedUlid::make('ITM'), 'company_id' => $this->companyId, 'subscription_id' => $subscriptionId,
+                'module_id' => $module->id, 'name_snapshot' => $module->name, 'quantity' => 1,
+                'unit_price_snapshot' => $module->monthly_price, 'version' => 1,
+                'created_by' => $this->user->id, 'updated_by' => $this->user->id,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        $this->actingAs($this->user)->withSession(['active_company_id' => $this->companyId])
+            ->getJson('/api/law/shell-context')
+            ->assertOk()
+            ->assertJsonPath('company.name', 'Érica Menezes')
+            ->assertJsonPath('subscription.plan_name', 'Essencial')
+            ->assertJsonCount(2, 'modules');
+    }
+}

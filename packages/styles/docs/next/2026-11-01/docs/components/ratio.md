@@ -32,7 +32,7 @@ Exemplo de proporção personalizada 3:2 (não é classe pronta):
 
 ```html
 <div class="fs-ratio" style="--fs-ratio: 66.6667%">
-  <img src="/imagens/paisagem.jpg" alt="Vista da orla de Ilhéus">
+  <img src="/imagens/paisagem.jpg" alt="Vista da orla">
 </div>
 ```
 

@@ -8,6 +8,14 @@ const registry = 'https://registry.npmjs.org/';
 const expectedPackageName = 'fokus-styles';
 const releaseTagPrefix = 'styles-v';
 
+const blockedPublishTokenEnv = ['NODE_AUTH_TOKEN', 'NPM_TOKEN'];
+
+function commandEnv(source = process.env) {
+  const env = { ...source };
+  for (const key of blockedPublishTokenEnv) delete env[key];
+  return env;
+}
+
 function npmCommand(args, cwd, timeout) {
   let command = 'npm';
   let commandArgs = args;
@@ -26,6 +34,9 @@ function npmCommand(args, cwd, timeout) {
     timeout,
     maxBuffer: 16 * 1024 * 1024,
     windowsHide: true,
+    // Trusted Publishing (OIDC) must not see a long-lived token. npm prefers
+    // a configured token over the GitHub Actions id-token.
+    env: commandEnv(),
   });
   return {
     status: result.status,
@@ -191,6 +202,9 @@ export async function publishBuiltPackage({
     return { published: false, reason: 'identical-version-already-published', releaseManifest, manifestPath };
   }
 
+  // npm >= 11.5.1 on GitHub Actions exchanges the job id-token for a
+  // short-lived publish credential. Flags stay explicit: provenance attestation
+  // and public access, with no NODE_AUTH_TOKEN.
   const published = await run([
     'publish', artifact.tarballPath, '--ignore-scripts', '--provenance', '--access', 'public', `--registry=${registry}`,
   ], cwd, 120_000);

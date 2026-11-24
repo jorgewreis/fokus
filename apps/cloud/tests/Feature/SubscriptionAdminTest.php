@@ -1,0 +1,653 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\PlatformAdmin;
+use App\Models\PlatformRole;
+use App\Models\User;
+use App\Services\CatalogManager;
+use App\Services\PendingSubscriptionVoucher;
+use App\Services\PrefixedUlid;
+use App\Services\SubscriptionBillingManager;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
+
+class SubscriptionAdminTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed();
+    }
+
+    public function test_customer_subscription_list_requires_admin_and_active_company_scope(): void
+    {
+        $fixture = $this->subscriptionFixture();
+        $user = User::findOrFail($fixture['user_id']);
+        $companyB = PrefixedUlid::make('COM');
+        $subscriptionB = PrefixedUlid::make('ASS');
+        $company = (array) DB::table('companies')->where('id', $fixture['company_id'])->first();
+        $company['id'] = $companyB;
+        $company['document_number'] = '12345678000199';
+        $company['legal_name'] = 'Empresa Beta';
+        DB::table('companies')->insert($company);
+        $membership = (array) DB::table('company_memberships')->where('company_id', $fixture['company_id'])->first();
+        $membership['id'] = PrefixedUlid::make('MBS');
+        $membership['company_id'] = $companyB;
+        $membership['active_admin_company_id'] = $companyB;
+        DB::table('company_memberships')->insert($membership);
+        $subscription = (array) DB::table('subscriptions')->where('id', $fixture['subscription_id'])->first();
+        $subscription['id'] = $subscriptionB;
+        $subscription['company_id'] = $companyB;
+        $subscription['open_company_product'] = $companyB.'-'.$subscription['product_id'];
+        DB::table('subscriptions')->insert($subscription);
+        $item = (array) DB::table('subscription_items')->where('subscription_id', $fixture['subscription_id'])->first();
+        $item['id'] = PrefixedUlid::make('ITM');
+        $item['company_id'] = $companyB;
+        $item['subscription_id'] = $subscriptionB;
+        $item['name_snapshot'] = 'Item exclusivo Beta';
+        DB::table('subscription_items')->insert($item);
+        $payment = (array) DB::table('payments')->where('subscription_id', $fixture['subscription_id'])->first();
+        $payment['id'] = PrefixedUlid::make('PAG');
+        $payment['company_id'] = $companyB;
+        $payment['subscription_id'] = $subscriptionB;
+        $payment['amount'] = 987.65;
+        DB::table('payments')->insert($payment);
+
+        $this->getJson('/api/subscriptions')->assertUnauthorized();
+        $response = $this->actingAs($user)->withSession(['active_company_id' => $fixture['company_id']])->getJson('/api/subscriptions')->assertOk();
+        $response->assertJsonCount(1)->assertJsonPath('0.id', $fixture['subscription_id']);
+        // Decimal columns are serialized as numbers by SQLite and as strings ("64.70") by MySQL.
+        $this->assertSame(64.7, (float) $response->json('0.payment.amount'));
+        $this->assertStringNotContainsString($subscriptionB, $response->getContent());
+        $this->assertStringNotContainsString('Item exclusivo Beta', $response->getContent());
+        $this->assertStringNotContainsString('987.65', $response->getContent());
+        $responseB = $this->actingAs($user)->withSession(['active_company_id' => $companyB])->getJson('/api/subscriptions')
+            ->assertOk()->assertJsonCount(1)->assertJsonPath('0.id', $subscriptionB)
+            ->assertJsonPath('0.items.0.name', 'Item exclusivo Beta');
+        $this->assertSame(987.65, (float) $responseB->json('0.payment.amount'));
+
+        foreach (['gestor', 'usuario'] as $role) {
+            DB::table('company_memberships')->where('company_id', $fixture['company_id'])->where('user_id', $user->id)
+                ->update(['role_id' => DB::table('roles')->where('code', $role)->value('id'), 'active_admin_company_id' => null]);
+            $denied = $this->actingAs($user)->withSession(['active_company_id' => $fixture['company_id']])->getJson('/api/subscriptions')->assertForbidden();
+            $this->assertStringNotContainsString($fixture['subscription_id'], $denied->getContent());
+            $this->assertStringNotContainsString('64.7', $denied->getContent());
+        }
+
+        DB::table('company_memberships')->where('company_id', $companyB)->where('user_id', $user->id)->update(['status' => 'suspenso']);
+        $this->actingAs($user)->withSession(['active_company_id' => $companyB])->getJson('/api/subscriptions')->assertForbidden();
+    }
+
+    public function test_dashboard_aggregates_active_subscriptions_in_one_snapshot(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture();
+        $original = (array) DB::table('subscriptions')->where('id', $fixture['subscription_id'])->first();
+        $expiredSubscriptionId = null;
+        for ($i = 0; $i < 251; $i++) {
+            $copy = $original;
+            $copy['id'] = PrefixedUlid::make('ASS');
+            $copy['open_company_product'] = null;
+            $copy['commercial_snapshot'] = json_encode(['monthly_amount' => 10]);
+            $expiredSubscriptionId ??= $copy['id'];
+            DB::table('subscriptions')->insert($copy);
+        }
+
+        $this->actingAs($admin, 'platform')->postJson('/api/backoffice/vouchers', [
+            'code' => 'DASHBOARDFREE', 'discount_type' => 'percentage', 'discount_value' => 10,
+        ])->assertCreated();
+        $redemption = [
+            'id' => PrefixedUlid::make('VRE'),
+            'voucher_id' => DB::table('vouchers')->where('code', 'DASHBOARDFREE')->value('id'),
+            'company_id' => $fixture['company_id'],
+            'subscription_id' => $fixture['subscription_id'],
+            'discount_amount' => 0,
+            'snapshot' => json_encode(['discount_type' => 'trial_free']),
+            'benefit_ends_at' => now()->addDay(),
+            'created_at' => now(),
+        ];
+        DB::table('voucher_redemptions')->insert($redemption);
+        $redemption['id'] = PrefixedUlid::make('VRE');
+        DB::table('voucher_redemptions')->insert($redemption);
+        $redemption['id'] = PrefixedUlid::make('VRE');
+        $redemption['subscription_id'] = $expiredSubscriptionId;
+        $redemption['benefit_ends_at'] = now()->subDay();
+        DB::table('voucher_redemptions')->insert($redemption);
+        $redemption['id'] = PrefixedUlid::make('VRE');
+        $redemption['benefit_ends_at'] = now()->addDay();
+        $redemption['snapshot'] = json_encode(['discount_type' => 'TRIAL_FREE']);
+        DB::table('voucher_redemptions')->insert($redemption);
+        $redemption['id'] = PrefixedUlid::make('VRE');
+        $redemption['snapshot'] = json_encode(['discount_type' => 123]);
+        DB::table('voucher_redemptions')->insert($redemption);
+
+        $pdo = in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)
+            ? DB::connection()->getReadPdo()
+            : null;
+        $bufferedBefore = $pdo?->getAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY);
+        $redemptionQueries = [];
+        DB::listen(function ($query) use (&$redemptionQueries): void {
+            if (str_contains(strtolower($query->sql), 'voucher_redemptions')) {
+                $redemptionQueries[] = $query->sql;
+            }
+        });
+        $response = $this->actingAs($admin, 'platform')->getJson('/api/backoffice/dashboard')->assertOk();
+        $response->assertJsonPath('metrics.active_subscriptions', 252)
+            ->assertJsonPath('metrics.mrr', 2510)
+            ->assertJsonPath('subscription_registrations_6m.5.value', 252);
+        $this->assertCount(1, $redemptionQueries);
+        if ($pdo !== null) {
+            $this->assertSame($bufferedBefore, $pdo->getAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY));
+        }
+    }
+
+    public function test_assisted_checkout_requires_platform_subscription_permission(): void
+    {
+        $admin = $this->platformAdmin('administrador_comercial');
+        $fixture = $this->subscriptionFixture();
+        DB::table('subscriptions')->where('id', $fixture['subscription_id'])->update(['status' => 'encerrada', 'open_company_product' => null]);
+        DB::table('products')->where('code', 'law')->update(['code' => 'fokus-law', 'publication_pending' => true]);
+        DB::table('platform_role_permissions')
+            ->where('platform_role_id', $admin->platform_role_id)
+            ->where('platform_permission_id', DB::table('platform_permissions')->where('code', 'platform.subscriptions.manage')->value('id'))
+            ->delete();
+        Http::fake();
+        $counts = [];
+        foreach (['billing_checkout_attempts', 'voucher_redemption_reservations', 'subscriptions', 'payments'] as $table) {
+            $counts[$table] = DB::table($table)->count();
+        }
+
+        $this->actingAs($admin, 'platform')->postJson('/api/backoffice/subscriptions/checkout', [
+            'company_id' => $fixture['company_id'], 'product_code' => 'fokus-law', 'plan_code' => 'law-advocacia', 'cycle' => 'monthly',
+        ])->assertForbidden();
+
+        Http::assertNothingSent();
+        foreach ($counts as $table => $count) {
+            $this->assertSame($count, DB::table($table)->count(), "Unexpected changes to {$table}");
+        }
+    }
+
+    public function test_assisted_checkout_and_free_voucher_activate_pending_subscription_until_expiry(): void
+    {
+        config(['services.mercado_pago.access_token' => 'test-token', 'services.mercado_pago.test_payer_email' => 'test_user_123@testuser.com']);
+        $admin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture();
+        DB::table('subscriptions')->where('id', $fixture['subscription_id'])->update(['status' => 'encerrada', 'open_company_product' => null]);
+        $product = DB::table('products')->where('code', 'law')->first();
+        DB::table('products')->where('id', $product->id)->update(['code' => 'fokus-law', 'publication_pending' => true]);
+        $plan = DB::table('plans')->where('product_id', $product->id)->where('code', 'law-advocacia')->first();
+        Http::fake(function ($request) {
+            static $created = 0;
+            if ($request->method() === 'POST') {
+                return Http::response(['id' => ++$created === 1 ? 'pre-assisted' : 'pre-assisted-2', 'init_point' => 'https://mercadopago.test/checkout'], 201);
+            }
+            if ($request->method() === 'GET') {
+                return Http::response(['status' => 'pending'], 200);
+            }
+
+            return Http::response(['status' => 'cancelled'], 200);
+        });
+
+        $this->actingAs($admin, 'platform')->getJson('/api/backoffice/subscriptions/checkout-options?q=Alpha')
+            ->assertOk()->assertJsonPath('companies.0.id', $fixture['company_id'])
+            ->assertJsonPath('products.0.code', 'fokus-law')
+            ->assertJsonPath('products.0.plans.0.code', 'law-advocacia');
+        $response = $this->actingAs($admin, 'platform')->postJson('/api/backoffice/subscriptions/checkout', [
+            'company_id' => $fixture['company_id'], 'product_code' => 'fokus-law', 'plan_code' => 'law-advocacia', 'cycle' => 'monthly',
+        ])->assertCreated()->assertJsonPath('checkout_url', 'https://mercadopago.test/checkout');
+        $subscriptionId = $response->json('subscription_id');
+        $this->assertDatabaseHas('subscriptions', ['id' => $subscriptionId, 'status' => 'aguardando_pagamento', 'created_by' => $fixture['user_id']]);
+        $originalAmount = (float) DB::table('payments')->where('subscription_id', $subscriptionId)->value('amount');
+        $commercialSnapshot = json_decode((string) DB::table('subscriptions')->where('id', $subscriptionId)->value('commercial_snapshot'), true);
+        $this->assertSame($plan->id, $commercialSnapshot['plan_id']);
+        $this->assertSame($plan->name, $commercialSnapshot['plan_name']);
+        $this->assertEqualsWithDelta($originalAmount, (float) $commercialSnapshot['amount'], 0.01);
+        $this->assertEqualsWithDelta($originalAmount, (float) $commercialSnapshot['monthly_amount'], 0.01);
+        $this->assertSame(1, $commercialSnapshot['publication_versions']['product_catalog_version']);
+        $this->assertSame(1, $commercialSnapshot['publication_versions']['plan_version']);
+        $this->assertSame(1, $commercialSnapshot['publication_versions']['module_versions']['processos-advocacia']);
+        $this->assertDatabaseHas('platform_audit_events', ['action' => 'backoffice.subscription_checkout_created', 'entity_id' => $subscriptionId]);
+
+        DB::table('vouchers')->insert([
+            'id' => PrefixedUlid::make('VCH'), 'code' => 'FREE7', 'name' => 'Sete dias gratuitos',
+            'discount_type' => 'trial_free', 'discount_value' => 100, 'product_id' => $product->id,
+            'plan_id' => $plan->id, 'benefit_duration' => 'd7', 'status' => 'ativa',
+            'created_by_platform_admin_id' => $admin->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->actingAs(User::find($fixture['user_id']))->postJson("/api/backoffice/subscriptions/{$subscriptionId}/free-voucher", ['voucher_code' => 'FREE7'])
+            ->assertUnauthorized();
+        $this->actingAs($admin, 'platform')->postJson("/api/backoffice/subscriptions/{$subscriptionId}/free-voucher", ['voucher_code' => 'FREE7'])
+            ->assertOk()->assertJsonPath('subscription_id', $subscriptionId);
+        $this->assertDatabaseHas('subscriptions', ['id' => $subscriptionId, 'status' => 'ativa', 'provider_subscription_id' => null]);
+        $activeSnapshot = json_decode((string) DB::table('subscriptions')->where('id', $subscriptionId)->value('commercial_snapshot'), true);
+        $this->assertSame($plan->id, $activeSnapshot['plan_id']);
+        $this->assertSame($plan->name, $activeSnapshot['plan_name']);
+        $this->assertSame(0.0, (float) $activeSnapshot['amount']);
+        $this->assertSame(0.0, (float) $activeSnapshot['monthly_amount']);
+        $this->assertEqualsWithDelta($originalAmount, (float) $activeSnapshot['base_amount'], 0.01);
+        $subscriptionDetails = $this->actingAs($admin, 'platform')->getJson("/api/backoffice/subscriptions/{$subscriptionId}")
+            ->assertOk()
+            ->assertJsonPath('amount', 0)
+            ->assertJsonPath('monthly_amount', 0)
+            ->assertJsonPath('has_active_free_benefit', true)
+            ->assertJsonPath('items.0.unit_price', 0);
+        $this->assertEqualsWithDelta($originalAmount, (float) $subscriptionDetails->json('base_amount'), 0.01);
+        $this->actingAs($admin, 'platform')->getJson('/api/backoffice/dashboard')
+            ->assertOk()
+            ->assertJsonPath('metrics.mrr', 0);
+        $listedCompany = $this->actingAs($admin, 'platform')->getJson('/api/backoffice/companies?q=Alpha')->assertOk();
+        $this->assertSame(1, $listedCompany->json('data.0.active_subscriptions'));
+        $this->assertSame($plan->name, $listedCompany->json('data.0.plan_name'));
+        $catalogPlan = app(CatalogManager::class)->managementPlans()->firstWhere('id', $plan->id);
+        $this->assertSame(2, $catalogPlan['subscription_count']);
+        $this->assertSame(1, $catalogPlan['active_subscription_count']);
+        $this->postJson('/api/auth/law-context', ['email' => User::find($fixture['user_id'])->email])
+            ->assertOk()->assertJsonPath('systems.0.value', $fixture['company_id']);
+        $this->assertDatabaseHas('voucher_redemptions', ['subscription_id' => $subscriptionId]);
+        $this->assertDatabaseHas('platform_audit_events', ['action' => 'backoffice.subscription_free_voucher_activated', 'entity_id' => $subscriptionId]);
+        Http::assertSent(fn ($request) => $request->method() === 'PUT' && $request->url() === 'https://api.mercadopago.com/preapproval/pre-assisted' && $request['status'] === 'cancelled');
+        $paymentId = DB::table('payments')->where('subscription_id', $subscriptionId)->value('id');
+        $this->assertEqualsWithDelta($originalAmount, (float) DB::table('payments')->where('id', $paymentId)->value('amount'), 0.01);
+        $this->actingAs($admin, 'platform')->getJson('/api/backoffice/payments')
+            ->assertOk()->assertJsonFragment(['id' => $paymentId, 'status' => 'cancelado']);
+        $this->actingAs($admin, 'platform')->getJson('/api/backoffice/payments?status=cancelado')
+            ->assertOk()->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.id', $paymentId)
+            ->assertJsonPath('data.0.status', 'cancelado');
+        app(SubscriptionBillingManager::class)->applyPayment($paymentId, ['id' => 'late-payment', 'preapproval_id' => 'pre-assisted'], 'cancelado');
+        $this->assertDatabaseHas('subscriptions', ['id' => $subscriptionId, 'status' => 'ativa']);
+
+        $this->travel(8)->days();
+        $this->artisan('fokus:expire-free-voucher-subscriptions')->assertSuccessful();
+        $this->assertDatabaseHas('subscriptions', ['id' => $subscriptionId, 'status' => 'suspensa']);
+        $this->actingAs($admin, 'platform')->patchJson("/api/backoffice/subscriptions/{$subscriptionId}", ['action' => 'reativacao', 'reason' => 'Tentativa sem novo pagamento.'])
+            ->assertUnprocessable();
+        $newCheckout = $this->actingAs($admin, 'platform')->postJson('/api/backoffice/subscriptions/checkout', [
+            'company_id' => $fixture['company_id'], 'product_code' => 'fokus-law', 'plan_code' => 'law-advocacia', 'cycle' => 'monthly',
+        ])->assertCreated();
+        $this->assertDatabaseHas('subscriptions', ['id' => $subscriptionId, 'status' => 'encerrada']);
+        $this->assertDatabaseHas('subscriptions', ['id' => $newCheckout->json('subscription_id'), 'status' => 'aguardando_pagamento']);
+    }
+
+    public function test_internal_admin_can_list_masked_companies_and_subscription_detail(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture();
+
+        $this->actingAs($admin, 'platform')->getJson('/api/backoffice/companies')
+            ->assertOk()
+            ->assertJsonPath('data.0.legal_name', 'Empresa Alpha')
+            ->assertJsonPath('data.0.document_number', '12345678000100')
+            ->assertJsonPath('data.0.admin_email', 'cliente-0@example.test');
+
+        $this->actingAs($admin, 'platform')->getJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'])
+            ->assertOk()
+            ->assertJsonPath('company_name', 'Empresa Alpha')
+            ->assertJsonPath('items.0.name', 'Gestão de Processos para Advogados')
+            ->assertJsonPath('payments.0.status', 'aguardando_pagamento')
+            ->assertJsonPath('history', []);
+    }
+
+    public function test_dashboard_subscription_list_returns_five_highest_value_active_items(): void
+    {
+        $admin = $this->platformAdmin();
+        foreach (range(1, 7) as $index) {
+            $fixture = $this->subscriptionFixture(['cpf' => str_pad((string) $index, 11, '0', STR_PAD_LEFT)]);
+            DB::table('companies')->where('id', $fixture['company_id'])->update([
+                'document_number' => sprintf('12345678000%03d', $index),
+                'legal_name' => "Empresa {$index}",
+            ]);
+            $amount = $index * 10;
+            DB::table('subscriptions')->where('id', $fixture['subscription_id'])->update([
+                'status' => $index === 7 ? 'encerrada' : 'ativa',
+                'commercial_snapshot' => json_encode(['plan_name' => "Plano {$index}", 'amount' => $amount, 'monthly_amount' => $amount]),
+            ]);
+        }
+
+        $response = $this->actingAs($admin, 'platform')->getJson('/api/backoffice/subscriptions?dashboard_top_value=1&status=ativa&per_page=5')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 6)
+            ->assertJsonCount(5, 'data');
+
+        $this->assertSame([60, 50, 40, 30, 20], array_map(fn (array $item): int => (int) $item['amount'], $response->json('data')));
+        $this->assertNotContains('Empresa 7', array_column($response->json('data'), 'company_name'));
+    }
+
+    public function test_admin_can_pause_reactivate_and_schedule_cancellation_with_audit(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture(['provider_subscription_id' => 'pre-managed']);
+        config(['services.mercado_pago.access_token' => 'test-token']);
+        Http::fake(['https://api.mercadopago.com/preapproval/pre-managed' => Http::response(['status' => 'authorized'], 200)]);
+
+        $this->actingAs($admin, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], [
+            'action' => 'suspensao',
+            'reason' => 'Revisão comercial solicitada.',
+        ])->assertOk()->assertJsonPath('status', 'aplicada');
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'suspensa']);
+
+        $this->actingAs($admin, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], [
+            'action' => 'reativacao',
+            'reason' => 'Revisão concluída.',
+        ])->assertOk();
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'ativa']);
+
+        $this->actingAs($admin, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], [
+            'action' => 'cancelamento',
+            'reason' => 'Encerramento solicitado pelo cliente.',
+        ])->assertOk()->assertJsonPath('status', 'agendada');
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'cancelamento_agendado']);
+        $this->assertDatabaseCount('subscription_changes', 3);
+        $this->assertDatabaseHas('platform_audit_events', ['action' => 'backoffice.subscription_cancelamento']);
+        Http::assertSent(fn ($request) => $request->method() === 'PUT' && $request['status'] === 'paused');
+        Http::assertSent(fn ($request) => $request->method() === 'PUT' && $request['status'] === 'authorized');
+    }
+
+    public function test_upgrade_uses_published_plan_and_waits_for_payment(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture(['provider_subscription_id' => 'pre-change']);
+        config(['services.mercado_pago.access_token' => 'test-token']);
+        Http::fake(['https://api.mercadopago.com/*' => Http::response(['id' => 'pref-upgrade', 'init_point' => 'https://mercadopago.test/upgrade', 'status' => 'authorized'], 200)]);
+        $targetPlanId = DB::table('plans')->where('code', 'law-cartorio-criminal')->value('id');
+
+        $this->actingAs($admin, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], [
+            'action' => 'upgrade',
+            'reason' => 'Ampliação contratada.',
+            'target_plan_id' => $targetPlanId,
+            'billing_cycle' => 'annual',
+            'amount' => 0,
+        ])->assertOk()->assertJsonPath('status', 'aguardando_pagamento');
+
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'ativa']);
+        $this->assertDatabaseHas('subscription_changes', ['subscription_id' => $fixture['subscription_id'], 'status' => 'aguardando_pagamento']);
+        $snapshot = json_decode((string) DB::table('subscription_changes')->where('subscription_id', $fixture['subscription_id'])->value('after_snapshot'), true);
+        $this->assertSame('law-cartorio-criminal', $snapshot['plan_code']);
+        $this->assertSame('annual', $snapshot['billing_cycle']);
+        $this->assertSame(1, $snapshot['publication_versions']['product_catalog_version']);
+        $this->assertSame(1, $snapshot['publication_versions']['plan_version']);
+    }
+
+    public function test_immediate_cancellation_ends_subscription_and_preserves_history(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture();
+
+        $this->actingAs($admin, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], [
+            'action' => 'cancelamento_imediato',
+            'reason' => 'Encerramento imediato aprovado.',
+        ])->assertOk()->assertJsonPath('status', 'aplicada');
+
+        $this->assertDatabaseHas('subscriptions', [
+            'id' => $fixture['subscription_id'],
+            'status' => 'encerrada',
+            'open_company_product' => null,
+        ]);
+        $this->assertDatabaseHas('subscription_changes', [
+            'subscription_id' => $fixture['subscription_id'],
+            'type' => 'cancelamento',
+            'status' => 'aplicada',
+            'reason' => 'Encerramento imediato aprovado.',
+        ]);
+    }
+
+    public function test_company_admin_can_cancel_unpaid_subscription_immediately(): void
+    {
+        config(['services.mercado_pago.access_token' => 'test-token']);
+        Http::fake(['https://api.mercadopago.com/preapproval/pre-unpaid' => Http::response(['status' => 'cancelled'], 200)]);
+        $fixture = $this->subscriptionFixture(['status' => 'aguardando_pagamento', 'provider_subscription_id' => 'pre-unpaid']);
+        $user = User::find($fixture['user_id']);
+
+        $this->actingAs($user)->withSession(['active_company_id' => $fixture['company_id']])
+            ->postJson('/api/subscriptions/'.$fixture['subscription_id'].'/change', ['type' => 'cancelamento_imediato'])
+            ->assertOk()->assertJsonPath('message', 'Assinatura cancelada imediatamente.');
+
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'encerrada', 'open_company_product' => null]);
+        $this->assertDatabaseHas('subscription_changes', ['subscription_id' => $fixture['subscription_id'], 'requested_by_user_id' => $user->id, 'status' => 'aplicada']);
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.mercadopago.com/preapproval/pre-unpaid' && $request['status'] === 'cancelled');
+    }
+
+    public function test_company_admin_cancel_button_schedules_paid_subscription_at_period_end(): void
+    {
+        $fixture = $this->subscriptionFixture(['status' => 'ativa']);
+        $user = User::find($fixture['user_id']);
+        DB::table('payments')->where('subscription_id', $fixture['subscription_id'])->update(['status' => 'aprovado']);
+        $periodEndsAt = DB::table('subscriptions')->where('id', $fixture['subscription_id'])->value('current_period_ends_at');
+
+        $this->actingAs($user)->withSession(['active_company_id' => $fixture['company_id']])
+            ->postJson('/api/subscriptions/'.$fixture['subscription_id'].'/change', ['type' => 'cancelamento'])
+            ->assertOk()->assertJsonPath('message', 'Assinatura cancelada ao final do período vigente.');
+
+        $this->assertDatabaseHas('subscriptions', [
+            'id' => $fixture['subscription_id'],
+            'status' => 'ativa',
+            'cancel_at' => $periodEndsAt,
+        ]);
+        $this->assertDatabaseHas('subscription_changes', [
+            'subscription_id' => $fixture['subscription_id'],
+            'type' => 'cancelamento',
+            'status' => 'agendada',
+        ]);
+    }
+
+    public function test_company_admin_cancel_unpaid_subscription_locally_when_provider_is_unavailable(): void
+    {
+        config(['services.mercado_pago.access_token' => 'test-token']);
+        Http::fake(['https://api.mercadopago.com/preapproval/pre-unavailable' => Http::response(['message' => 'temporary failure'], 500)]);
+        $fixture = $this->subscriptionFixture(['status' => 'aguardando_pagamento', 'provider_subscription_id' => 'pre-unavailable']);
+        $user = User::find($fixture['user_id']);
+
+        $this->actingAs($user)->withSession(['active_company_id' => $fixture['company_id']])
+            ->postJson('/api/subscriptions/'.$fixture['subscription_id'].'/change', ['type' => 'cancelamento'])
+            ->assertOk()
+            ->assertJsonPath('message', 'Assinatura não paga cancelada imediatamente.')
+            ->assertJsonPath('provider_sync_pending', true);
+
+        $this->assertDatabaseHas('subscriptions', [
+            'id' => $fixture['subscription_id'],
+            'status' => 'encerrada',
+            'open_company_product' => null,
+        ]);
+    }
+
+    public function test_company_admin_can_delete_only_closed_subscription(): void
+    {
+        $fixture = $this->subscriptionFixture(['status' => 'encerrada']);
+        $user = User::find($fixture['user_id']);
+
+        $this->actingAs($user)->withSession(['active_company_id' => $fixture['company_id']])
+            ->deleteJson('/api/subscriptions/'.$fixture['subscription_id'])
+            ->assertOk()->assertJsonPath('message', 'Assinatura excluída definitivamente.');
+
+        $this->assertDatabaseMissing('subscriptions', ['id' => $fixture['subscription_id']]);
+        $this->assertDatabaseMissing('subscription_items', ['subscription_id' => $fixture['subscription_id']]);
+        $this->assertDatabaseMissing('payments', ['subscription_id' => $fixture['subscription_id']]);
+    }
+
+    public function test_company_admin_cannot_delete_active_subscription(): void
+    {
+        $fixture = $this->subscriptionFixture(['status' => 'ativa']);
+        $user = User::find($fixture['user_id']);
+
+        $this->actingAs($user)->withSession(['active_company_id' => $fixture['company_id']])
+            ->deleteJson('/api/subscriptions/'.$fixture['subscription_id'])
+            ->assertStatus(422);
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'ativa']);
+    }
+
+    public function test_downgrade_is_scheduled_and_command_applies_it_at_period_end(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture(['period_ends_at' => now()->subMinute(), 'provider_subscription_id' => 'pre-change']);
+        config(['services.mercado_pago.access_token' => 'test-token']);
+        Http::fake(['https://api.mercadopago.com/*' => Http::response(['id' => 'pref-upgrade', 'init_point' => 'https://mercadopago.test/upgrade', 'status' => 'authorized'], 200)]);
+        $original = json_decode(DB::table('subscriptions')->where('id', $fixture['subscription_id'])->value('commercial_snapshot'), true);
+        DB::table('subscriptions')->where('id', $fixture['subscription_id'])->update(['commercial_snapshot' => json_encode([...$original, 'amount' => 500, 'monthly_amount' => 500])]);
+        $targetPlanId = DB::table('plans')->where('code', 'law-cartorio-criminal')->value('id');
+
+        $this->actingAs($admin, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], [
+            'action' => 'downgrade',
+            'reason' => 'Redução de escopo.',
+            'target_plan_id' => $targetPlanId,
+        ])->assertOk()->assertJsonPath('status', 'agendada');
+
+        $this->artisan('fokus:apply-subscription-changes')->expectsOutput('Alterações aplicadas: 1')->assertSuccessful();
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'ativa']);
+        $this->assertDatabaseHas('subscription_changes', ['subscription_id' => $fixture['subscription_id'], 'status' => 'aplicada']);
+        $this->assertDatabaseHas('subscription_items', ['subscription_id' => $fixture['subscription_id'], 'name_snapshot' => 'Gestão de Processos para Varas Criminais', 'deleted_at' => null]);
+    }
+
+    public function test_override_is_restricted_to_superadmin_and_records_before_after_snapshots(): void
+    {
+        $commercial = $this->platformAdmin('administrador_comercial');
+        $superadmin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture();
+        $payload = ['action' => 'override', 'reason' => 'Acordo comercial aprovado.', 'override' => ['monthly_amount' => 499.90, 'billing_cycle' => 'monthly']];
+
+        $this->actingAs($commercial, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], $payload)->assertForbidden();
+        $this->withoutExceptionHandling()->actingAs($superadmin, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], $payload)->assertOk();
+
+        $change = DB::table('subscription_changes')->where('subscription_id', $fixture['subscription_id'])->where('type', 'override')->first();
+        $this->assertNotNull($change);
+        $this->assertSame(499.90, (float) json_decode($change->after_snapshot, true)['monthly_amount']);
+        $this->assertNotSame($change->before_snapshot, $change->after_snapshot);
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'ativa']);
+    }
+
+    public function test_subscription_public_name_can_only_be_changed_by_superadmin_and_is_audited(): void
+    {
+        $commercial = $this->platformAdmin('administrador_comercial');
+        $superadmin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture();
+        $url = '/api/backoffice/subscriptions/'.$fixture['subscription_id'].'/public-name';
+
+        $this->actingAs($commercial, 'platform')->patchJson($url, ['public_name' => 'Empresa Alpha'])->assertForbidden();
+        $this->actingAs($superadmin, 'platform')->patchJson($url, ['public_name' => '  Empresa Alpha  '])->assertOk()->assertJsonPath('public_name', 'Empresa Alpha');
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'public_name' => 'Empresa Alpha']);
+        $this->assertDatabaseHas('platform_audit_events', ['action' => 'backoffice.subscription_public_name_updated', 'entity_id' => $fixture['subscription_id']]);
+        $this->actingAs($superadmin, 'platform')->getJson('/api/backoffice/dashboard')
+            ->assertOk()
+            ->assertJsonPath('recent_activity.0.title', 'Assinatura atualizada')
+            ->assertJsonPath('recent_activity.0.description', 'Assinatura: Advocacia · Empresa Alpha · Nome público alterado de “sem nome público” para “Empresa Alpha”.');
+        $this->actingAs($superadmin, 'platform')->patchJson($url, ['public_name' => null])->assertOk()->assertJsonPath('public_name', null);
+        $this->actingAs($superadmin, 'platform')->patchJson($url, ['public_name' => str_repeat('x', 121)])->assertUnprocessable();
+    }
+
+    public function test_free_upgrade_preserves_expiry_without_new_payment_or_redemption(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->freeChangeFixture($admin);
+        DB::table('vouchers')->where('code', 'ACTIVEFREE')->update(['discount_type' => 'fixed', 'discount_value' => 1, 'status' => 'suspensa']);
+        $data = ['action' => 'upgrade', 'reason' => 'Incluir módulos.', 'items' => [['module_code' => 'processos-advocacia'], ['module_code' => 'contatos-advocacia']], 'billing_cycle' => 'monthly', 'expected_version' => 1];
+        $this->actingAs($admin, 'platform')->postJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'].'/quote', $data)
+            ->assertOk()->assertJsonPath('free_benefit', true)->assertJsonPath('charge_now', 0)->assertJsonPath('requires_new_voucher', false);
+        $this->actingAs($admin, 'platform')->patchJson('/api/backoffice/subscriptions/'.$fixture['subscription_id'], $data)->assertOk()->assertJsonPath('status', 'aplicada');
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'ativa', 'current_period_ends_at' => $fixture['expiry']]);
+        $this->assertSame(2, DB::table('subscription_items')->where('subscription_id', $fixture['subscription_id'])->whereNull('deleted_at')->count());
+        $this->assertDatabaseCount('voucher_redemptions', 1);
+        $this->assertDatabaseCount('payments', 1);
+        Http::assertNothingSent();
+    }
+
+    public function test_portal_free_upgrade_uses_the_same_rules_without_gateway_charge(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->freeChangeFixture($admin);
+        $user = User::find($fixture['user_id']);
+        $payload = ['billing_cycle' => 'monthly', 'version' => 1, 'items' => [['module_code' => 'processos-advocacia'], ['module_code' => 'contatos-advocacia']]];
+        $this->actingAs($user)->withSession(['active_company_id' => $fixture['company_id']])->postJson('/api/law/subscription/quote', $payload)
+            ->assertOk()->assertJsonPath('free_benefit', true)->assertJsonPath('charge_now', 0);
+        $this->postJson('/api/law/subscription/change', $payload)->assertCreated()->assertJsonPath('status', 'aplicada')->assertJsonPath('checkout_url', null);
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'current_period_ends_at' => $fixture['expiry']]);
+        $this->assertDatabaseCount('payments', 1);
+        Http::assertNothingSent();
+    }
+
+    public function test_free_upgrade_requires_eligible_replacement_voucher_and_old_expiry_does_not_suspend_it(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->freeChangeFixture($admin, true);
+        $data = ['action' => 'upgrade', 'reason' => 'Nova composição elegível.', 'items' => [['module_code' => 'processos-advocacia'], ['module_code' => 'contatos-advocacia']], 'billing_cycle' => 'monthly', 'expected_version' => 1];
+        $url = '/api/backoffice/subscriptions/'.$fixture['subscription_id'];
+        $this->actingAs($admin, 'platform')->postJson($url.'/quote', $data)->assertOk()->assertJsonPath('requires_new_voucher', true);
+        $this->actingAs($admin, 'platform')->patchJson($url, $data)->assertUnprocessable();
+        DB::table('vouchers')->insert(['id' => PrefixedUlid::make('VCH'), 'code' => 'NEWFREE', 'name' => 'Novo benefício', 'discount_type' => 'trial_free', 'discount_value' => 100,
+            'created_by_platform_admin_id' => $admin->id, 'product_id' => $fixture['product_id'], 'benefit_duration' => 'm1', 'redemption_limit_per_company' => 1, 'status' => 'ativa', 'created_at' => now(), 'updated_at' => now()]);
+        $this->actingAs($admin, 'platform')->patchJson($url, [...$data, 'voucher_code' => 'NEWFREE'])->assertOk()->assertJsonPath('status', 'aplicada');
+        $this->assertDatabaseCount('voucher_redemptions', 2);
+        $this->assertDatabaseCount('payments', 1);
+        $this->travel(8)->days();
+        $this->assertSame(0, app(PendingSubscriptionVoucher::class)->suspendExpired());
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'ativa']);
+        Http::assertNothingSent();
+    }
+
+    public function test_backoffice_can_cancel_pending_cancellation_and_restore_contract(): void
+    {
+        $admin = $this->platformAdmin();
+        $fixture = $this->subscriptionFixture();
+        $url = '/api/backoffice/subscriptions/'.$fixture['subscription_id'];
+        $this->actingAs($admin, 'platform')->patchJson($url, ['action' => 'cancelamento', 'reason' => 'Encerrar ao final.'])->assertOk()->assertJsonPath('status', 'agendada');
+        $this->actingAs($admin, 'platform')->deleteJson($url.'/change', ['reason' => 'Cliente decidiu continuar.', 'expected_version' => 2])->assertOk();
+        $this->assertDatabaseHas('subscriptions', ['id' => $fixture['subscription_id'], 'status' => 'ativa', 'cancel_at' => null]);
+        $this->assertDatabaseHas('subscription_changes', ['subscription_id' => $fixture['subscription_id'], 'status' => 'cancelada']);
+    }
+
+    private function freeChangeFixture(PlatformAdmin $admin, bool $restricted = false): array
+    {
+        Http::fake();
+        $fixture = $this->subscriptionFixture();
+        $subscription = DB::table('subscriptions')->where('id', $fixture['subscription_id'])->first();
+        $snapshot = json_decode($subscription->commercial_snapshot, true);
+        $expiry = now()->addDays(7)->toDateTimeString();
+        $voucherId = PrefixedUlid::make('VCH');
+        DB::table('vouchers')->insert(['id' => $voucherId, 'code' => 'ACTIVEFREE', 'name' => 'Gratuidade vigente', 'discount_type' => 'trial_free', 'discount_value' => 100,
+            'product_id' => $subscription->product_id, 'plan_id' => $restricted ? $snapshot['plan_id'] : null, 'benefit_duration' => 'd7',
+            'redemption_limit_per_company' => 1, 'status' => 'ativa', 'created_by_platform_admin_id' => $admin->id, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('voucher_redemptions')->insert(['id' => PrefixedUlid::make('VRD'), 'voucher_id' => $voucherId, 'company_id' => $fixture['company_id'], 'subscription_id' => $fixture['subscription_id'],
+            'discount_amount' => 64.70, 'benefit_starts_at' => now(), 'benefit_ends_at' => $expiry, 'snapshot' => json_encode(['discount_type' => 'trial_free']), 'created_at' => now()]);
+        DB::table('subscriptions')->where('id', $fixture['subscription_id'])->update(['current_period_ends_at' => $expiry, 'commercial_snapshot' => json_encode([
+            ...$snapshot, 'plan_id' => null, 'plan_code' => null, 'plan_name' => 'Personalizada', 'base_amount' => 34.9, 'base_monthly_amount' => 34.9,
+            'amount' => 0, 'monthly_amount' => 0, 'current_period_ends_at' => $expiry,
+        ])]);
+
+        return [...$fixture, 'expiry' => $expiry, 'product_id' => $subscription->product_id];
+    }
+
+    private function platformAdmin(string $role = 'superadministrador'): PlatformAdmin
+    {
+        return PlatformAdmin::create([
+            'id' => PrefixedUlid::make('PAD'),
+            'name' => 'Equipe Fokus',
+            'email' => $role.'-'.PlatformAdmin::count().'@example.test',
+            'password' => Hash::make('SenhaInterna!2026'),
+            'status' => 'ativo',
+            'platform_role_id' => PlatformRole::where('code', $role)->value('id'),
+            'email_verified_at' => now(),
+        ]);
+    }
+
+    private function subscriptionFixture(array $options = []): array
+    {
+        $product = DB::table('products')->where('code', 'law')->first();
+        $module = DB::table('modules')->where('code', 'processos-advocacia')->first();
+        $user = User::create(['id' => PrefixedUlid::make('USR'), 'name' => 'Administrador Alpha', 'cpf' => $options['cpf'] ?? '52998224725', 'email' => 'cliente-'.User::count().'@example.test', 'password' => Hash::make('SenhaCliente!2026'), 'status' => 'ativa', 'email_verified_at' => now()]);
+        $companyId = PrefixedUlid::make('COM');
+        DB::table('companies')->insert(['id' => $companyId, 'document_type' => 'cnpj', 'document_number' => '12345678000100', 'legal_name' => 'Empresa Alpha', 'status' => 'ativa', 'version' => 1, 'created_by' => $user->id, 'updated_by' => $user->id, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('company_memberships')->insert(['id' => PrefixedUlid::make('MBS'), 'company_id' => $companyId, 'user_id' => $user->id, 'role_id' => DB::table('roles')->where('code', 'admin')->value('id'), 'status' => 'ativo', 'active_admin_company_id' => $companyId, 'version' => 1, 'created_by' => $user->id, 'updated_by' => $user->id, 'created_at' => now(), 'updated_at' => now()]);
+        $subscriptionId = PrefixedUlid::make('ASS');
+        $endsAt = $options['period_ends_at'] ?? now()->addMonth();
+        $snapshot = ['plan_id' => DB::table('plans')->where('code', 'law-advocacia')->value('id'), 'plan_code' => 'law-advocacia', 'plan_name' => 'Advocacia', 'billing_cycle' => 'monthly', 'monthly_amount' => 64.70, 'amount' => 64.70, 'current_period_starts_at' => now()->toISOString(), 'current_period_ends_at' => $endsAt->toISOString(), 'status' => 'ativa', 'items' => [['module_id' => $module->id, 'name' => $module->name, 'quantity' => 1, 'unit_price' => (float) $module->monthly_price, 'conditions' => ['plan_code' => 'law-advocacia']]]];
+        DB::table('subscriptions')->insert(['id' => $subscriptionId, 'company_id' => $companyId, 'product_id' => $product->id, 'status' => $options['status'] ?? 'ativa', 'open_company_product' => $companyId.'-'.$product->id, 'version' => 1, 'billing_cycle' => 'monthly', 'current_period_starts_at' => now(), 'current_period_ends_at' => $endsAt, 'provider_subscription_id' => $options['provider_subscription_id'] ?? null, 'commercial_snapshot' => json_encode($snapshot), 'created_by' => $user->id, 'updated_by' => $user->id, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('subscription_items')->insert(['id' => PrefixedUlid::make('ITM'), 'company_id' => $companyId, 'subscription_id' => $subscriptionId, 'module_id' => $module->id, 'name_snapshot' => $module->name, 'quantity' => 1, 'unit_price_snapshot' => $module->monthly_price, 'conditions_snapshot' => json_encode(['plan_code' => 'law-advocacia']), 'version' => 1, 'created_by' => $user->id, 'updated_by' => $user->id, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('payments')->insert(['id' => PrefixedUlid::make('PAG'), 'company_id' => $companyId, 'subscription_id' => $subscriptionId, 'provider' => 'mercado_pago', 'status' => 'aguardando_pagamento', 'amount' => 64.70, 'currency' => 'BRL', 'provider_payload_sanitized' => json_encode(['test' => true]), 'version' => 1, 'created_by' => $user->id, 'updated_by' => $user->id, 'created_at' => now(), 'updated_at' => now()]);
+
+        return ['company_id' => $companyId, 'subscription_id' => $subscriptionId, 'user_id' => $user->id];
+    }
+}
