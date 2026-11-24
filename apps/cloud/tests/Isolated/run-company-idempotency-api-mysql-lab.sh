@@ -2,11 +2,35 @@
 set -euo pipefail
 
 # Disposable proof only: this never receives an .env, host database, or host network.
-test -f composer.lock
-test -f tests/Isolated/company-idempotency-api-mysql-bootstrap.php
-# A linked worktree stores its Git directory in a .git file; both layouts are
-# valid because the proof only needs `git archive HEAD` below.
-test -e .git
+if [[ ! -f composer.lock ]]; then
+  echo "idempotency MySQL lab: composer.lock is missing. Run the script from the Fokus Cloud app root (apps/cloud in the monorepo, or the repository root in a standalone checkout)." >&2
+  exit 1
+fi
+if [[ ! -f tests/Isolated/company-idempotency-api-mysql-bootstrap.php ]]; then
+  echo "idempotency MySQL lab: tests/Isolated/company-idempotency-api-mysql-bootstrap.php is missing. Run the script from the Fokus Cloud app root." >&2
+  exit 1
+fi
+# Work-tree check, not a local .git path probe: in the monorepo the Git directory lives at
+# the repository root, while this script runs from apps/cloud. Linked worktrees
+# and standalone checkouts also satisfy git rev-parse --is-inside-work-tree.
+if [[ "$(git rev-parse --is-inside-work-tree 2>/dev/null || true)" != true ]]; then
+  echo "idempotency MySQL lab: not inside a Git work tree. The lab archives the app with git and cannot run here." >&2
+  exit 1
+fi
+
+# Archive only the app tree so composer.lock is at the archive root in both
+# layouts. `git archive` from apps/cloud with HEAD:<prefix> would apply the
+# subdirectory pathspec twice and emit an empty archive; always run it from
+# the repository root. An empty prefix (standalone checkout) is HEAD:.
+archive_app_tree() {
+  git -C "$(git rev-parse --show-toplevel)" archive --format=tar "HEAD:$(git rev-parse --show-prefix)"
+}
+
+# Regression hook: prerequisites plus the app archive, without Docker or network.
+if [[ "${FOKUS_LAB_ARCHIVE_ONLY:-}" == 1 ]]; then
+  archive_app_tree
+  exit 0
+fi
 
 runtime_image='fokus-rei60-mysql-lab-runtime'
 mysql_image='mysql:8.4'
@@ -25,7 +49,7 @@ trap cleanup EXIT
 docker build -q -t "$runtime_image" -f tests/Deployment/linux-runtime/Dockerfile . >/dev/null
 docker volume create "$source_volume" >/dev/null
 # git archive deliberately excludes ignored working files such as .env and vendor.
-git archive --format=tar HEAD | docker run --rm -i --network none -v "$source_volume:/workspace" composer:2.8 sh -c 'tar -xf - -C /workspace'
+archive_app_tree | docker run --rm -i --network none -v "$source_volume:/workspace" composer:2.8 sh -c 'tar -xf - -C /workspace'
 # The archive also omits empty runtime directories. Create mount targets before
 # overlaying them with tmpfs in the read-only test container.
 docker run --rm --network none -v "$source_volume:/workspace" composer:2.8 \
