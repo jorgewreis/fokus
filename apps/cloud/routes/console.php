@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Schema;
+
+Schedule::command('fokus:prune-expired-data')->daily();
+// Reconstruction decision: remove unusable import previews every fifteen minutes.
+Schedule::command('law:prune-expired-contact-imports')->everyFifteenMinutes()->withoutOverlapping(15);
+Schedule::command('law:sync-case-datajud')->everyFifteenMinutes()->withoutOverlapping(120);
+Schedule::command('law:sync-case-djen')->everyFifteenMinutes()->withoutOverlapping(120);
+Schedule::command('law:sync-contact-age-tags')->dailyAt('04:15')->withoutOverlapping(120);
+Schedule::command('queue:work law-datajud --queue=law-datajud --stop-when-empty --max-time=50 --timeout=70 --tries=1')
+    ->everyMinute()->withoutOverlapping(5)->runInBackground();
+Schedule::command('fokus:expire-support-sessions')->everyFiveMinutes();
+Schedule::command('fokus:compensate-checkout-orphans')->everyFiveMinutes();
+Schedule::command('fokus:apply-subscription-changes')->hourly();
+Schedule::command('fokus:expire-voucher-reservations')->everyFiveMinutes();
+Schedule::command('fokus:expire-subscription-tolerance')->hourly();
+Schedule::command('fokus:expire-free-voucher-subscriptions')->hourly();
+Schedule::command('fokus:reconcile-mercado-pago')->daily();
+
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
+
+Artisan::command('inspire', function () {
+    $this->comment(Inspiring::quote());
+})->purpose('Display an inspiring quote');
+
+Artisan::command('law:prune-expired-contact-imports', function (): void {
+    if (! Schema::hasTable('law_contact_import_batches')) {
+        return;
+    }
+
+    DB::table('law_contact_import_batches')->where('expires_at', '<=', now())->delete();
+})->purpose('Remove only expired contact import previews');

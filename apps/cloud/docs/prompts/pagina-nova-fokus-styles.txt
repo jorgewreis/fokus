@@ -1,0 +1,138 @@
+PROMPT — CRIAÇÃO DE PÁGINA NOVA SEM MODELO EXISTENTE
+
+Use este prompt quando não houver uma página-modelo adequada no Fokus Cloud.
+Leia primeiro:
+- docs/prompts/governanca-visual-fokus-styles.txt
+- docs/prompts/perguntas-fokus-styles.txt
+- docs/03-architecture/fokus-styles-ui-governance.md
+- a documentação e o código do módulo relacionado
+
+MODELO PADRÃO DO BACKOFFICE
+
+Para páginas do Backoffice, a página Empresas (`public/backoffice/pages/companies.html`)
+é a referência funcional e visual obrigatória. Reutilize a composição de cabeçalho,
+filtros, card de tabela responsiva, paginação, estados de carregamento/erro/vazio,
+ações acessíveis e offcanvas de detalhes/formulário, adaptando somente os dados e
+as permissões do módulo. Não copie estilos, IDs ou lógica específicos de Empresas:
+extraia e use contratos compartilhados em `fs-*`, `fs-u-*`, `data-fs-*` e nos
+componentes reutilizáveis do shell. A página só pode divergir desse modelo quando
+houver requisito funcional ou de acessibilidade documentado.
+
+OBJETIVO
+
+Criar uma página funcional, acessível, consistente e visualmente refinada,
+usando o Fokus Styles instalado como fonte visual e técnica primária. A
+ausência de modelo não autoriza inventar padrões, componentes ou APIs já
+existentes no Fokus Styles ou no shell do produto.
+
+AUDITORIA OBRIGATÓRIA
+
+Antes de criar código, pesquise documentação, shell, navegação, páginas
+existentes e o Fokus Styles instalado. Confirme a versão e procure tokens
+`--fs-*`, componentes `fs-*`, utilitários `fs-u-*`, atributos
+`data-fs-*`, composições, exemplos e contratos JavaScript. Separe o resultado
+em confirmado, proposto, pendente e bloqueado.
+
+ORDEM DE DECISÃO
+
+1. Reutilize shell, navegação, cabeçalho, container e responsividade do produto.
+2. Use tokens oficiais para cores, tipografia, espaçamento, bordas, raios,
+   sombras, tamanhos e movimento.
+3. Use componentes oficiais para botões, links, inputs, selects, checks,
+   radios, badges, cards, alerts, tabelas, paginação, modais, offcanvas,
+   tabs, dropdowns e loading.
+4. Componha esses elementos; não duplique componentes com HTML, CSS ou JS.
+5. Toda composição com potencial de repetição deve ser compartilhada,
+   documentada e reutilizada.
+6. Código exclusivo só é permitido para uma necessidade realmente específica,
+   com justificativa registrada e CSS escopado à página.
+7. Mudanças globais devem ser propostas no repositório `fokus-styles`; nunca
+   edite `node_modules/fokus-styles` como solução permanente.
+8. Só implemente após plano e autorização explícita.
+
+PLANO VISUAL E FUNCIONAL
+
+Antes da implementação, defina objetivo, público, tarefas, conteúdo, ações,
+dados, permissões, estados, contratos de API, hierarquia de conteúdo,
+estrutura do shell, container e grid, componentes reutilizados, tokens usados,
+breakpoints, estados de erro/vazio/sucesso/loading, overflow, textos longos,
+critérios de aceite e decisões pendentes.
+
+ACESSIBILIDADE OBRIGATÓRIA
+
+- Use HTML semântico, landmark principal e uma hierarquia coerente de headings.
+- Dê nome acessível a botões, links, ícones e controles visuais.
+- Associe todo campo a label visível, instrução e mensagem de erro acessível.
+- Garanta foco visível, ordem lógica de teclado e navegação completa sem mouse.
+- Em modal, drawer e menus, preserve foco, permita Escape e devolva o foco ao
+  acionador ao fechar.
+- Use ARIA apenas quando necessário e com valores corretos.
+- Não dependa apenas de cor, ícone, posição ou animação para comunicar estados.
+- Valide contraste de textos, controles, bordas, badges e estados.
+- Respeite `prefers-reduced-motion`, zoom, reflow e leitores de tela quando
+  disponíveis.
+- Garanta cabeçalhos e escopo corretos em tabelas.
+
+FUNCIONALIDADE OBRIGATÓRIA
+
+Implemente e teste carregamento, loading, erro, vazio, busca, filtros,
+paginação, validação cliente/servidor, prevenção de duplo envio, permissões,
+sucesso, cancelamento, recuperação após erro, atualização dos dados e deep link
+quando aplicável. Toda ação visível deve funcionar ou estar desabilitada com
+explicação.
+
+ALINHAMENTO E ESPAÇAMENTO
+
+Use container, grid e utilitários oficiais ou uma composição documentada. Mantenha
+alinhamentos consistentes entre título, ações, cards, formulários e tabelas.
+Use tokens de espaçamento, ritmo vertical previsível, áreas de toque adequadas,
+largura de leitura limitada e tabelas responsivas. Não use posicionamento
+improvisado, margens negativas ou larguras fixas sem justificativa. Teste
+320px, 375px, 768px, 1024px e desktop amplo, evitando cards estreitos, colunas
+esticadas, desalinhamento e espaços vazios acidentais.
+
+PREFERÊNCIA DE LAYOUT
+
+Prefira `display: flex`, flex-wrap, gap, flex-basis e alinhamento flexível para
+estruturar páginas, regiões, cards, formulários e ações. Evite `display: block`
+como mecanismo de layout e evite `display: grid`, salvo quando uma matriz
+bidimensional for realmente necessária e a decisão estiver justificada no
+plano. Não use posicionamento absoluto para compensar uma estrutura flexível
+mal definida.
+
+TIPOGRAFIA, CORES E TEMAS
+
+Use a escala tipográfica, famílias, pesos, line-height, tracking, superfícies,
+bordas e estados do Fokus Styles. Não use valores arbitrários para corrigir
+inconsistências locais. Use tokens `--fs-*` e variantes oficiais para texto,
+fundo, informação, sucesso, atenção, erro e desabilitado. Valide contraste e,
+quando disponível, temas claro e escuro.
+
+IMPLEMENTAÇÃO
+
+Após autorização: use as APIs oficiais identificadas; não crie arquivo CSS,
+classe visual, token ou componente paralelo quando já existir contrato oficial;
+para mudança global, altere o CSS-fonte do Fokus Styles e sincronize depois;
+escopo CSS local à página somente para exceção comprovadamente exclusiva; não
+sobrescreva globalmente componentes para resolver caso local; não crie botões,
+inputs, selects, cards, badges, alerts ou overlays paralelos; documente
+novo componente compartilhado; preserve contratos, alterações locais, segredos
+e dados reais.
+
+VALIDAÇÃO E ACEITE
+
+Execute checks documentais, testes, lint, auditoria de tokens e de classes
+duplicadas, testes funcionais e de erro, teclado, foco, ARIA, contraste,
+reduced motion, temas e responsividade. Confirme em navegador real a página
+renderizada e os estilos computados, não apenas HTML/CSS-fonte.
+
+A entrega só está concluída quando estiver organizada, alinhada, legível,
+acessível e funcional no navegador. Relate separadamente confirmado por código,
+confirmado por teste, confirmado por navegador, proposto, pendente e bloqueado.
+
+PERGUNTAS
+
+Use docs/prompts/perguntas-fokus-styles.txt: inspecione antes de perguntar,
+faça uma pergunta por vez, ofereça exatamente cinco alternativas, marque uma
+única recomendação e explique-a pelo contexto. Não implemente decisão pendente
+sem autorização explícita.

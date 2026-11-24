@@ -1,0 +1,157 @@
+import { createRecordsDrawer } from "./records-drawer.js";
+
+const isUncertainResult = (error) => !error.status || error.status === 408 || error.status >= 500;
+const planActionStates = new Map();
+let planSaveState = null;
+const planActionListeners = new Set();
+const notifyPlanActions = () => planActionListeners.forEach((listener) => listener());
+
+/** Planos: composição comercial, módulos, personalizações e ciclo de vida. */
+export async function mount(root, context = {}) {
+    const $ = (selector) => root.querySelector(selector) || document.querySelector(selector);
+    let disposed = false;
+    const live = () => !disposed && !context.signal?.aborted && root.isConnected;
+    const api = context.api || window.FokusApi;
+    const pageSize = 15;
+    const form = $("#plan-form");
+    const list = $("#plan-list");
+    const state = { catalog: { products: [], options: {} }, plans: [], filtered: [], page: 1, mode: "create", planId: null, modules: [], defaults: {}, pendingAction: null, saving: false, actionRunning: false };
+    const drawer = createRecordsDrawer({ trigger: $("#plan-drawer-trigger"), drawer: $("#plan-drawer") });
+    const compositionDrawer = createRecordsDrawer({ trigger: $("#plan-composition-trigger"), drawer: $("#plan-composition-drawer") });
+    const destructiveModal = window.FokusStyles?.Modal?.getOrCreateInstance($("#plan-destructive-trigger"));
+    const field = (name) => form.elements.namedItem(name);
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[character]));
+    const money = (value) => Math.max(0, Number(value || 0)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    const parseMoney = (value) => window.FokusCurrency?.parse(value) ?? (Number(String(value || "").replace(",", ".")) || 0);
+    const showMessage = (text, tone = "danger") => { const node = $("#plans-message"); node.textContent = text || ""; node.dataset.tone = tone; node.hidden = !text; };
+    const labels = { ativo: "Ativo", inativo: "Inativo", pausado: "Pausado", arquivado: "Arquivado", publicado: "Publicado", rascunho: "Rascunho" };
+    const badge = (value) => { const normalized = String(value || "").toLowerCase(); const tone = ["ativo", "publicado"].includes(normalized) ? "success" : ["pausado", "rascunho"].includes(normalized) ? "warning" : ["arquivado"].includes(normalized) ? "danger" : "secondary"; return `<span class="fs-badge fs-badge-width-100 fs-badge-soft-${tone}">${escapeHtml(labels[normalized] || value || "-")}</span>`; };
+    const planVersion = (plan) => plan.release_version || (Number(plan.published_version) > 0 ? `v${Number(plan.published_version)}.0` : "—");
+    const icon = { view: "Folder-File--Streamline-Ultimate.png", edit: "Common-File-Edit--Streamline-Ultimate.png", activate: "Common-File-Check--Streamline-Ultimate.png", publish: "File-Code-2--Streamline-Ultimate.png", pause: "Common-File-Subtract--Streamline-Ultimate.png", archive: "File-Code-Remove--Streamline-Ultimate.png", delete: "Common-File-Remove--Streamline-Ultimate.png" };
+    const action = (type, plan, label, danger = false) => `<button class="fs-btn fs-btn-icon fs-btn-icon-plain fs-table-action${danger ? " fs-btn-danger" : ""}" type="button" data-plan-action="${type}" data-plan-id="${escapeHtml(plan.id)}" ${type !== "view" && (planSaveState || planActionStates.has(String(plan.id))) ? "disabled" : ""} ${type !== "view" && (planSaveState === "pending" || planActionStates.get(String(plan.id)) === "pending") ? 'aria-busy="true"' : ""} aria-label="${label}" title="${label}"><img src="/backoffice/assets/icons/${icon[type]}" alt="" /></button>`;
+    const product = (id) => state.catalog.products.find((item) => String(item.id) === String(id));
+    const allModules = () => state.catalog.products.flatMap((item) => (item.modules || []).map((module) => ({ ...module, product_name: item.name, product_code: item.code })));
+    const selectedModuleIds = () => state.modules.map((module) => String(module.id));
+    const selectedDefaults = () => Object.entries(state.defaults).filter(([, tierId]) => tierId).map(([personalizationId, tierId]) => ({ personalization_id: personalizationId, tier_id: tierId }));
+    const selectedProductModules = () => allModules().filter((module) => String(module.product_id) === String(field("product_id").value));
+    const suggestedMonthly = (rawMonthly) => { const cents = Math.round(Math.max(0, Number(rawMonthly || 0)) * 0.9 * 100); if (cents < 500) return 0; return Math.max(0, (Math.floor(cents / 500) * 500 - 10) / 100); };
+    const calculateSuggested = () => { const moduleTotal = state.modules.reduce((sum, module) => sum + Math.max(0, Number(module.monthly_amount || module.monthly_price || 0)), 0); const personalizationTotal = Object.entries(state.defaults).reduce((sum, [personalizationId, tierId]) => { const personalization = state.modules.flatMap((module) => module.personalizations || []).find((item) => String(item.id) === String(personalizationId)); const tier = personalization?.tiers?.find((item) => String(item.id) === String(tierId)); return sum + Math.max(0, Number(tier?.additional_monthly_amount || 0)); }, 0); return Math.max(0, suggestedMonthly(moduleTotal) + personalizationTotal); };
+    const updatePrices = () => { const suggested = calculateSuggested(); const override = field("monthly_amount").value.trim() ? Math.max(0, parseMoney(field("monthly_amount").value)) : suggested; $("#plan-suggested-price").textContent = money(suggested); $("#plan-annual-price").textContent = money(override * 10); };
+    const renderSummary = () => { const names = state.modules.map((module) => module.name); $("#plan-composition-summary").textContent = names.length ? `${names.length} funcionalidade(s): ${names.join(", ")}` : "Nenhuma funcionalidade selecionada."; updatePrices(); };
+    const catalogProductCode = (code) => ({ "fokus-law": "law", "fokus-lead": "lead" }[code] || code);
+    const segmentOptions = (productId) => {
+        const productCode = product(productId)?.code || "";
+        const segments = state.catalog.options.segments || {};
+        const productSegments = segments[productCode] || segments[catalogProductCode(productCode)] || [];
+        return productSegments.length ? productSegments : Object.values(segments).flat().filter((item, index, items) => items.findIndex((candidate) => candidate.code === item.code) === index);
+    };
+    const renderPlanSegments = (selected = "") => {
+        const options = segmentOptions(field("product_id").value);
+        const value = options.some((item) => String(item.code) === String(selected)) ? String(selected) : "";
+        field("segment").innerHTML = '<option value="">Selecione um segmento</option>' + options.map((item) => `<option value="${escapeHtml(item.code)}">${escapeHtml(item.label)}</option>`).join("");
+        field("segment").value = value;
+    };
+    const renderProducts = () => { const current = field("product_id").value; $("#plan-product").innerHTML = '<option value="">Selecione um produto</option>' + state.catalog.products.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${escapeHtml(item.code)})</option>`).join(""); field("product_id").value = current; renderPlanSegments(field("segment").value); const segments = [...new Set(state.plans.map((plan) => plan.segment).filter(Boolean))].sort(); $("#plan-segment-filter").innerHTML = '<option value="">Todos os segmentos</option>' + segments.map((segment) => `<option value="${escapeHtml(segment)}">${escapeHtml(segment)}</option>`).join(""); };
+    const planActions = (plan) => {
+        const canPublish = context.permissions?.has("platform.catalog.publish") || window.__backofficePermissions?.has("platform.catalog.publish");
+        const items = [action("view", plan, "Ver detalhes do plano")];
+        if (["pausado", "inativo"].includes(plan.status) && plan.publication_state !== "arquivado") items.push(action("edit", plan, "Editar plano"));
+        if (!canPublish) return items.join("");
+        if (plan.publication_state === "arquivado") items.push(action("delete", plan, "Excluir plano", true));
+        else if (plan.status === "ativo" && plan.publication_state === "publicado") items.push(action("pause", plan, "Pausar plano"));
+        else if (plan.status === "ativo") items.push(action("pause", plan, "Pausar plano para editar"), action("publish", plan, "Publicar plano"));
+        else if (["inativo", "pausado"].includes(plan.status)) items.push(action("activate", plan, "Ativar plano"), action("archive", plan, "Arquivar plano"));
+        return items.join("");
+    };
+    const renderPagination = (totalPages) => { $("#plan-pagination").innerHTML = `<ul class="fs-pagination fs-pagination-compact"><li class="fs-page-item"><button class="fs-page-link" type="button" data-plan-page="${state.page - 1}" aria-label="Página anterior" ${state.page === 1 ? "disabled" : ""}>‹</button></li><li class="fs-page-item is-active" aria-current="page"><button class="fs-page-link" type="button" data-plan-page="${state.page}" aria-label="Página ${state.page}" aria-current="page">${state.page}</button></li><li class="fs-page-item"><button class="fs-page-link" type="button" data-plan-page="${state.page + 1}" aria-label="Próxima página" ${state.page === totalPages ? "disabled" : ""}>›</button></li></ul>`; };
+    const render = () => { const query = $("#plan-search").value.trim().toLowerCase(); const status = $("#plan-status-filter").value; const segment = $("#plan-segment-filter").value; state.filtered = state.plans.filter((plan) => (!query || `${plan.name} ${plan.full_name} ${plan.code}`.toLowerCase().includes(query)) && (!status || plan.status === status) && (!segment || plan.segment === segment)); const totalPages = Math.max(1, Math.ceil(state.filtered.length / pageSize)); state.page = Math.min(Math.max(state.page, 1), totalPages); const visible = state.filtered.slice((state.page - 1) * pageSize, state.page * pageSize); list.innerHTML = visible.length ? visible.map((plan) => `<tr><td class="fs-width-600" data-label="Plano"><strong>${escapeHtml(plan.full_name || plan.name)}</strong><small class="fs-u-d-block fs-u-fs-sm">${escapeHtml(plan.code)}${plan.featured ? " · Destaque" : ""}</small></td><td class="fs-width-500" data-label="Produto">${escapeHtml(plan.product_name || "-")}<small class="fs-u-d-block fs-u-fs-sm">${escapeHtml(plan.product_code || "")}</small></td><td class="fs-width-400" data-label="Valores"><div class="plan-price-stack"><div class="plan-price-line"><span class="plan-price-label">Mensal</span><strong class="plan-price-value">${money(plan.monthly_amount)}</strong></div><div class="plan-price-line plan-price-line--annual"><span class="plan-price-label">Anual</span><span class="plan-price-value">${money(plan.annual_amount)}</span></div></div></td><td class="fs-width-300" data-label="Status">${badge(plan.status)}</td><td class="fs-width-300" data-label="Publicação">${badge(plan.publication_state)}</td><td class="fs-width-300" data-label="Versão">${escapeHtml(planVersion(plan))}</td><td class="fs-width-200" data-label="Assinaturas">${Number(plan.subscription_count || 0)}</td><td class="fs-width-400" data-label="Ações"><div class="fs-u-d-flex fs-u-gap-2">${planActions(plan)}</div></td></tr>`).join("") : '<tr><td colspan="7">Nenhum plano encontrado com os filtros informados.</td></tr>'; $("#plan-table-summary").textContent = `${state.filtered.length} registros encontrados`; $("#plan-table-footer-summary").textContent = `Mostrando página ${state.page} de ${totalPages} com ${visible.length} registros, de um total de ${totalPages} páginas.`; renderPagination(totalPages); window.refreshFokusDataTables?.(root); };
+    const resetForm = () => { form.reset(); field("code").disabled = false; field("status").value = "inativo"; field("status").disabled = false; field("display_order").value = "1"; field("monthly_amount").value = ""; renderPlanSegments(); state.mode = "create"; state.planId = null; state.modules = []; state.defaults = {}; drawer.setState({ mode: "create" }); form.hidden = false; $("#plan-view-panel").hidden = true; $("#plan-composition-open").hidden = false; $("#plan-form-footer").hidden = false; $("#plan-drawer-kicker").textContent = "CATÁLOGO"; $("#plan-drawer-title").textContent = "Novo plano"; $("#plan-drawer-description").textContent = "Cadastre uma oferta comercial para um produto."; $("#plan-form-submit").textContent = "Cadastrar plano"; renderSummary(); };
+    const populateForm = (plan) => { ["product_id", "code", "base_name", "segment", "status", "display_order", "featured", "technical_description", "commercial_content"].forEach((key) => { if (field(key)) field(key).value = key === "product_id" ? plan.product_id : key === "base_name" ? plan.name : plan[key] ?? ""; }); renderPlanSegments(plan.segment); const configuredMonthly = Number(plan.configured_monthly_amount); field("monthly_amount").value = plan.configured_monthly_amount !== null && plan.configured_monthly_amount !== undefined && Number.isFinite(configuredMonthly) && configuredMonthly >= 0 ? window.FokusCurrency?.format(configuredMonthly) || String(configuredMonthly) : ""; state.modules = (plan.modules || []).map((module) => ({ ...module })); state.defaults = Object.fromEntries((plan.personalization_defaults || []).map((item) => [String(item.personalization_id), String(item.tier_id)])); renderSummary(); };
+    const openCreate = () => { resetForm(); drawer.show(); $("#plan-product").focus(); };
+    const openEdit = (plan) => { resetForm(); state.mode = "edit"; state.planId = plan.id; drawer.setState({ mode: "edit", record: plan }); populateForm(plan); $("#plan-drawer-kicker").textContent = "EDITAR PLANO"; $("#plan-drawer-title").textContent = "Editar plano"; $("#plan-drawer-description").textContent = "Altere os dados comerciais e a composição do plano."; $("#plan-form-submit").textContent = "Salvar alterações"; field("code").disabled = true; field("status").disabled = true; drawer.show(); $("#plan-name").focus(); };
+    const detailList = (items, get = (item) => item) => items?.length ? `<ul>${items.map((item) => `<li>${escapeHtml(get(item))}</li>`).join("")}</ul>` : '<p class="fs-u-color-secondary">Nenhum item informado.</p>';
+    const renderView = (plan) => { $("#plan-view-panel").innerHTML = `<section class="fs-card fs-card-panel" aria-labelledby="plan-view-data-title"><div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="plan-view-data-title">Dados do plano</h3><p class="fs-card-subtitle">Identificação comercial, status e publicação.</p></div></div><div class="fs-card-body"><dl class="fs-detail-list"><div><dt>Produto</dt><dd>${escapeHtml(`${plan.product_name || "-"} (${plan.product_code || "-"})`)}</dd></div><div><dt>Nome</dt><dd>${escapeHtml(plan.full_name || plan.name || "-")}</dd></div><div><dt>Código técnico</dt><dd>${escapeHtml(plan.code || "-")}</dd></div><div><dt>Segmento</dt><dd>${escapeHtml(plan.segment || "-")}</dd></div><div><dt>Status</dt><dd>${badge(plan.status)}</dd></div><div><dt>Publicação</dt><dd>${badge(plan.publication_state)}</dd></div></dl></div></section><section class="fs-card fs-card-panel" aria-labelledby="plan-view-commercial-title"><div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="plan-view-commercial-title">Preço e composição</h3><p class="fs-card-subtitle">Valores comerciais e funcionalidades vinculadas ao plano.</p></div></div><div class="fs-card-body"><dl class="fs-detail-list"><div><dt>Mensal</dt><dd>${escapeHtml(money(plan.monthly_amount))}</dd></div><div><dt>Anual</dt><dd>${escapeHtml(money(plan.annual_amount))}</dd></div><div><dt>Funcionalidades</dt><dd>${Number(plan.modules_count || (plan.modules || []).length)}</dd></div></dl><h4>Funcionalidades selecionadas</h4>${detailList(plan.modules, (item) => item.name || item.full_name || item.code)}</div></section><section class="fs-card fs-card-panel" aria-labelledby="plan-view-operations-title"><div class="fs-card-header"><div class="fs-card-header-title"><h3 class="fs-card-title" id="plan-view-operations-title">Resumo operacional</h3><p class="fs-card-subtitle">Dados do catálogo e vínculos comerciais.</p></div></div><div class="fs-card-body"><dl class="fs-detail-list"><div><dt>Status do produto</dt><dd>${badge(plan.product_status)}</dd></div><div><dt>Versão publicada do plano</dt><dd>${escapeHtml(planVersion(plan))}</dd></div><div><dt>Assinaturas ativas</dt><dd>${Number(plan.active_subscription_count || 0)}</dd></div><div><dt>Assinaturas encerradas</dt><dd>${Number(plan.closed_subscription_count || 0)}</dd></div><div><dt>Vouchers</dt><dd>${Number(plan.voucher_count || 0)}</dd></div><div><dt>Empresas</dt><dd>${Number(plan.company_count || 0)}</dd></div></dl><div class="fs-u-d-flex fs-u-flex-wrap fs-u-gap-2 fs-u-mt-3"><a class="fs-btn fs-btn-outline-primary fs-width-300" href="/backoffice/produtos">Ver produtos</a><a class="fs-btn fs-btn-outline-primary fs-width-300" href="/backoffice/modulos">Ver módulos</a><a class="fs-btn fs-btn-outline-primary fs-width-400" href="/backoffice/assinaturas">Ver assinaturas</a><a class="fs-btn fs-btn-outline-primary fs-width-300" href="/backoffice/vouchers">Ver vouchers</a></div></div></section>`; };
+    const openView = (plan) => { resetForm(); state.mode = "view"; state.planId = plan.id; drawer.setState({ mode: "view", record: plan }); form.hidden = true; $("#plan-view-panel").hidden = false; $("#plan-composition-open").hidden = true; $("#plan-form-footer").hidden = true; $("#plan-drawer-kicker").textContent = "CONSULTA"; $("#plan-drawer-title").textContent = "Detalhes do plano"; $("#plan-drawer-description").textContent = "Consulte os dados, preços, composição e vínculos comerciais."; renderView(plan); drawer.show(); };
+    $("#plan-view-panel").className = "fs-offcanvas-body fs-u-d-flex fs-u-flex-column fs-u-gap-4 backoffice-records-view-panel";
+    const closeDrawer = () => { drawer.close(); $("#plan-composition-open").hidden = false; $("#plan-form-footer").hidden = false; resetForm(); };
+    const renderComposition = () => { const productItem = product(field("product_id").value); const modules = selectedProductModules(); $("#composition-product-label").textContent = productItem ? `${productItem.name} · selecione as funcionalidades disponíveis.` : "Selecione um produto no plano."; $("#plan-module-options").innerHTML = modules.length ? modules.map((module) => `<label class="fs-check"><input class="fs-check-input plan-module-checkbox" type="checkbox" value="${escapeHtml(module.id)}" ${selectedModuleIds().includes(String(module.id)) ? "checked" : ""} /><span class="fs-check-label"><span class="plan-module-meta"><strong>${escapeHtml(module.name)}</strong><small>${escapeHtml(module.code)} · ${money(module.monthly_price)} · ${escapeHtml(labels[module.status] || module.status || "-")} / ${escapeHtml(labels[module.publication_state] || module.publication_state || "-")}</small></span></span></label>`).join("") : '<p class="fs-u-color-secondary">Não existem funcionalidades cadastradas para este produto.</p>'; const selected = new Set(selectedModuleIds()); const personalizations = modules.filter((module) => selected.has(String(module.id))).flatMap((module) => (module.personalizations || []).map((item) => ({ ...item, module_name: module.name }))); $("#plan-personalization-options").innerHTML = personalizations.length ? personalizations.map((item) => `<div class="plan-personalization-row"><div><strong>${escapeHtml(item.type_label || item.type_code)}</strong><small class="fs-u-d-block fs-u-fs-sm">${escapeHtml(item.module_name)}${item.required ? " · Obrigatória" : " · Opcional"}</small></div><select class="fs-form-select fs-width-500 plan-default-tier" data-personalization-id="${escapeHtml(item.id)}" ${item.required ? "required" : ""}><option value="">${item.required ? "Selecione uma faixa" : "Sem padrão"}</option>${(item.tiers || []).filter((tier) => tier.active !== false).map((tier) => `<option value="${escapeHtml(tier.id)}" ${String(state.defaults[item.id] || "") === String(tier.id) ? "selected" : ""}>${escapeHtml(tier.value)} · + ${money(tier.additional_monthly_amount)}</option>`).join("")}</select></div>`).join("") : '<p class="fs-u-color-secondary">Nenhuma personalização disponível nos módulos selecionados.</p>'; };
+    const openComposition = () => { renderComposition(); drawer.close(); compositionDrawer.setState({ mode: "composition", record: { planId: state.planId } }); compositionDrawer.show(); };
+    const applyComposition = () => { const checked = [...document.querySelectorAll(".plan-module-checkbox:checked")].map((input) => String(input.value)); state.modules = selectedProductModules().filter((module) => checked.includes(String(module.id))); state.defaults = Object.fromEntries([...document.querySelectorAll(".plan-default-tier")].filter((select) => select.value).map((select) => [select.dataset.personalizationId, select.value])); renderSummary(); compositionDrawer.close(); drawer.show(); };
+    const load = async () => { try { const [catalog, plans] = await Promise.all([api.request("/backoffice/catalog"), api.request("/backoffice/plans")]); if (!live()) return; state.catalog = catalog || { products: [], options: {} }; state.plans = Array.isArray(plans) ? plans : plans.data || []; renderProducts(); render(); showMessage(""); return true; } catch (error) { if (live()) showMessage(error.message || "Não foi possível carregar os planos."); return false; } };
+    const save = async (event) => {
+        event.preventDefault();
+        if (state.saving || planSaveState || planActionStates.size) return;
+        const editing = state.mode === "edit";
+        const editId = editing ? String(state.planId || "") : "";
+        if (editing && !editId) { showMessage("Não foi possível identificar o plano que será atualizado."); return; }
+        if (window.FokusForm && !window.FokusForm.validate(form)) return;
+        const data = Object.fromEntries(new FormData(form));
+        data.display_order = Number(data.display_order || 0);
+        data.featured = data.featured === "1";
+        data.module_ids = selectedModuleIds();
+        data.personalization_defaults = selectedDefaults();
+        if (data.monthly_amount) data.monthly_amount = parseMoney(data.monthly_amount); else delete data.monthly_amount;
+        state.saving = true;
+        planSaveState = "pending";
+        notifyPlanActions();
+        try {
+            await api.request(editing ? `/backoffice/catalog/plans/${editId}` : "/backoffice/catalog/plans", { method: editing ? "PATCH" : "POST", body: data });
+            if (!live()) { planSaveState = "uncertain"; return; }
+            closeDrawer();
+            const refreshed = await load();
+            if (!live() || !refreshed) { planSaveState = "uncertain"; return; }
+            planSaveState = null;
+            showMessage("Plano salvo. Ative, publique o plano e republique o catálogo em Produtos.", "success");
+        } catch (error) {
+            if (isUncertainResult(error)) planSaveState = "uncertain";
+            else {
+                planSaveState = null;
+                if (live()) { window.FokusForm?.mapServerErrors(form, error.errors); showMessage(error.message || "Não foi possível salvar o plano."); }
+            }
+        } finally {
+            state.saving = false;
+            notifyPlanActions();
+        }
+    };
+    const syncPlanActions = () => {
+        if (!live()) return;
+        render();
+        const submit = $("#plan-form-submit");
+        submit.disabled = Boolean(planSaveState || planActionStates.size);
+        if (planSaveState === "pending") submit.setAttribute("aria-busy", "true"); else submit.removeAttribute("aria-busy");
+        if (planSaveState === "uncertain" || [...planActionStates.values()].includes("uncertain")) showMessage("Confira a situação do plano após atualizar a página antes de tentar novamente.");
+        else if (planSaveState || planActionStates.size) showMessage("Há uma ação de plano em andamento. Aguarde o resultado.");
+    };
+    planActionListeners.add(syncPlanActions);
+    const runAction = async (plan, type, reason = "", releaseType = "minor", trigger = null) => {
+        const id = String(plan.id);
+        if (state.actionRunning || planSaveState || planActionStates.has(id)) return;
+        state.actionRunning = true;
+        planActionStates.set(id, "pending");
+        if (trigger) { trigger.disabled = true; trigger.setAttribute("aria-busy", "true"); }
+        notifyPlanActions();
+        const endpoint = type === "delete" ? `/backoffice/catalog/plans/${plan.id}` : `/backoffice/catalog/plans/${plan.id}/${type}`;
+        try {
+            const response = await api.request(endpoint, { method: type === "delete" ? "DELETE" : "POST", body: type === "publish" ? { release_type: releaseType } : reason ? { reason } : undefined });
+            if (!live()) { planActionStates.set(id, "uncertain"); return; }
+            const refreshed = await load();
+            if (!live() || !refreshed) { planActionStates.set(id, "uncertain"); return; }
+            planActionStates.delete(id);
+            if (live()) showMessage(type === "activate" ? "Plano ativado. Publique o plano e o catálogo." : type === "publish" ? `Plano publicado na versão ${response.release_version || `v${Number(response.published_version)}.0`}. Publique também o catálogo em Produtos.` : type === "pause" ? "Plano pausado. O catálogo está pendente de republicação." : type === "archive" ? "Plano arquivado." : "Plano excluído.", "success");
+        } catch (error) {
+            if (isUncertainResult(error)) planActionStates.set(id, "uncertain");
+            else planActionStates.delete(id);
+            if (live() && !isUncertainResult(error)) showMessage(error.message || "Não foi possível concluir a ação.");
+        } finally {
+            state.actionRunning = false;
+            if (trigger) { trigger.disabled = planActionStates.has(id); trigger.removeAttribute("aria-busy"); }
+            notifyPlanActions();
+        }
+    };
+    const confirmAction = (plan, type) => { state.pendingAction = { plan, type }; const reasonField = $("#plan-dialog-reason"); const reasonLabel = reasonField.closest("label").querySelector("span"); const needsReason = ["archive", "delete"].includes(type); $("#plan-dialog-title").textContent = type === "delete" ? "Excluir plano" : type === "pause" ? "Pausar plano" : type === "publish" ? "Publicar plano" : "Arquivar plano"; $("#plan-dialog-description").textContent = type === "delete" ? "A exclusão só será concluída se não houver dependências comerciais." : type === "pause" ? "O catálogo do produto ficará indisponível para novas contratações até a republicação." : type === "publish" ? "Depois de publicar o plano, publique uma nova versão do catálogo em Produtos para liberar novas contratações." : "O arquivamento preserva o histórico comercial do plano."; $("#plan-release-choice").hidden = type !== "publish"; $("#plan-destructive-form").querySelector('[name="release_type"][value="minor"]').checked = true; reasonField.required = needsReason; reasonField.closest("label").hidden = !needsReason; reasonLabel.textContent = "Motivo obrigatório"; $("#plan-destructive-form").querySelector('[type="submit"]').textContent = type === "pause" ? "Confirmar pausa" : type === "publish" ? "Publicar plano" : "Confirmar"; reasonField.value = ""; destructiveModal?.show(); };
+
+    $("#plan-new").addEventListener("click", openCreate); $("#plan-drawer-close").addEventListener("click", closeDrawer); $("#plan-form-cancel").addEventListener("click", closeDrawer); form.addEventListener("submit", save); $("#plan-composition-open").addEventListener("click", openComposition); $("#plan-composition-close").addEventListener("click", () => { compositionDrawer.close(); drawer.show(); }); $("#plan-composition-cancel").addEventListener("click", () => { compositionDrawer.close(); drawer.show(); }); $("#plan-composition-save").addEventListener("click", applyComposition); $("#plan-monthly").addEventListener("input", updatePrices); $("#plan-product").addEventListener("change", () => { renderPlanSegments(); state.modules = []; state.defaults = {}; renderComposition(); renderSummary(); }); $("#plan-filter-form").addEventListener("submit", (event) => { event.preventDefault(); state.page = 1; render(); }); $("#plan-search").addEventListener("input", () => { state.page = 1; render(); }); ["#plan-status-filter", "#plan-segment-filter"].forEach((selector) => $(selector).addEventListener("change", () => { state.page = 1; render(); })); $("#plan-pagination").addEventListener("click", (event) => { const button = event.target.closest("[data-plan-page]"); if (!button || button.disabled) return; state.page = Number(button.dataset.planPage); render(); }); list.addEventListener("click", async (event) => { const button = event.target.closest("[data-plan-action]"); if (!button || button.disabled || state.actionRunning) return; const plan = state.plans.find((item) => String(item.id) === button.dataset.planId); if (!plan) return; const type = button.dataset.planAction; if (type !== "view" && (planSaveState || planActionStates.has(String(plan.id)))) return; if (type === "view") openView(plan); else if (type === "edit" && ["pausado", "inativo"].includes(plan.status)) openEdit(plan); else if (["archive", "delete", "pause", "publish"].includes(type)) confirmAction(plan, type); else await runAction(plan, type, "", "minor", button); }); $("#plan-destructive-form").addEventListener("submit", async (event) => { event.preventDefault(); const reason = $("#plan-dialog-reason").value.trim(); if (!state.pendingAction || (["archive", "delete"].includes(state.pendingAction.type) && !reason)) return; const { plan, type } = state.pendingAction; const releaseType = new FormData(event.currentTarget).get("release_type") || "minor"; state.pendingAction = null; destructiveModal?.hide(); await runAction(plan, type, reason, releaseType); });
+    await load();
+    if (planSaveState || planActionStates.size) syncPlanActions();
+    return () => { disposed = true; planActionListeners.delete(syncPlanActions); drawer.dispose(); compositionDrawer.dispose(); destructiveModal?.dispose?.(); window.disposeBackofficeRecordsPage?.(root); };
+}
