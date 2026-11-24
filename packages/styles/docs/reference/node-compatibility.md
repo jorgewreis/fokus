@@ -140,8 +140,10 @@ rebuild. A publicação posterior precisa validar seu próprio artefato.
 
 Para desenvolvimento, use a versão atualizada da linha 22 (a partir de 22.13.0)
 ou 24 (a partir de 24.11.0). Mínimos são pontos de teste, não recomendação para
-permanecer em patches antigos. CI, release e atualização visual selecionam a
-linha 22 flutuante; agora registram Node/npm e usam `npm ci --engine-strict`.
+permanecer em patches antigos. A CI e a atualização visual selecionam a linha 22
+flutuante. O workflow de release (`.github/workflows/styles-release.yml`) usa
+Node 24 e instala `npm@latest`, com piso npm >= 11.5.1, para o Trusted
+Publishing (OIDC). Esses jobs registram Node/npm e usam `npm ci --engine-strict`.
 O lockfile fixa dependências, mas não fixa o patch Node nem o npm desses jobs.
 O npm do release pode diferir dos npms da matriz e precisa ser validado no
 próprio fluxo de release; a matriz não homologa publicação no registry.

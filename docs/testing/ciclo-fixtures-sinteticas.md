@@ -3,7 +3,7 @@
 **Estado:** procedimento documental para dados sintéticos; não representa cobertura já implementada.
 **Atualizado em:** 19/11/2026
 **Produto:** Fokus Cloud Law — MVP sintético.
-**Fontes:** [PRD vigente](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a), seção 8 e decisões de autorização; [REI-198 — ambiente sintético isolado](https://linear.app/reis-developer/issue/REI-198/vara-inicializar-aplicacao-greenfield-e-ambiente-sintetico-isolado); [REI-219 — ciclo de fixtures](https://linear.app/reis-developer/issue/REI-219/vara-documentar-ciclo-de-vida-das-fixtures-sinteticas); [README de apps/law](../../apps/law/README.md).
+**Fontes:** [PRD vigente](https://app.notion.com/p/41b6af4c510981e0b980eff10759823a), seção 8 e decisões de autorização; [REI-198 — ambiente sintético isolado](https://linear.app/reis-developer/issue/REI-198); [REI-219 — ciclo de fixtures](https://linear.app/reis-developer/issue/REI-219); [README de apps/law](../../apps/law/README.md).
 
 ## 1. Finalidade e limites
 
@@ -61,9 +61,9 @@ Cada cenário deve ser isolado ou restaurar o baseline ao final, para manter o r
 | Validação | Submeter valor sintético válido e inválido para regra já aprovada. | Aceitação/rejeição observável corresponde à regra; cenários pendentes ficam marcados como não executáveis. | A validação depende de consulta externa ou de regra ainda não aprovada. |
 | Recusa de alvo inseguro | Testar guard unitário com ambiente, driver, host ou database fora da lista permitida. | Guard retorna recusa antes de conexão. | Destino remoto/compartilhado é aceito ou se tenta conexão para provar a recusa. |
 
-**Bloqueios de autorização de Processo:** catálogo de sigilo e comportamento aguardam decisão na [REI-231](https://linear.app/reis-developer/issue/REI-231/vara-definir-catalogo-de-sigilo-e-acesso-a-processos-sinteticos); competência e forma de atribuição aguardam decisão na [REI-232](https://linear.app/reis-developer/issue/REI-232/vara-definir-competencia-e-escopo-de-acesso-a-processos-sinteticos). Não criar defaults, valores de teste ou regras baseadas em CNJ/Unidade/participação para contornar esses bloqueios.
+**Bloqueios de autorização de Processo:** catálogo de sigilo e comportamento aguardam decisão na [REI-231](https://linear.app/reis-developer/issue/REI-231); competência e forma de atribuição aguardam decisão na [REI-232](https://linear.app/reis-developer/issue/REI-232). Não criar defaults, valores de teste ou regras baseadas em CNJ/Unidade/participação para contornar esses bloqueios.
 
-**Duplicidade documental:** a normalização é pendente na [REI-233](https://linear.app/reis-developer/issue/REI-233/vara-definir-normalizacao-e-duplicidade-dos-documentos-de-pessoas). Até decisão, pode-se testar validações locais já especificadas, mas não afirmar cobertura do alerta/comparação de duplicidade documental.
+**Duplicidade documental:** a normalização é pendente na [REI-233](https://linear.app/reis-developer/issue/REI-233). Até decisão, pode-se testar validações locais já especificadas, mas não afirmar cobertura do alerta/comparação de duplicidade documental.
 
 ## 6. Execução, reset e encerramento
 
