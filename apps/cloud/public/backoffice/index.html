@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light" data-role="admin" data-backoffice-auth="pending">
+    <head>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Fokus Cloud Admin</title>
+        <meta
+            name="description"
+            content="Backoffice administrativo do Fokus Cloud."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+            html[data-backoffice-auth="pending"] body {
+                visibility: hidden;
+            }
+        </style>
+
+        <!-- IMPORT CSS -->
+        <link
+            rel="stylesheet"
+            href="/backoffice/assets/css/main.css?v=20261113-page-mount-v1"
+        />
+        <link
+            rel="stylesheet"
+            href="/backoffice/assets/css/layout/container.css?v=20260918-container-height-v2"
+        />
+        <link
+            rel="stylesheet"
+            href="/backoffice/assets/css/pages/admin-dashboard.css?v=20261114-sidebar-filters-v3"
+        />
+        <link
+            rel="stylesheet"
+            href="/assets/css/shared/fokus.css?v=20261123-fokus-styles-3-0-0"
+        />
+    </head>
+    <body>
+        <script src="/assets/js/api-client.js?v=20260828-19"></script>
+        <script src="/assets/js/fokus.min.js?v=20261123-fokus-styles-3-0-0"></script>
+        <script src="/backoffice/assets/js/toast-notifications.js?v=20261114-session-reset-v1"></script>
+        <script src="/backoffice/assets/js/form-system.js?v=20260928-minimum-loading-state-v1"></script>
+        <script src="/assets/js/brazilian-documents.js?v=20260930-document-validation-v1"></script>
+        <script src="/backoffice/assets/js/currency-input.js?v=20260902-currency-prefix-fix"></script>
+        <script src="/backoffice/assets/js/records-page.js?v=20261113-page-owner-v1"></script>
+        <script src="/backoffice/assets/js/backoffice-router.js?v=20261115-modules-pagination-focus-v1"></script>
+        <template id="backoffice-app-template">
+        <div class="container-page expanded">
+            <div class="fs-sidebar expanded" id="sidebar">
+                <div class="top">
+                    <button
+                        class="mobile-sidebar-toggle"
+                        type="button"
+                        aria-label="Abrir menu lateral"
+                        aria-expanded="false"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Sidebar-Collapes--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                            alt=""
+                        />
+                    </button>
+                    <div class="sidebar-brand">
+                        FOKUS CLOUD <strong>ADMIN</strong>
+                    </div>
+                    <div class="line-hr-single"></div>
+                </div>
+
+                <nav
+                    class="content sidebar-nav"
+                    aria-label="Navegação administrativa"
+                >
+                    <button
+                        class="sidebar-button active"
+                        type="button"
+                        data-sidebar-item="platform-dashboard-final" aria-label="Dashboard"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Layout-Dashboard--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                        />
+                        <span class="sidebar-button-label text-subtitle-sm"
+                            >Dashboard</span
+                        >
+                    </button>
+                    <button
+                        class="sidebar-button"
+                        type="button"
+                        data-sidebar-item="companies" aria-label="Empresas"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Small-Office-Tall-Building--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                        />
+                        <span class="sidebar-button-label text-subtitle-sm"
+                            >Empresas</span
+                        >
+                    </button>
+                    <button
+                        class="sidebar-button"
+                        type="button"
+                        data-sidebar-item="users" aria-label="Usuários"
+                        data-platform-permission="platform.users.view"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Multiple-Actions-Setting--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                        />
+                        <span class="sidebar-button-label text-subtitle-sm"
+                            >Usuários</span
+                        >
+                    </button>
+                    <div class="sidebar-nav-group" data-sidebar-group="catalog">
+                        <button
+                            class="sidebar-button sidebar-group-toggle"
+                            type="button"
+                            data-sidebar-item="products"
+                            aria-label="Catálogo"
+                            aria-expanded="true"
+                            aria-controls="catalog-subnav"
+                        >
+                            <img
+                                src="/backoffice/assets/icons/Customer-Relationship-Management-List-Document-Share--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                                alt=""
+                            />
+                            <span class="sidebar-button-label text-subtitle-sm">Catálogo</span>
+                            <img class="sidebar-group-chevron" src="/backoffice/assets/icons/Arrow-Down-1--Streamline-Ultimate.png?v=20260916-catalog-arrow-v2" alt="" aria-hidden="true" />
+                        </button>
+                        <div class="sidebar-subnav" id="catalog-subnav" role="group" aria-label="Seções do catálogo">
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="catalog-overview" data-platform-permission="platform.catalog.manage">
+                                <span class="sidebar-button-label text-subtitle-sm">Visão geral</span>
+                            </button>
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="products" data-platform-role="superadministrador">
+                                <span class="sidebar-button-label text-subtitle-sm">Produtos</span>
+                            </button>
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="modules">
+                                <span class="sidebar-button-label text-subtitle-sm">Módulos</span>
+                            </button>
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="subscription-plans">
+                                <span class="sidebar-button-label text-subtitle-sm">Planos</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button
+                        class="sidebar-button"
+                        type="button"
+                        data-sidebar-item="subscriptions" aria-label="Assinaturas"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Seo-Search--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                        />
+                        <span class="sidebar-button-label text-subtitle-sm"
+                            >Assinaturas</span
+                        >
+                    </button>
+                    <button
+                        class="sidebar-button"
+                        type="button"
+                        data-sidebar-item="pagamentos" aria-label="Pagamentos"
+                        data-platform-permission="platform.payments.view"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Accounting-Coins--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                        />
+                        <span class="sidebar-button-label text-subtitle-sm"
+                            >Pagamentos</span
+                        >
+                    </button>
+                    <button
+                        class="sidebar-button"
+                        type="button"
+                        data-sidebar-item="vouchers" aria-label="Vouchers"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Tickets--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                        />
+                        <span class="sidebar-button-label text-subtitle-sm"
+                            >Vouchers</span
+                        >
+                    </button>
+                    <div class="sidebar-nav-group" data-sidebar-group="audit" data-platform-role="superadministrador">
+                        <button class="sidebar-button sidebar-group-toggle" type="button" data-sidebar-item="audit-overview" aria-label="Auditoria" data-platform-role="superadministrador" aria-expanded="true" aria-controls="audit-subnav">
+                            <img src="/backoffice/assets/icons/Lock-1--Streamline-Ultimate.png?v=20260930-audit" alt="" />
+                            <span class="sidebar-button-label text-subtitle-sm">Auditoria</span>
+                            <img class="sidebar-group-chevron" src="/backoffice/assets/icons/Arrow-Down-1--Streamline-Ultimate.png?v=20260916-catalog-arrow-v2" alt="" aria-hidden="true" />
+                        </button>
+                        <div class="sidebar-subnav" id="audit-subnav" role="group" aria-label="Seções da auditoria">
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="audit-activity" data-platform-role="superadministrador"><span class="sidebar-button-label text-subtitle-sm">Atividade recente</span></button>
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="audit-access" data-platform-role="superadministrador"><span class="sidebar-button-label text-subtitle-sm">Controle de acessos</span></button>
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="audit-sessions" data-platform-role="superadministrador"><span class="sidebar-button-label text-subtitle-sm">Sessões ativas</span></button>
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="audit-events" data-platform-role="superadministrador"><span class="sidebar-button-label text-subtitle-sm">Eventos do sistema</span></button>
+                            <button class="sidebar-button sidebar-subnav-button" type="button" data-sidebar-item="audit-reports" data-platform-role="superadministrador"><span class="sidebar-button-label text-subtitle-sm">Relatórios</span></button>
+                        </div>
+                    </div>
+                    <button
+                        class="sidebar-button"
+                        type="button"
+                        disabled
+                        aria-disabled="true"
+                        title="Interessados (indisponível)"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Programming-User-Chat--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                        />
+                        <span class="sidebar-button-label text-subtitle-sm"
+                            >Interessados</span
+                        >
+                    </button>
+                    <button
+                        class="sidebar-button"
+                        type="button"
+                        disabled
+                        aria-disabled="true"
+                        title="Configurações"
+                    >
+                        <img
+                            src="/backoffice/assets/icons/Cog--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2"
+                            alt=""
+                        />
+                        <span class="sidebar-button-label text-subtitle-sm"
+                            >Configurações</span
+                        >
+                    </button>
+                </nav>
+
+                <div class="bottom">
+                    <div class="line-hr-single"></div>
+                    <div class="sidebar-institutional">
+                        <img
+                            src="/backoffice/assets/icons/Amazon-Web-Service-Private--Streamline-Ultimate-Regular.png"
+                            alt=""
+                        />
+                        <span>Tecnologia para um futuro mais humano.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE CONTENT -->
+            <div class="container-content">
+                <div class="admin-final-dashboard admin-shell-content">
+                    <header class="admin-final-header">
+                        <label class="admin-global-search">
+                            <img src="/backoffice/assets/icons/Seo-Search--Streamline-Ultimate.png" alt="" />
+                            <input type="search" placeholder="Buscar empresas, usuários, clientes, assinaturas..." aria-label="Buscar na plataforma" />
+                        </label>
+                        <div class="admin-global-search-results" id="admin-global-search-results" hidden></div>
+                        <div class="admin-header-user">
+                            <button class="admin-notifications-button" type="button" title="Avisos da plataforma" aria-label="Avisos da plataforma">
+                                <img src="/backoffice/assets/icons/Alarm-Bell--Streamline-Ultimate-Regular.png" alt="" aria-hidden="true" />
+                            </button>
+                            <div class="admin-user-avatar" id="dashboard-user-initials">AD</div>
+                            <button class="admin-user-details" type="button" aria-expanded="false" aria-controls="admin-user-menu">
+                                <strong id="dashboard-user-name">Administrador</strong>
+                                <span id="dashboard-user-role">Administrador</span>
+                            </button>
+                            <nav class="admin-user-menu" id="admin-user-menu" hidden aria-label="Menu do usuário">
+                                <button type="button" disabled>Editar perfil</button>
+                                <button type="button" disabled>Alterar senha</button>
+                                <button type="button" data-dashboard-logout>Sair</button>
+                            </nav>
+                        </div>
+                    </header>
+                    <div class="admin-header-toast" id="admin-header-toast" role="status" aria-live="polite" hidden>
+                        <button class="admin-header-toast-close" type="button" aria-label="Fechar notificações">×</button>
+                        <div id="admin-header-toast-content"></div>
+                    </div>
+                    <div id="page-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        (() => {
+            const pageContent = document.querySelector("#page-content");
+            const sidebarButtons = document.querySelectorAll(
+                "[data-sidebar-item]",
+            );
+            const pagePath = "./pages";
+            const pageVersion = "20261002-subscriptions-upgrade-v3";
+            const routePageMap = {
+                painel: "platform-dashboard-final",
+                empresas: "companies",
+                planos: "subscription-plans",
+                catalogo: "products",
+                produtos: "products",
+                modulos: "modules",
+                modules: "modules",
+                assinaturas: "subscriptions",
+                pagamentos: "pagamentos",
+                billing: "pagamentos",
+                vouchers: "vouchers",
+                usuarios: "users",
+                seguranca: "users",
+                interesses: "product-interests",
+                "product-interests": "product-interests",
+                auditoria: "audit-overview",
+                "atividade-recente": "audit-activity",
+                "controle-de-acessos": "audit-access",
+                "sessoes-ativas": "audit-sessions",
+                "eventos-do-sistema": "audit-events",
+                "relatorios-de-auditoria": "audit-reports",
+                componentes: "ui-components",
+            };
+            const nameParticles = new Set([
+                "de",
+                "da",
+                "do",
+                "das",
+                "dos",
+                "e",
+            ]);
+            const sidebar = document.querySelector("#sidebar");
+            const containerPage = document.querySelector(".container-page");
+            const mobileSidebarToggle = document.querySelector(
+                ".mobile-sidebar-toggle",
+            );
+            const mobileSidebarToggleIcon = mobileSidebarToggle.querySelector(
+                "img",
+            );
+            const responsiveSidebarQuery = window.matchMedia(
+                "(max-width: 1919px)",
+            );
+            const sidebarCollapseDelay = 60_000;
+            const sidebarRevealDelay = 320;
+            const sidebarOpacityDelay = 260;
+            const sidebarScaleDelay = 300;
+            const sidebarCollapseTransitionDelay = 520;
+            let sidebarCollapseTimer;
+            let sidebarFooterRevealTimer;
+            let sidebarFooterOpacityTimer;
+            let sidebarFooterScaleTimer;
+            let sidebarCollapseTransitionTimer;
+            let sidebarViewportSyncTimer;
+
+            function isSidebarResponsive() {
+                return responsiveSidebarQuery.matches;
+            }
+
+            function cancelSidebarCollapse() {
+                window.clearTimeout(sidebarCollapseTimer);
+                sidebarCollapseTimer = undefined;
+            }
+
+            function cancelSidebarCollapseTransition() {
+                window.clearTimeout(sidebarCollapseTransitionTimer);
+                sidebarCollapseTransitionTimer = undefined;
+                window.clearTimeout(sidebarFooterScaleTimer);
+                sidebarFooterScaleTimer = undefined;
+                sidebar.classList.remove("is-collapsing");
+            }
+
+            function cancelSidebarFooterReveal() {
+                window.clearTimeout(sidebarFooterRevealTimer);
+                window.clearTimeout(sidebarFooterOpacityTimer);
+                window.clearTimeout(sidebarFooterScaleTimer);
+                sidebarFooterRevealTimer = undefined;
+                sidebarFooterOpacityTimer = undefined;
+                sidebarFooterScaleTimer = undefined;
+                sidebar.classList.remove("sidebar-footer-ready");
+                sidebar.classList.remove("sidebar-footer-visible");
+                sidebar.classList.remove("sidebar-labels-ready");
+                sidebar.classList.remove("sidebar-labels-visible");
+                sidebar.classList.remove("sidebar-interactive-ready");
+            }
+
+            function expandSidebar() {
+                if (!isSidebarResponsive()) {
+                    return;
+                }
+
+                cancelSidebarCollapse();
+                cancelSidebarCollapseTransition();
+                sidebar.classList.add("expanded");
+                sidebar.classList.remove("single");
+                if (!sidebar.classList.contains("sidebar-labels-ready")) {
+                    cancelSidebarFooterReveal();
+                    sidebarFooterRevealTimer = window.setTimeout(() => {
+                        sidebar.classList.add("sidebar-footer-ready");
+                        sidebar.classList.add("sidebar-labels-ready");
+                        sidebarFooterOpacityTimer = window.setTimeout(() => {
+                            sidebar.classList.add("sidebar-footer-visible");
+                            sidebar.classList.add("sidebar-labels-visible");
+                            sidebar.classList.add("sidebar-interactive-ready");
+                            sidebarFooterOpacityTimer = undefined;
+                        }, sidebarOpacityDelay);
+                        sidebarFooterRevealTimer = undefined;
+                    }, sidebarRevealDelay);
+                } else if (!sidebar.classList.contains("sidebar-labels-visible")) {
+                    window.clearTimeout(sidebarFooterOpacityTimer);
+                    sidebarFooterOpacityTimer = window.setTimeout(() => {
+                        sidebar.classList.add("sidebar-footer-visible");
+                        sidebar.classList.add("sidebar-labels-visible");
+                        sidebar.classList.add("sidebar-interactive-ready");
+                        sidebarFooterOpacityTimer = undefined;
+                    }, sidebarOpacityDelay);
+                }
+                mobileSidebarToggle.setAttribute("aria-expanded", "true");
+                mobileSidebarToggle.setAttribute(
+                    "aria-label",
+                    "Fechar menu lateral",
+                );
+                mobileSidebarToggleIcon.src =
+                    "/backoffice/assets/icons/Sidebar-Expand--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2";
+            }
+
+            function collapseSidebar() {
+                if (!isSidebarResponsive()) {
+                    return;
+                }
+
+                const compactCatalogToggle = document.querySelector(
+                    '[data-sidebar-group="catalog"] .sidebar-group-toggle',
+                );
+                const compactCatalogSubnav = document.querySelector(
+                    '[data-sidebar-group="catalog"] .sidebar-subnav',
+                );
+                compactCatalogToggle?.setAttribute("aria-expanded", "false");
+                if (compactCatalogSubnav) {
+                    compactCatalogSubnav.hidden = true;
+                }
+                const compactAuditToggle = document.querySelector('[data-sidebar-group="audit"] .sidebar-group-toggle');
+                const compactAuditSubnav = document.querySelector('[data-sidebar-group="audit"] .sidebar-subnav');
+                compactAuditToggle?.setAttribute("aria-expanded", "false");
+                if (compactAuditSubnav) compactAuditSubnav.hidden = true;
+
+                window.clearTimeout(sidebarFooterRevealTimer);
+                window.clearTimeout(sidebarFooterOpacityTimer);
+                sidebarFooterRevealTimer = undefined;
+                sidebarFooterOpacityTimer = undefined;
+                sidebar.classList.remove("sidebar-footer-visible");
+                sidebar.classList.remove("sidebar-labels-visible");
+                sidebar.classList.remove("sidebar-interactive-ready");
+                if (window.innerWidth > 700 && sidebar.classList.contains("expanded")) {
+                    sidebar.classList.add("is-collapsing");
+                    sidebarFooterScaleTimer = window.setTimeout(() => {
+                        sidebar.classList.remove("sidebar-footer-ready");
+                        sidebar.classList.remove("sidebar-labels-ready");
+                        sidebar.classList.remove("sidebar-interactive-ready");
+                        sidebarFooterScaleTimer = undefined;
+                    }, sidebarScaleDelay);
+                    sidebarCollapseTransitionTimer = window.setTimeout(() => {
+                        sidebar.classList.add("single");
+                        sidebar.classList.remove("expanded");
+                        sidebar.classList.remove("sidebar-footer-ready");
+                        sidebar.classList.remove("sidebar-labels-ready");
+                        sidebar.classList.remove("is-collapsing");
+                        sidebarCollapseTransitionTimer = undefined;
+                    }, sidebarCollapseTransitionDelay);
+                } else {
+                    cancelSidebarFooterReveal();
+                    sidebar.classList.add("single");
+                    sidebar.classList.remove("expanded");
+                }
+                mobileSidebarToggle.setAttribute("aria-expanded", "false");
+                mobileSidebarToggle.setAttribute(
+                    "aria-label",
+                    "Abrir menu lateral",
+                );
+                mobileSidebarToggleIcon.src =
+                    "/backoffice/assets/icons/Sidebar-Collapes--Streamline-Ultimate.png?v=20260915-sidebar-icons-v2";
+            }
+
+            function scheduleSidebarCollapse() {
+                if (!isSidebarResponsive()) {
+                    return;
+                }
+
+                cancelSidebarCollapse();
+                sidebarCollapseTimer = window.setTimeout(() => {
+                    if (
+                        !sidebar.matches(":hover") &&
+                        !sidebar.contains(document.activeElement)
+                    ) {
+                        collapseSidebar();
+                    }
+                }, sidebarCollapseDelay);
+            }
+
+            function syncSidebarToViewport() {
+                cancelSidebarCollapse();
+                cancelSidebarCollapseTransition();
+
+                if (isSidebarResponsive()) {
+                    collapseSidebar();
+                    return;
+                }
+
+                cancelSidebarFooterReveal();
+                sidebar.classList.add("expanded");
+                sidebar.classList.remove("single");
+                sidebar.classList.add("sidebar-footer-ready");
+                sidebar.classList.add("sidebar-labels-ready");
+                sidebar.classList.add("sidebar-footer-visible");
+                sidebar.classList.add("sidebar-labels-visible");
+                sidebar.classList.add("sidebar-interactive-ready");
+            }
+
+            function scheduleSidebarViewportSync() {
+                window.clearTimeout(sidebarViewportSyncTimer);
+                sidebarViewportSyncTimer = window.setTimeout(() => {
+                    syncSidebarToViewport();
+                    sidebarViewportSyncTimer = undefined;
+                }, 120);
+            }
+
+            sidebar.addEventListener("mouseenter", expandSidebar);
+            sidebar.addEventListener("mouseleave", scheduleSidebarCollapse);
+            sidebar.addEventListener("focusin", expandSidebar);
+            sidebar.addEventListener("focusout", (event) => {
+                if (!sidebar.contains(event.relatedTarget)) {
+                    scheduleSidebarCollapse();
+                }
+            });
+            sidebar.addEventListener("pointerdown", (event) => {
+                if (!event.target.closest(".mobile-sidebar-toggle")) {
+                    expandSidebar();
+                }
+            });
+            sidebar.addEventListener("click", () => {
+                if (isSidebarResponsive()) {
+                    expandSidebar();
+                    scheduleSidebarCollapse();
+                }
+            });
+            mobileSidebarToggle.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (isSidebarResponsive() && window.innerWidth <= 700) {
+                    if (sidebar.classList.contains("expanded")) {
+                        cancelSidebarCollapse();
+                        collapseSidebar();
+                    } else {
+                        expandSidebar();
+                        scheduleSidebarCollapse();
+                    }
+                }
+            });
+            document.addEventListener("pointerdown", (event) => {
+                if (isSidebarResponsive() && !sidebar.contains(event.target)) {
+                    cancelSidebarCollapse();
+                    collapseSidebar();
+                }
+            });
+            responsiveSidebarQuery.addEventListener(
+                "change",
+                syncSidebarToViewport,
+            );
+            window.addEventListener("resize", scheduleSidebarViewportSync);
+            syncSidebarToViewport();
+
+            function formatSidebarAdminName(fullName) {
+                const words = String(fullName || "")
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean);
+
+                if (!words.length) {
+                    return "";
+                }
+
+                const parts = [words[0]];
+
+                for (let index = 1; index < words.length; index += 1) {
+                    const word = words[index];
+                    const lower = word.toLowerCase();
+
+                    if (nameParticles.has(lower)) {
+                        const next = words[index + 1];
+                        if (next && !nameParticles.has(next.toLowerCase())) {
+                            parts.push(`${word} ${next}`);
+                            break;
+                        }
+                        continue;
+                    }
+
+                    parts.push(word);
+                    break;
+                }
+
+                return parts.join(" ").trim();
+            }
+
+            function initFokusStylesComponents() {
+                const definitions = [
+                    ["tooltip", window.FokusStyles?.Tooltip],
+                    ["modal", window.FokusStyles?.Modal],
+                    ["offcanvas", window.FokusStyles?.Offcanvas],
+                    ["datatable", window.FokusStyles?.DataTable],
+                    ["pagination", window.FokusStyles?.Pagination],
+                    ["select", window.FokusStyles?.Select],
+                    ["spinner", window.FokusStyles?.Spinner],
+                ];
+
+                definitions.forEach(([name, Constructor]) => {
+                    if (Constructor) {
+                        window.FokusStyles.core.autoInit(name, Constructor);
+                    }
+                });
+            }
+
+            window.refreshFokusDataTables = function (container = document) {
+                container.querySelectorAll?.('[data-fs="datatable"]').forEach((element) => {
+                    window.FokusStyles?.DataTable?.getInstance(element)?.refresh();
+                });
+            };
+
+            async function loadSidebarPage(pageName) {
+                return window.__backofficeRouter?.navigate(pageName);
+            }
+
+            window.__adminHeaderNotifications = [];
+            const adminHeaderEscape = (value) => String(value ?? "").replace(/[&<>'"]/g, (char) => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[char]));
+            const adminHeaderDisplayName = (value) => String(value || "Administrador").trim().split(/\s+/).filter(Boolean).slice(0, 2).join(" ") || "Administrador";
+            const adminHeaderSetUser = (admin) => {
+                const name = String(admin?.name || "Administrador").trim();
+                const words = name.split(/\s+/).filter(Boolean);
+                document.querySelector("#dashboard-user-name").textContent = adminHeaderDisplayName(name);
+                document.querySelector("#dashboard-user-role").textContent = String(admin?.role || "Administrador");
+                document.querySelector("#dashboard-user-initials").textContent = words.slice(0, 2).map((word) => word[0]).join("").toUpperCase() || "AD";
+            };
+            const adminHeaderHideToast = () => {
+                const toast = document.querySelector("#admin-header-toast");
+                toast.classList.remove("is-visible");
+                window.setTimeout(() => { toast.hidden = true; }, 220);
+            };
+            const adminHeaderShowToast = () => {
+                const toast = document.querySelector("#admin-header-toast");
+                const content = document.querySelector("#admin-header-toast-content");
+                const items = window.__adminHeaderNotifications || [];
+                content.innerHTML = items.length
+                    ? `<strong>Notificações</strong><ul>${items.map((item) => `<li><b>${adminHeaderEscape(item.label || "Aviso da plataforma")}</b><span>${adminHeaderEscape(item.description || "")}</span></li>`).join("")}</ul>`
+                    : `<strong>Notificações</strong><p>Você não tem nenhuma notificação.</p>`;
+                toast.hidden = false;
+                window.requestAnimationFrame(() => toast.classList.add("is-visible"));
+            };
+            const adminHeaderSearch = document.querySelector(".admin-global-search input");
+            let adminHeaderSearchTimer;
+            let adminHeaderGeneration = 0;
+            const adminHeaderLoadSearch = async (value) => {
+                const generation = adminHeaderGeneration;
+                const query = value.trim();
+                const panel = document.querySelector("#admin-global-search-results");
+                if (!query) { panel.hidden = true; return; }
+                try {
+                    const response = await FokusApi.request(`/backoffice/search?q=${encodeURIComponent(query)}`);
+                    if (generation !== adminHeaderGeneration) return;
+                    const groups = response.groups || [];
+                    const items = groups.flatMap((group) => group.items || []);
+                    panel.innerHTML = items.length ? groups.filter((group) => group.items?.length).map((group) => `<section><strong>${adminHeaderEscape(group.label)}</strong>${group.items.map((item) => `<a href="${adminHeaderEscape(item.href || "#")}"><span>${adminHeaderEscape(item.title)}</span><small>${adminHeaderEscape(item.subtitle || "")}</small></a>`).join("")}</section>`).join("") : '<p class="admin-global-search-empty">Nenhum resultado encontrado.</p>';
+                    panel.hidden = false;
+                } catch { if (generation === adminHeaderGeneration) panel.hidden = true; }
+            };
+            adminHeaderSearch.addEventListener("input", (event) => { window.clearTimeout(adminHeaderSearchTimer); adminHeaderSearchTimer = window.setTimeout(() => adminHeaderLoadSearch(event.target.value), 220); });
+            adminHeaderSearch.addEventListener("keydown", (event) => { if (event.key === "Escape") { adminHeaderSearch.value = ""; document.querySelector("#admin-global-search-results").hidden = true; } });
+            document.querySelector(".admin-notifications-button").addEventListener("click", adminHeaderShowToast);
+            document.querySelector(".admin-header-toast-close").addEventListener("click", adminHeaderHideToast);
+            const adminHeaderUserDetails = document.querySelector(".admin-user-details");
+            const adminHeaderUserMenu = document.querySelector("#admin-user-menu");
+            adminHeaderUserDetails.addEventListener("click", () => { const open = adminHeaderUserMenu.hidden; adminHeaderUserMenu.hidden = !open; adminHeaderUserDetails.setAttribute("aria-expanded", String(open)); });
+            document.addEventListener("click", (event) => { if (!event.target.closest(".admin-global-search") && !event.target.closest(".admin-global-search-results")) document.querySelector("#admin-global-search-results").hidden = true; if (!event.target.closest(".admin-header-user")) { adminHeaderUserMenu.hidden = true; adminHeaderUserDetails.setAttribute("aria-expanded", "false"); } });
+            const adminLogoutButton = document.querySelector("[data-dashboard-logout]");
+            adminLogoutButton.addEventListener("click", async () => {
+                if (adminLogoutButton.disabled) return;
+                adminLogoutButton.disabled = true;
+                try {
+                    await FokusApi.request("/backoffice/auth/logout", { method: "POST" });
+                    window.dispatchEvent(new Event("fokus:platform-logout"));
+                    location.assign("https://www.fokuscloud.com.br/");
+                } catch (error) {
+                    adminLogoutButton.disabled = false;
+                    window.alert(error?.message || "Não foi possível encerrar a sessão do Backoffice. Tente novamente.");
+                }
+            });
+            window.__adminHeaderReady = true;
+            const loadAdminHeaderData = async () => {
+                const generation = adminHeaderGeneration;
+                const response = await FokusApi.request("/backoffice/dashboard");
+                if (generation !== adminHeaderGeneration) return;
+                adminHeaderSetUser(response.user);
+                window.__adminHeaderNotifications = response.alerts || [];
+                document.querySelector(".admin-notifications-button").classList.toggle("has-notifications", window.__adminHeaderNotifications.length > 0);
+            };
+            window.addEventListener("fokus:backoffice-suspend", () => {
+                adminHeaderGeneration++;
+                window.clearTimeout(adminHeaderSearchTimer);
+                adminHeaderSearch.value = "";
+                const results = document.querySelector("#admin-global-search-results");
+                results.replaceChildren();
+                results.hidden = true;
+                window.__adminHeaderNotifications = [];
+                document.querySelector(".admin-notifications-button").classList.remove("has-notifications");
+                const toast = document.querySelector("#admin-header-toast");
+                toast.hidden = true;
+                toast.classList.remove("is-visible");
+                document.querySelector("#admin-header-toast-content").replaceChildren();
+                adminHeaderUserMenu.hidden = true;
+                adminHeaderUserDetails.setAttribute("aria-expanded", "false");
+            });
+            window.addEventListener("fokus:backoffice-revalidated", (event) => {
+                adminHeaderSetUser(event.detail);
+                loadAdminHeaderData().catch(() => {});
+            });
+
+            sidebarButtons.forEach((button) => {
+                if (button.classList.contains("sidebar-group-toggle")) {
+                    return;
+                }
+                button.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    loadSidebarPage(button.dataset.sidebarItem);
+
+                    if (isSidebarResponsive()) {
+                        cancelSidebarCollapse();
+                        collapseSidebar();
+                    }
+                });
+            });
+
+            const catalogGroup = document.querySelector("[data-sidebar-group=\"catalog\"]");
+            const catalogToggle = catalogGroup?.querySelector(".sidebar-group-toggle");
+            const catalogSubnav = catalogGroup?.querySelector(".sidebar-subnav");
+            catalogToggle?.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                const expanded = catalogToggle.getAttribute("aria-expanded") === "true";
+                const nextExpanded = !expanded;
+                catalogToggle.setAttribute("aria-expanded", String(nextExpanded));
+                catalogSubnav.hidden = expanded;
+            });
+            const auditGroup = document.querySelector("[data-sidebar-group=\"audit\"]");
+            const auditToggle = auditGroup?.querySelector(".sidebar-group-toggle");
+            const auditSubnav = auditGroup?.querySelector(".sidebar-subnav");
+            auditToggle?.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                const expanded = auditToggle.getAttribute("aria-expanded") === "true";
+                auditToggle.setAttribute("aria-expanded", String(!expanded));
+                auditSubnav.hidden = expanded;
+            });
+
+            async function hydrateAdmin() {
+                try {
+                    const response = window.__backofficeBootstrapResponse;
+                    if (!response?.admin) throw new Error("Não autorizado.");
+                        document
+                        .querySelectorAll("[data-platform-permission]")
+                        .forEach((element) => {
+                            element.hidden = !(
+                                response?.admin?.permissions || []
+                                ).includes(element.dataset.platformPermission);
+                        });
+                    document
+                        .querySelectorAll('[data-platform-role]')
+                        .forEach((element) => {
+                            element.hidden = response?.admin?.role !== element.dataset.platformRole;
+                        });
+                    window.__backofficePermissions = new Set(response?.admin?.permissions || []);
+                    window.__backofficeAdmin = response.admin;
+                    return response.admin;
+                } catch (error) {
+                    location.replace("/?acesso=administrativo");
+                    return null;
+                }
+            }
+
+            (async () => {
+                const admin = await hydrateAdmin();
+                if (!admin) return;
+
+                window.__backofficeAuthorized = true;
+                document.documentElement.dataset.backofficeAuth = "authorized";
+                window.__backofficeRouter = window.BackofficeRouter.create({
+                    root: pageContent,
+                    sidebarButtons,
+                    admin,
+                    onComponentsReady: initFokusStylesComponents,
+                });
+                loadAdminHeaderData().catch(() => {});
+                window.__backofficeRouter.start();
+            })();
+        })();
+        </script>
+        </template>
+        <script>
+            (async () => {
+                try {
+                    const response = await FokusApi.request("/backoffice/auth/me");
+                    if (!response?.admin) throw new Error("Não autorizado.");
+                    window.__backofficeBootstrapResponse = response;
+                    document.documentElement.dataset.backofficeAuth = "authorized";
+                    const template = document.querySelector("#backoffice-app-template");
+                    const fragment = template.content.cloneNode(true);
+                    const scripts = [...fragment.querySelectorAll("script")];
+                    // Scripts in a template fragment must be executed explicitly;
+                    // keeping them in the inserted fragment would execute the
+                    // shell bootstrap twice in some browsers.
+                    scripts.forEach((source) => source.remove());
+                    document.body.replaceChildren(fragment);
+                    scripts.forEach((source) => {
+                        const script = document.createElement("script");
+                        script.textContent = source.textContent;
+                        document.body.appendChild(script);
+                    });
+                } catch (_) {
+                    location.replace("/?acesso=administrativo");
+                }
+            })();
+        </script>
+    </body>
+</html>

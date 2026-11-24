@@ -1,0 +1,39 @@
+PROMPT — COMPONENTE ESPECÍFICO COM FOKUS STYLES
+
+Use este prompt para criar, adaptar ou corrigir um componente visual isolado.
+Antes de agir, leia docs/prompts/governanca-visual-fokus-styles.txt e cumpra
+todas as regras nele definidas.
+
+ENTRADA
+
+Receba a descrição do componente, sua finalidade, consumidores conhecidos,
+estados, conteúdo, regras funcionais e restrições. Não exija do usuário dados
+que possam ser descobertos no repositório.
+
+FLUXO OBRIGATÓRIO
+
+1. Localize componentes, tokens, utilitários, atributos data-fs-* e APIs
+   JavaScript equivalentes no Fokus Styles instalado.
+2. Consulte os consumidores e exemplos existentes.
+3. Classifique a solução como reutilização, extensão global, composição ou
+   complemento exclusivo.
+4. Para componente existente, preserve anatomia, classes, atributos e estados
+   oficiais; altere somente conteúdo, dados e hooks de domínio.
+5. Se a mudança afetar todos os consumidores, altere o componente existente no
+   CSS-fonte do Fokus Styles. Não crie arquivo CSS novo, classe paralela,
+   seletor de página ou override local para esconder uma necessidade global.
+6. Antes de criar qualquer arquivo ou classe, prove no plano que a API existente
+   não pode ser reutilizada ou ajustada. Se não houver autorização para alterar
+   o Fokus Styles, pare e informe o bloqueio em vez de criar um substituto.
+7. Se for exclusivo, crie o menor complemento possível, sem duplicar tokens ou
+   componentes oficiais, e registre por que não deve ser compartilhado.
+8. Para ajustes de estilo, use primeiro a classe oficial já existente. Não
+   introduza uma nova classe quando a classe oficial já identifica o componente.
+9. Documente API, anatomia, estados, acessibilidade, responsividade e exemplos.
+10. Só implemente após autorização explícita.
+
+SAÍDA
+
+Entregue auditoria, decisão arquitetural, plano, implementação autorizada,
+testes e evidências de navegador. Informe claramente se o componente pertence
+ao Cloud, ao Fokus Styles ou apenas a uma página.

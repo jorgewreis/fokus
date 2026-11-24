@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cadastre-se | Fokus Cloud</title>
+    <link rel="stylesheet" href="/assets/css/shared/fokus.css?v=20261123-fokus-styles-3-0-0" />
+    <link rel="stylesheet" href="/marketing/products/fokus-law.css?v=20261008-primary-outline-buttons-v1" />
+    <link rel="stylesheet" href="/auth/checkout.css?v=20261014-shared-register-consent-links-v2" />
+  </head>
+  <body class="law-checkout-page shared-register-page">
+    <main class="checkout-wrap">
+      <section class="auth-card law-login-card law-checkout-card law-register-card" aria-labelledby="register-title">
+        <div class="card-heading law-login-heading">
+          <p class="section-kicker">CADASTRO INICIAL</p>
+          <h1 class="fs-card-title" id="register-title">CRIE SEU CADASTRO.</h1>
+          <p class="card-description">Informe seus dados pessoais ou os dados da organização e da pessoa responsável.</p>
+        </div>
+        <form id="register-form">
+          <label class="form-field">
+            <span class="fs-form-label">Tipo de documento</span>
+            <select class="fs-form-select" name="document_type" id="document-type">
+              <option value="cnpj">CNPJ</option>
+              <option value="cpf">CPF</option>
+            </select>
+          </label>
+          <label class="form-field">
+            <span class="fs-form-label" id="company-document-label">CNPJ</span>
+            <input class="fs-form-control" id="company-document" name="document_number" inputmode="text" maxlength="18" autocomplete="off" required aria-describedby="company-document-error" />
+            <span id="company-document-error" class="field-error" role="alert"></span>
+          </label>
+          <label class="form-field" id="company-name-label">
+            <span class="fs-form-label" id="company-name-label-text">Razão social</span>
+            <input class="fs-form-control" id="legal-name" name="legal_name" autocomplete="organization" required />
+          </label>
+          <label class="form-field">
+            <span class="fs-form-label">Nome completo do administrador</span>
+            <input class="fs-form-control" id="admin-name" name="name" autocomplete="name" required />
+          </label>
+          <label class="form-field">
+            <span class="fs-form-label">CPF do administrador</span>
+            <input class="fs-form-control" id="admin-cpf" name="cpf" inputmode="numeric" maxlength="14" autocomplete="off" required aria-describedby="admin-cpf-error" />
+            <span id="admin-cpf-error" class="field-error" role="alert"></span>
+          </label>
+          <label class="form-field">
+            <span class="fs-form-label">E-mail profissional</span>
+            <input class="fs-form-control" name="email" type="email" required />
+          </label>
+          <label class="form-field">
+            <span class="fs-form-label">Senha</span>
+            <input class="fs-form-control" name="password" type="password" minlength="12" required />
+          </label>
+          <div class="consent-field">
+            <input id="terms-consent" type="checkbox" name="terms" required />
+            <label for="terms-consent">Li e aceito os Termos de Uso.</label>
+            <a href="/termos-de-uso" target="_blank" rel="noopener">Ler documento</a>
+          </div>
+          <div class="consent-field">
+            <input id="privacy-consent" type="checkbox" name="privacy" required />
+            <label for="privacy-consent">Li e estou ciente da Política de Privacidade.</label>
+            <a href="/privacidade" target="_blank" rel="noopener">Ler documento</a>
+          </div>
+        </form>
+        <div class="login-actions"><button class="fs-btn fs-btn-primary law-submit" form="register-form" type="submit">Cadastre-se</button></div>
+        <p id="feedback" class="form-message" role="status"></p>
+      </section>
+    </main>
+    <script src="/assets/js/api-client.js"></script>
+    <script src="/assets/js/brazilian-documents.js?v=20260930-document-validation-v1"></script>
+    <script>
+      const type = document.querySelector('#document-type');
+      const companyNameLabel = document.querySelector('#company-name-label-text');
+      const companyDocumentLabel = document.querySelector('#company-document-label');
+      const companyDocument = document.querySelector('#company-document');
+      const legalName = document.querySelector('#legal-name');
+      const adminName = document.querySelector('#admin-name');
+      const adminCpf = document.querySelector('#admin-cpf');
+      const form = document.querySelector('#register-form');
+      const feedback = document.querySelector('#feedback');
+      const requestedReturnTo = new URLSearchParams(location.search).get('return_to');
+      const returnTo = ['/contratar/fokus-law', '/assinaturas/fokus-lead'].includes(requestedReturnTo) ? requestedReturnTo : undefined;
+
+      const documents = window.FokusDocuments;
+      const companyMask = documents.bind(companyDocument, () => type.value);
+      const adminCpfMask = documents.bind(adminCpf, 'cpf');
+      const validateDocument = (input, documentType, errorId) => {
+        const error = document.querySelector(errorId);
+        const value = documents.normalize(input.value, documentType);
+        const valid = documents.valid(value, documentType);
+        if (valid) {
+          input.removeAttribute('aria-invalid');
+          error.textContent = '';
+          error.classList.remove('is-visible');
+          return true;
+        }
+        if (!value) return false;
+        input.setAttribute('aria-invalid', 'true');
+        error.textContent = `${documentType.toUpperCase()} inválido. Confira os dígitos e informe novamente.`;
+        error.classList.add('is-visible');
+        return false;
+      };
+
+      const syncCpfIdentity = () => {
+        const isCpf = type.value === 'cpf';
+        companyNameLabel.textContent = isCpf ? 'Nome completo' : 'Razão social';
+        companyDocumentLabel.textContent = isCpf ? 'CPF' : 'CNPJ';
+        companyDocument.placeholder = isCpf ? '000.000.000-00' : '00.000.000/0000-00';
+        adminName.readOnly = isCpf;
+        adminCpf.readOnly = isCpf;
+        if (isCpf) {
+          adminName.value = legalName.value;
+          adminCpf.value = companyDocument.value;
+          adminCpfMask.apply();
+        }
+      };
+      type.onchange = () => {
+        companyDocument.value = '';
+        companyDocument.removeAttribute('aria-invalid');
+        document.querySelector('#company-document-error').classList.remove('is-visible');
+        syncCpfIdentity();
+      };
+      companyDocument.addEventListener('input', () => { if (type.value === 'cpf') { adminCpf.value = companyDocument.value; adminCpfMask.apply(); } });
+      legalName.addEventListener('input', () => { if (type.value === 'cpf') adminName.value = legalName.value; });
+      companyDocument.addEventListener('input', () => { companyDocument.removeAttribute('aria-invalid'); document.querySelector('#company-document-error').classList.remove('is-visible'); });
+      adminCpf.addEventListener('input', () => { adminCpf.removeAttribute('aria-invalid'); document.querySelector('#admin-cpf-error').classList.remove('is-visible'); });
+      companyDocument.onblur = () => validateDocument(companyDocument, type.value, '#company-document-error');
+      adminCpf.onblur = () => validateDocument(adminCpf, 'cpf', '#admin-cpf-error');
+      form.onsubmit = async (event) => {
+        event.preventDefault();
+        const companyValid = validateDocument(companyDocument, type.value, '#company-document-error');
+        const cpfValid = validateDocument(adminCpf, 'cpf', '#admin-cpf-error');
+        if (!companyValid || !cpfValid) return;
+        syncCpfIdentity();
+        const values = Object.fromEntries(new FormData(event.currentTarget));
+        values.document_number = documents.normalize(companyDocument.value, type.value);
+        values.cpf = documents.normalize(adminCpf.value, 'cpf');
+        let offerIntent = null;
+        if (returnTo) { try { offerIntent = JSON.parse(localStorage.getItem(returnTo === '/assinaturas/fokus-lead' ? 'fokus-lead-offer-v1' : 'fokus-law-offer-v1') || 'null'); } catch {} }
+        try {
+          await FokusApi.request('/auth/register-company', {
+            method: 'POST',
+            body: { ...values, ...(returnTo ? { return_to: returnTo, offer_intent: offerIntent } : {}), terms_version: '2.0', privacy_version: '2.0' },
+          });
+          location.href = returnTo ? `/verificar-email?return_to=${encodeURIComponent(returnTo)}` : '/verificar-email';
+        } catch (error) {
+          feedback.textContent = error.message;
+        }
+      };
+    </script>
+  </body>
+</html>
