@@ -864,3 +864,57 @@
     .home-page .immersive-hero-content { bottom: auto; padding-top: 112px; }
     .home-page .immersive-hero h1 { font-size: clamp(34px, 11vw, 44px); }
 }
+
+/* O mockup imersivo deixava o shell claro com texto marfim. Home mantém o nav sobre a foto. */
+.showcase-page .showcase-nav,
+.showcase-page .showcase-hero,
+.showcase-page .showcase-card {
+    animation: none;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) {
+    color: #242723;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-nav {
+    position: relative;
+    inset: auto;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 28px 34px 0;
+    color: #4f524e;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-brand,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-hero h1,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-information h2,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-information h3 {
+    color: #242723 !important;
+    text-shadow: none;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-brand span,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-kicker,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-hero h1 .showcase-accent {
+    color: #9a7440 !important;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-hero h1 .motion-word {
+    color: #242723 !important;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-hero h1 .showcase-accent {
+    color: #9a7440 !important;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-card {
+    color: #f4efe6;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-card .fs-btn-outline-primary {
+    color: #f6f1e8;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-card .fs-btn-primary {
+    color: #10110f;
+}
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-nav a,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-nav > span,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-hero p,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-information p,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-footer,
+.showcase-page:not(.home-page):not(.legal-document-page) .showcase-footer a {
+    color: #4f524e !important;
+    text-shadow: none;
+}

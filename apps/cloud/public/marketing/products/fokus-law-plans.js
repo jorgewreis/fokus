@@ -192,10 +192,6 @@
     finally { button.disabled = false; }
   });
 
-  if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }), { threshold: .12 });
-    document.querySelectorAll('[data-reveal]').forEach((node) => { node.classList.add('lp-reveal'); observer.observe(node); });
-  }
   window.FokusApi.request('/catalog/fokus-law').then((catalog) => {
     state.catalog = catalog;
     renderOffers(); renderBuilder(); quote();
