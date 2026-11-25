@@ -49,10 +49,11 @@ async function requiredAssets() {
 // Exact reviewed workflow pin. This accepts only the manual-main dispatch,
 // the production environment, the publication gate and the atomic sealed
 // publisher. It is not a YAML heuristic and does not grant permission to run
-// it. Any change needs review. The current bytes add transport retries to the
-// Cloudflare purge only. The gate, environment, sealed publisher and FPM
-// policy are unchanged.
-const reviewedWorkflowSha256 = 'edafe8fa0aa7f91901314c60b70b96a41120345337ade95452a7363dc7c7679d';
+// it. Any change needs review. The current bytes write DEPLOY_SSH_KEY with
+// exactly one trailing newline (CRLF-normalized) and validate it with
+// ssh-keygen -y without printing the key. The gate, environment, sealed
+// publisher and FPM policy are unchanged.
+const reviewedWorkflowSha256 = 'c29556cc02d18479ce72c0c101404a6bb2fc0626dd111731340dce45d19685ad';
 // Monorepo jorgewreis/fokus (REI-315): the reviewed bytes stay in the inactive
 // source apps/cloud/.github/workflows/deploy.yml. The active root workflow
 // .github/workflows/cloud-deploy.yml is derived from it by
