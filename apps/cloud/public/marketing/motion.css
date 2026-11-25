@@ -1,0 +1,84 @@
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: clip;
+}
+
+.motion-word {
+    display: inline-block;
+}
+
+.immersive-hero,
+.lead-hero,
+.law-hero {
+    isolation: isolate;
+}
+
+.motion-hero-media {
+    position: absolute;
+    z-index: -1;
+    top: -32px;
+    right: 0;
+    bottom: -32px;
+    left: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+}
+
+.home-page .showcase-nav {
+    position: fixed;
+}
+
+.home-page .showcase-nav.is-ivory {
+    inset: 0 0 auto;
+    padding: 14px 34px;
+    background: #eeeae1;
+}
+
+.home-page .showcase-nav.is-ivory .showcase-brand,
+.home-page .showcase-nav.is-ivory .showcase-nav-links a {
+    color: #242723 !important;
+    text-shadow: none;
+}
+
+.home-page .showcase-nav.is-ivory .showcase-brand span {
+    color: #9a7440 !important;
+}
+
+.home-page .immersive-products a {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0 1px;
+    transition: background-size 180ms ease, color 180ms ease;
+}
+
+.home-page .immersive-products a:hover,
+.home-page .immersive-products a:focus-visible {
+    background-size: 100% 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-page .showcase-nav,
+    .home-page .immersive-products a,
+    .lp-universe-grid,
+    .lp-universe-orbit,
+    .lp-universe-core,
+    .lp-module-node,
+    .lp-universe-signal,
+    .lead-pricing-mark i {
+        animation: none !important;
+        transition: none !important;
+    }
+}
