@@ -21,14 +21,16 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[2]
 VERIFIER_COMMIT = 'a8cc9729181471c9f46ccb15d51383e1aceb61ab'
-# Reviewed transport retries and the first-release bootstrap. Candidate
-# verification is unchanged. Each /up and release fetch may repeat only
-# transport_or_tls_error, up to three times inside the deadline; a release
-# retry mints a new nonce. HTTP status, content-type, size, contract, redirect
-# and release mismatch are not retried. Only probe-current may accept an
-# explicit unsealed text/html 404, including a legacy page larger than MAX_BODY,
-# classified from status and content-type.
-VERIFIER_BLOB = '72c289cb316da22a13c5b7441bdde33f13c0144c'
+# Reviewed transport retries, first-release bootstrap, and release HTTP
+# 502/503/504 retries. Candidate verification is otherwise unchanged. Each /up
+# and release fetch may repeat transport_or_tls_error, and a release fetch may
+# also repeat HTTP 502/503/504, up to three times inside the deadline; a
+# release retry mints a new nonce. Other HTTP status, content-type, size,
+# contract, redirect and release mismatch are not retried. Failure reasons for
+# release_http_not_ok include the numeric status and never the body. Only
+# probe-current may accept an explicit unsealed text/html 404, including a
+# legacy page larger than MAX_BODY, classified from status and content-type.
+VERIFIER_BLOB = '5d3304ed7aff6d33ce6ea74057d1e0f5fac922df'
 NONCE = 'a' * 48
 PROBE_PATHS = ('/_deployment/release', '/_deployment/release/', '//_deployment/release', '///_deployment/release///')
 
@@ -114,7 +116,7 @@ def adversarial_samples(module, config):
     # Fault injection wraps actual HTTP responses; production verifier remains unchanged.
     for fault, reason in (('cached', 'release_probe_mismatch'),
                           ('mixed', 'release_samples_inconsistent'),
-                          ('http', 'release_http_not_ok'),
+                          ('http', 'release_http_not_ok status=502'),
                           ('cache_header', 'release_cache_policy_invalid'),
                           ('leak', 'release_contract_invalid')):
         samples = []
