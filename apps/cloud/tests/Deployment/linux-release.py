@@ -21,10 +21,10 @@ assert all(isinstance(x,str) and re.fullmatch(r'[a-z0-9./_-]+@sha256:[0-9a-f]{64
 assert args.image==profile['runtime_image'], 'Runtime image differs from profile'
 assert args.dockerfile.resolve()==(ROOT/profile['dockerfile']).resolve(), 'Dockerfile differs from profile'
 containers=[];results=[]
-def run(label,command,check=True):
+def run(label,command,check=True,cwd=None):
     start=time.time()
     with (args.report/(label+'.log')).open('w',encoding='utf-8') as log:
-        p=subprocess.run(command,stdout=log,stderr=subprocess.STDOUT)
+        p=subprocess.run(command,stdout=log,stderr=subprocess.STDOUT,cwd=cwd)
     results.append({'name':label,'exit_code':p.returncode,'seconds':round(time.time()-start,3)})
     (args.report/'commands.json').write_text(json.dumps(results,indent=2))
     print(label,p.returncode,flush=True)
@@ -95,7 +95,7 @@ try:
     gates=[]
     for label,script,options in [('deploy-guard','test_fpm_guard.py',[]),('deploy-workflow','test_fpm_workflow.py',[]),('publication-gate','test_publication_gate.py',[]),('deploy-integration','test_deploy_candidate.py',[]),('static','linux-static.py',['--backend-only'] if args.backend_only else []),('rsync','linux-rsync.py',[]),('suite-sqlite','linux-release-suite.py',['--driver','sqlite']),('suite-mysql','linux-release-suite.py',['--driver','mysql']),('upgrade-sqlite','linux-upgrade.py',['--driver','sqlite']),('upgrade-mysql','linux-upgrade.py',['--driver','mysql'])]:
         gates.append(run(label,docker('exec',test,'python3','tests/Deployment/'+script,*options),check=False))
-    gates.append(run('idempotency-mysql-lab',['bash',str(ROOT/'tests/Isolated/run-company-idempotency-api-mysql-lab.sh')],check=False))
+    gates.append(run('idempotency-mysql-lab',['bash',str(ROOT/'tests/Isolated/run-company-idempotency-api-mysql-lab.sh')],check=False,cwd=ROOT))
     if (ROOT/'tests/Deployment/linux-http/run-all.py').is_file():
         gates.append(run('http',docker('exec','-e','RELEASE_REPORT_DIR=/work/reports/http',test,'python3','tests/Deployment/linux-http/run-all.py',*(['--concurrency-only'] if args.backend_only else [])),check=False))
     else:raise RuntimeError('HTTP release harness missing; cannot mark gate passed')

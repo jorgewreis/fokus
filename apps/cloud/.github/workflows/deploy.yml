@@ -215,8 +215,12 @@ jobs:
           test -n "$DEPLOY_KNOWN_HOSTS"
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          printf '%s' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$(printf '%s' "$DEPLOY_SSH_KEY" | tr -d '\r')" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+          if ! ssh-keygen -y -f ~/.ssh/id_ed25519 >/dev/null 2>&1; then
+            echo "DEPLOY_SSH_KEY is not a usable OpenSSH private key. Confirm the secret stores the real key body (gh secret set can drop the trailing newline). The key was not printed." >&2
+            exit 1
+          fi
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
           ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" exit

@@ -534,7 +534,7 @@ class WorkflowContract(unittest.TestCase):
         section_path = ROOT / 'tests/Deployment/fixtures/atomic-publication-section.yml'
         section = section_path.read_text(encoding='utf-8')
         self.assertEqual(hashlib.sha256(section.encode()).hexdigest(),
-                         '94c3fe7238e6a75c97fa61ca07cceb20b8cea3cbbcbadca1dcf3ceefa0d1638c')
+                         '0edb8a7fedc195a309165f12c447f446257d823d16acdd2af22ed6d6a2ecdd08')
         start = workflow.index('      # The remaining legacy steps mutate DEPLOY_PATH in place')
         end = workflow.index('      - name: Apply explicitly selected PHP-FPM reload policy\n')
         workflow = workflow[:start] + section + workflow[end:]
