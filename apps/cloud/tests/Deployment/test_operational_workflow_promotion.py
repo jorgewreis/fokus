@@ -91,6 +91,8 @@ jobs:
         remote = out.split('  remote:\n', 1)[1]
         self.assertNotIn('working-directory', remote)
         self.assertEqual(out, promote.promote('synthetic.yml', self.SOURCE))
+        backup = promote.promote('production-backup.yml', self.SOURCE)
+        self.assertIn("  schedule:\n    - cron: '1 2 * * *'\n", backup)
 
     def test_refuses_unknown_shapes(self):
         for source in (self.SOURCE.replace('jobs:', 'defaults:\n  run:\n    shell: bash\n\njobs:'),
@@ -139,11 +141,20 @@ class PromotedWorkflows(unittest.TestCase):
     def test_production_workflows_are_dispatch_only(self):
         for source in SOURCES:
             text = self.promoted(source.name)
+            if source.name == 'production-backup.yml':
+                self.assertIn('schedule:', on_block(text), source.name)
+                self.assertEqual(events(text), ['schedule', 'workflow_dispatch'], source.name)
+                continue
             self.assertNotIn('schedule:', on_block(text), source.name)
             if source.name == 'deploy.yml':
                 continue
             if 'secrets.' in text or 'environment:' in text:
                 self.assertEqual(events(text), ['workflow_dispatch'], source.name)
+
+    def test_production_backup_supports_atomic_release_layout(self):
+        backup = self.promoted('production-backup.yml')
+        self.assertIn('$DEPLOY_PATH/current/deploy/export-database.php', backup)
+        self.assertIn('$DEPLOY_PATH/shared/storage/app', backup)
 
     def test_automatic_triggers_are_scoped_to_the_cloud(self):
         for source in SOURCES:
