@@ -14,8 +14,8 @@ adaptações de layout:
 * filtros ``paths`` em ``push``/``pull_request``: os filtros existentes ganham o
   prefixo e as referências a workflows apontam para ``cloud-*.yml``; sem filtro,
   ``apps/cloud/**`` mais o próprio arquivo do workflow;
-* ``schedule`` removido: backup e workflows de produção ficam só com
-  ``workflow_dispatch`` até o corte (o agendamento continua no fokus-cloud);
+* ``schedule`` removido nos demais workflows de produção;
+  ``production-backup.yml`` preserva o agendamento diário no monorepo;
 * grupos de ``concurrency`` inalterados (nenhum colide com Law/Styles);
 * ``git diff --name-only`` com ``--relative`` (o diretório de trabalho é o app);
 * ``law-schema-preflight``: o checkout proposto fica em ``proposed/`` e o app em
@@ -37,6 +37,7 @@ HEADER = ('# Gerado por apps/cloud/tools/ci/promote-workflows.py a partir de\n'
           '# revisada e rode o script (o teste test_operational_workflow_promotion.py\n'
           '# falha se este arquivo divergir).\n')
 SPECIAL_CHECKOUT = {'law-schema-preflight.yml'}
+KEEP_SCHEDULE = {'production-backup.yml'}
 
 
 class PromotionError(ValueError):
@@ -93,7 +94,7 @@ def promote_triggers(lines, name):
         trailing = []
         while body and not body[-1].strip():
             trailing.insert(0, body.pop())
-        if event == 'schedule':
+        if event == 'schedule' and name not in KEEP_SCHEDULE:
             i = j
             continue
         if event in ('push', 'pull_request'):

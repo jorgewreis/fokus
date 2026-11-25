@@ -5,6 +5,8 @@
 name: Cloud · Encrypted production backup and isolated restore
 
 "on":
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
 
 jobs:
@@ -57,10 +59,12 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           set -euo pipefail
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && php deploy/export-database.php" |
+          [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9_./-]+$ ]]
+          [[ "$DEPLOY_PATH" != *..* ]]
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "set -eu; if test -f '$DEPLOY_PATH/current/deploy/export-database.php'; then cd '$DEPLOY_PATH/current'; elif test -f '$DEPLOY_PATH/deploy/export-database.php'; then cd '$DEPLOY_PATH'; else echo 'Missing deploy/export-database.php under DEPLOY_PATH' >&2; exit 1; fi; php deploy/export-database.php" |
             gzip -1 |
             gpg --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/fokuscloud-backup-passphrase" --symmetric --cipher-algo AES256 --output "$RUNNER_TEMP/fokuscloud-backup/database.sql.gz.gpg"
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && if test -d storage/app; then tar -czf - storage/app; else tar -czf - --files-from /dev/null; fi" |
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "set -eu; if test -d '$DEPLOY_PATH/shared/storage/app'; then cd '$DEPLOY_PATH/shared'; elif test -d '$DEPLOY_PATH/storage/app'; then cd '$DEPLOY_PATH'; else echo 'Missing storage/app under DEPLOY_PATH' >&2; exit 1; fi; tar -czf - storage/app" |
             gpg --batch --yes --pinentry-mode loopback --passphrase-file "$RUNNER_TEMP/fokuscloud-backup-passphrase" --symmetric --cipher-algo AES256 --output "$RUNNER_TEMP/fokuscloud-backup/storage-app.tar.gz.gpg"
           cd "$RUNNER_TEMP/fokuscloud-backup"
           sha256sum database.sql.gz.gpg storage-app.tar.gz.gpg > manifest.sha256
