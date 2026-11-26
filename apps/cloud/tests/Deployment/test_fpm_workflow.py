@@ -25,6 +25,10 @@ PREFLIGHT = 'Preflight selected FPM policy before any remote mutation'
 ACTIVATE = 'Apply explicitly selected PHP-FPM reload policy'
 REPORT = 'Report each publication phase'
 VERIFY = 'Verify application health and expected active release'
+RECOVER = 'Recover previous release after unsuccessful activation'
+RECOVERY_CONDITION = ("if: ${{ failure() && (steps.switch.outcome == 'failure' || "
+                      "(steps.switch.outcome == 'success' && (steps.services.outcome == 'failure' || "
+                      "steps.release.outcome == 'failure'))) }}")
 
 
 def deployment_steps():
@@ -135,7 +139,10 @@ class WorkflowExecution(unittest.TestCase):
             for name, script, body in steps[start:]:
                 output_file.write_text('')
                 identifier = re.search(r'^        id: (.+)$', body, re.M)
-                if status and name != REPORT:
+                recovery_due = (outcomes.get('switch') == 'failure'
+                                or (outcomes.get('switch') == 'success' and 'failure' in (
+                                    outcomes.get('services'), outcomes.get('release'))))
+                if (name == RECOVER and not recovery_due) or (status and name not in {REPORT, RECOVER}):
                     if identifier: outcomes[identifier[1]] = 'skipped'
                     continue
                 if name == REPORT:
@@ -184,11 +191,31 @@ class WorkflowExecution(unittest.TestCase):
             with self.subTest(scenario=scenario):
                 events, completed, status = self.exercise(scenario)
                 self.assertNotEqual(status, 0)
-                self.assertEqual(completed[-2:], [ACTIVATE, REPORT])
+                self.assertEqual(completed[-3:], [ACTIVATE, RECOVER, REPORT])
                 self.assertIn('rsync', [event[0] for event in events])
                 self.assertNotIn(['purge'], events)
-                self.assertLessEqual(sum(event[:3] == ['sudo', '-n', '--'] for event in events), 1)
+                self.assertLessEqual(sum(event[:3] == ['sudo', '-n', '--'] for event in events), 2)
                 self.assertFalse(any('restart' in word for event in events for word in event))
+
+    def test_successful_recovery_verifies_previous_without_turning_publish_green(self):
+        for scenario in ('reload_once_failed', 'switch_uncertain', 'http_old_sha'):
+            with self.subTest(scenario=scenario):
+                events, completed, status = self.exercise(scenario)
+                self.assertNotEqual(status, 0)
+                self.assertEqual(completed[-2:], [RECOVER, REPORT])
+                self.assertIn(['previous-http-verify'], events)
+                self.assertNotIn(['purge'], events)
+                self.assertIn("Previous sealed release verified; original publication remains failed.", self.report)
+
+    def test_uncertain_recovery_is_reported_and_never_purges(self):
+        for scenario in ('unsealed_previous', 'invalid_recovery_receipt', 'rollback_refused', 'previous_unhealthy'):
+            with self.subTest(scenario=scenario):
+                events, completed, status = self.exercise(scenario)
+                self.assertNotEqual(status, 0)
+                self.assertEqual(completed[-2:], [RECOVER, REPORT])
+                self.assertNotIn(['purge'], events)
+                self.assertIn("Recovery is not confirmed; operator verification is required.", self.report)
+                self.assertNotIn("Previous sealed release verified;", self.report)
 
     def test_schema_failure_does_not_activate_or_continue_publication(self):
         events, completed, status = self.exercise('schema_failure')
@@ -246,7 +273,7 @@ class WorkflowExecution(unittest.TestCase):
                                    'Require verifiable deployment prerequisites',
                                    'Configure SSH', 'Seal inactive release at the remote root', PREFLIGHT,
                                    'Verify Law schema before publishing application code'])
-        self.assertEqual(names[-4:], [ACTIVATE, VERIFY, 'Purge Cloudflare cache', REPORT])
+        self.assertEqual(names[-5:], [ACTIVATE, VERIFY, RECOVER, 'Purge Cloudflare cache', REPORT])
         self.assertNotIn('Block legacy in-place publication', names)
         self.assertNotIn('Sync application source', names)
         scripts = {name: script for name, script, _body in steps}
@@ -255,11 +282,14 @@ class WorkflowExecution(unittest.TestCase):
         self.assertIn(':$DEPLOY_PATH/releases/$EXPECTED_RELEASE/', scripts['Transfer sealed release into a new directory'])
         self.assertNotIn(':$DEPLOY_PATH/"', scripts['Transfer sealed release into a new directory'])
         self.assertIn('atomic_publisher.py\' switch', scripts['Switch the current symlink atomically'])
-        self.assertIn('atomic_publisher.py\' rollback', scripts[VERIFY])
+        self.assertIn('atomic_publisher.py\' rollback', scripts[RECOVER])
+        self.assertNotIn('rollback', scripts[VERIFY])
         self.assertLess(names.index('Transfer sealed release into a new directory'), names.index(ACTIVATE))
         self.assertLess(names.index(VERIFY), names.index('Purge Cloudflare cache'))
         for name, _, body in steps:
-            if name != REPORT:
+            if name == RECOVER:
+                self.assertIn(RECOVERY_CONDITION, body)
+            elif name != REPORT:
                 self.assertNotRegex(body, r'(?m)^        if:', name)
         purge = scripts['Purge Cloudflare cache']
         self.assertIn('if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ZONE_ID" ]; then', purge)

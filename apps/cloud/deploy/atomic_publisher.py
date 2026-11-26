@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Seal a new release directory and switch current atomically.
 
-The active tree is never a write target. A failed post-switch verification
-restores the previous symlink. Database changes are not reversed.
+The active tree is never a write target. Failed activation may restore the
+previous symlink. Database changes are not reversed.
 """
 import argparse
 import base64
+from contextlib import contextmanager
 import hashlib
 import importlib.util
 import json
@@ -323,12 +324,32 @@ def run_migrations(candidate):
         raise PublicationError('migration_failed')
 
 
+@contextmanager
+def publication_lock(base):
+    # Load only on the Linux publisher; the build/seal helpers also run on Windows.
+    import fcntl
+    descriptor = os.open(base, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise PublicationError('publication_busy') from None
+        yield
+    finally:
+        os.close(descriptor)
+
+
 def switch(base, release, *, bootstrap, migrate=run_migrations):
+    base = require_base(base)
+    with publication_lock(base):
+        return switch_locked(base, release, bootstrap=bootstrap, migrate=migrate)
+
+
+def switch_locked(base, release, *, bootstrap, migrate):
     if RELEASE_NAME.fullmatch(release) is None:
         raise PublicationError('invalid_release')
     if not isinstance(bootstrap, bool):
         raise PublicationError('invalid_bootstrap_flag')
-    base = require_base(base)
     current = base / 'current'
     if not current.is_symlink():
         raise PublicationError('current_symlink_required')
@@ -346,6 +367,12 @@ def switch(base, release, *, bootstrap, migrate=run_migrations):
         raise PublicationError('bootstrap_refused_sealed_current')
     if not sealed and not bootstrap:
         raise PublicationError('bootstrap_required_for_unsealed_current')
+    previous_release = None
+    if sealed:
+        previous_release = previous_resolved.name
+        if previous_resolved.parent != base / 'releases' or RELEASE_NAME.fullmatch(previous_release) is None:
+            raise PublicationError('previous_release_unbound')
+        require_bound_identity(previous_resolved, previous_release)
     link_shared(base, candidate)
     if migrate is not None:
         migrate(candidate)
@@ -353,8 +380,10 @@ def switch(base, release, *, bootstrap, migrate=run_migrations):
         'bootstrap': bootstrap,
         'candidate': str(candidate.resolve()),
         'previous': raw_previous,
+        'previous_resolved': str(previous_resolved),
+        'previous_release': previous_release,
         'release': release,
-        'schema': 1,
+        'schema': 2,
     }
     temporary = base / ('.switch-state-' + secrets.token_hex(8))
     temporary.write_bytes(dumps(state))
@@ -372,17 +401,50 @@ def rollback(base, release):
     if RELEASE_NAME.fullmatch(release) is None:
         raise PublicationError('invalid_release')
     base = require_base(base)
+    with publication_lock(base):
+        return rollback_locked(base, release)
+
+
+def rollback_locked(base, release):
     try:
-        state = json.loads((base / 'switch-state.json').read_bytes())
+        state_file = base / 'switch-state.json'
+        if state_file.is_symlink():
+            raise PublicationError('switch_state_missing')
+        state = json.loads(state_file.read_bytes())
     except (OSError, UnicodeError, json.JSONDecodeError):
         raise PublicationError('switch_state_missing') from None
-    if not isinstance(state, dict) or state.get('schema') != 1 or state.get('release') != release:
+    candidate = base / 'releases' / release
+    if (not isinstance(state, dict) or state.get('schema') != 2 or state.get('release') != release
+            or state.get('candidate') != str(candidate) or not isinstance(state.get('bootstrap'), bool)):
         raise PublicationError('rollback_release_mismatch')
+    require_bound_identity(candidate, release)
+    raw = state.get('previous')
+    if not isinstance(raw, str) or not raw:
+        raise PublicationError('previous_release_unbound')
+    previous = (base / raw).resolve()
+    if previous == candidate or not previous.is_dir() or str(previous) != state.get('previous_resolved'):
+        raise PublicationError('previous_release_unbound')
+    previous_release = state.get('previous_release')
+    if state['bootstrap']:
+        if previous_release is not None or (previous / '.release' / 'identity.php').exists():
+            raise PublicationError('previous_release_unbound')
+    else:
+        if (not isinstance(previous_release, str) or RELEASE_NAME.fullmatch(previous_release) is None
+                or previous != base / 'releases' / previous_release):
+            raise PublicationError('previous_release_unbound')
+        require_bound_identity(previous, previous_release)
     current = base / 'current'
-    if not current.is_symlink() or Path(os.readlink(current)).resolve() != Path(state['candidate']).resolve():
+    if not current.is_symlink():
         raise PublicationError('rollback_current_mismatch')
-    replace_symlink(base, current, state['previous'])
-    print('atomic_rollback=restored_previous_release')
+    active = os.readlink(current)
+    if active == str(candidate):
+        replace_symlink(base, current, raw)
+        print('atomic_rollback=restored_previous_release')
+    elif active == raw:
+        print('atomic_rollback=previous_pointer_already_present')
+    else:
+        raise PublicationError('rollback_current_mismatch')
+    return previous_release
 
 
 def seal_local_from_environment(env):
@@ -404,6 +466,8 @@ def main(argv=None):
         command = commands.add_parser(name)
         command.add_argument('--base', required=True)
         command.add_argument('--release', required=True)
+        if name == 'rollback':
+            command.add_argument('--report-previous', action='store_true')
         if name == 'switch':
             command.add_argument('--bootstrap', required=True, choices=('true', 'false'))
     args = parser.parse_args(argv)
@@ -413,7 +477,9 @@ def main(argv=None):
         elif args.command == 'switch':
             switch(safe_absolute(args.base), args.release, bootstrap=args.bootstrap == 'true')
         else:
-            rollback(safe_absolute(args.base), args.release)
+            previous = rollback(safe_absolute(args.base), args.release)
+            if args.report_previous:
+                print('previous_release=' + (previous or 'unsealed'))
     except PublicationError as error:
         print('atomic_publication=failed reason=' + error.reason, file=sys.stderr)
         return 1

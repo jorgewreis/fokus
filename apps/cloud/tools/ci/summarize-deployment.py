@@ -17,6 +17,7 @@ PHASES = (
     ("SERVICES", "Selected runtime action"),
     ("CDN", "Optional CDN purge"),
     ("RELEASE", "HTTP health and expected dynamic release observed"),
+    ("RECOVERY", "Previous sealed release identity and health after recovery"),
 )
 OUTCOMES = {"success", "failure", "cancelled", "skipped"}
 
@@ -25,8 +26,8 @@ def render(env):
     results = {key: env.get("PHASE_" + key, "") for key, _ in PHASES}
     # No unknown or empty result can become success.
     results = {key: value if value in OUTCOMES else "unknown" for key, value in results.items()}
-    complete = all(value == "success" for key, value in results.items() if key != "CDN")
-    complete = complete and results["CDN"] in {"success", "skipped"}
+    complete = all(value == "success" for key, value in results.items() if key not in {"CDN", "RECOVERY"})
+    complete = complete and results["CDN"] in {"success", "skipped"} and results["RECOVERY"] == "skipped"
     lines = ["## Publication evidence", "", "| Phase | Outcome |", "| --- | --- |"]
     for key, label in PHASES:
         value = results[key]
@@ -41,7 +42,12 @@ def render(env):
         lines.append(f"| {label} | {value} |")
     lines.extend(["", "Automated publication checks passed." if complete else "Publication is NOT fully verified."])
     if not complete and any(results[key] != "skipped" for key in ("SCHEMA", "STAGE", "SWITCH") if results[key] != "unknown"):
-        lines.append("Remote writes may have occurred. The code pointer is rolled back when release verification fails; do not automatically roll back migrations.")
+        lines.append("Remote writes may have occurred. Do not automatically roll back migrations.")
+    if results["RECOVERY"] == "success":
+        lines.append("Previous sealed release verified; original publication remains failed.")
+    elif not complete and results["SWITCH"] in {"success", "failure", "cancelled"} and (
+            results["SWITCH"] != "success" or results["SERVICES"] != "success" or results["RELEASE"] != "success"):
+        lines.append("Recovery is not confirmed; operator verification is required.")
     lines.append("This evidence does not certify destination inventory, every PHP worker, every business flow, or full recoverability.")
     return "\n".join(lines) + "\n", complete
 
