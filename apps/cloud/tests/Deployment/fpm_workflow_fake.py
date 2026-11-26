@@ -15,16 +15,20 @@ args = sys.argv[1:]
 if program == 'python3':
     if args[0] == 'tools/ci/verify-deployment.py':
         assert args[1:] == ['verify']
-        state['events'].append(['http-verify'])
+        previous = os.environ['EXPECTED_RELEASE'] == 'b' * 40
+        state['events'].append(['previous-http-verify' if previous else 'http-verify'])
         state_path.write_text(json.dumps(state))
         module = runpy.run_path(args[0], run_name='fixture_verify')
         def fetch(url, timeout):
             if url.endswith('/up'):
+                if previous and state['scenario'] == 'previous_unhealthy':
+                    return 503, {}, b'unhealthy'
                 return 200, {}, b'healthy'
             nonce = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)['deploy_probe'][0]
-            release = 'b' * 40 if state['scenario'] == 'http_old_sha' else os.environ['EXPECTED_RELEASE']
+            mismatched = {'http_old_sha', 'unsealed_previous', 'invalid_recovery_receipt', 'rollback_refused', 'previous_unhealthy'}
+            release = 'b' * 40 if not previous and state['scenario'] in mismatched else os.environ['EXPECTED_RELEASE']
             headers = {'content-type': 'application/json', 'cache-control': 'no-store'}
-            if state['scenario'] == 'http_cached': headers['cache-control'] = 'public, max-age=600'
+            if not previous and state['scenario'] == 'http_cached': headers['cache-control'] = 'public, max-age=600'
             return 200, headers, json.dumps({'status': 'ok', 'release': release, 'probe': nonce}).encode()
         module['verify'].__kwdefaults__.update(fetcher=fetch, sleeper=lambda seconds: None)
         sys.exit(module['main'](['verify']))
@@ -36,7 +40,8 @@ if program == 'sudo':
     assert args == ['-n', '--', '/usr/bin/systemctl', 'reload', '--', state['service']]
     state['events'].append(['sudo', *args])
     state_path.write_text(json.dumps(state))
-    sys.exit(1 if state['scenario'] == 'reload_denied' else 0)
+    first_reload = sum(event[:3] == ['sudo', '-n', '--'] for event in state['events']) == 1
+    sys.exit(1 if state['scenario'] == 'reload_denied' or (state['scenario'] == 'reload_once_failed' and first_reload) else 0)
 if program == 'ssh' and args[-1].startswith('LC_ALL=C '):
     assert args[:-1] == [
         '-p', '2222', '-o', 'ConnectionAttempts=1', '-o', 'BatchMode=yes',
@@ -82,3 +87,15 @@ state['events'].append(event)
 state_path.write_text(json.dumps(state))
 if state['scenario'] == 'schema_failure' and program == 'ssh' and 'mkdir -m 700' in args[-1]:
     sys.exit(1)
+if program == 'ssh' and 'atomic_publisher.py' in args[-1]:
+    if ' rollback ' in args[-1]:
+        assert '--report-previous' in args[-1] and 'StrictHostKeyChecking=yes' in args
+        if state['scenario'] == 'rollback_refused':
+            sys.exit(1)
+        if state['scenario'] == 'invalid_recovery_receipt':
+            print('unrecognized receipt')
+            sys.exit(0)
+        print('atomic_rollback=restored_previous_release')
+        print('previous_release=' + ('unsealed' if state['scenario'] == 'unsealed_previous' else 'b' * 40))
+    elif ' switch ' in args[-1] and state['scenario'] == 'switch_uncertain':
+        sys.exit(255)

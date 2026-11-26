@@ -51,9 +51,9 @@ async function requiredAssets() {
 // publisher. It is not a YAML heuristic and does not grant permission to run
 // it. Any change needs review. The current bytes write DEPLOY_SSH_KEY with
 // exactly one trailing newline (CRLF-normalized) and validate it with
-// ssh-keygen -y without printing the key. The gate, environment, sealed
-// publisher and FPM policy are unchanged.
-const reviewedWorkflowSha256 = 'c29556cc02d18479ce72c0c101404a6bb2fc0626dd111731340dce45d19685ad';
+// ssh-keygen -y without printing the key. REI-22 adds a guarded recovery
+// step after switch/FPM/health failure, before the unchanged purge step.
+const reviewedWorkflowSha256 = '0fb8e2c0304e26dbe23e964c5d694e0f85ea4b01033c3c174397195372c24d01';
 // Monorepo jorgewreis/fokus (REI-315): the reviewed bytes stay in the inactive
 // source apps/cloud/.github/workflows/deploy.yml. The active root workflow
 // .github/workflows/cloud-deploy.yml is derived from it by

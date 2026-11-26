@@ -170,3 +170,20 @@ Testes em `tests/Deployment/test_operational_*.py` exercitam contratos sem produ
 A recuperação sintética usa SQLite, tar, diretórios temporários e boot de um programa Python mínimo recuperado; não restaura a aplicação Laravel nem suas dependências; não é teste de dump MySQL produtivo, cifra real, cofre, OPcache/FPM real nem medição de RTO. Testes do verificador não instalam endpoint. CI normal permanece responsável pelas regressões existentes da aplicação. Validação local: 47 testes operacionais aprovados, incluindo HTTPS loopback com CA temporária e teste da etapa SSH que preserva 1/42/255. YAML e sintaxe Bash dos 31 blocos run passaram; `git diff --check`, tokens, SEO (15 páginas) e contrato visual (19 páginas) passaram. O teste de assets confirmou manifesto/14 arquivos; a parte rsync foi ignorada porque o executável está ausente. PHP/Composer não estão instalados neste executor; PHPUnit/build/visual completos dependem dos runners existentes do CI. Resultados remotos e SHA exato ficam no PR e checkpoint da REI-22.
 
 **Ainda dependem de acesso/intervenção/autorização:** metadados e política efetiva GitHub production; vínculo independente do alvo; leitura controlada de vhost/pool/OPcache e schema atual; desenho/aprovação do endpoint; custódia/configuração/artefato recuperável completos; exercício isolado real autorizado; eventual permissão mínima para ação necessária; qualquer merge/deploy ou alteração produtiva. Nenhuma dessas condições é considerada satisfeita pelo teste sintético ou badge verde.
+
+### Recuperação após tentativa de troca (REI-22)
+
+Se a troca não for confirmada ou se a recarga PHP-FPM ou a prova HTTPS da
+nova versão falhar após a troca, o mesmo workflow verifica o registro local
+da tentativa e só restaura o ponteiro anterior se o candidato e o destino
+corresponderem ao registro. Uma versão posterior não é sobrescrita. A
+recuperação aplica a política de runtime já selecionada (sem restart) e
+exige saúde HTTPS e identidade exata da versão anterior selada. O deploy
+original continua falho, mesmo com recuperação verificada; o purge normal
+não executa nesse caso.
+
+A restauração do ponteiro não é restauração do banco. Não reverta migrations
+automaticamente. Se o runner for cancelado, o registro faltar, a versão
+anterior não for selada ou o runtime anterior não puder ser confirmado, a
+recuperação fica a confirmar pelo operador. Não inicie outro deploy até
+conciliar a versão servida e a compatibilidade do esquema.

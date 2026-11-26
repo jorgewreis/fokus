@@ -328,6 +328,12 @@ jobs:
       - name: Verify application health and expected active release
         id: release
         timeout-minutes: 2
+        run: python3 tools/ci/verify-deployment.py verify
+
+      - name: Recover previous release after unsuccessful activation
+        id: recovery
+        if: ${{ failure() && (steps.switch.outcome == 'failure' || (steps.switch.outcome == 'success' && (steps.services.outcome == 'failure' || steps.release.outcome == 'failure'))) }}
+        timeout-minutes: 4
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
@@ -338,10 +344,29 @@ jobs:
           [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9_./-]+$ ]]
           [[ "$DEPLOY_PATH" != *..* ]]
           [[ "$EXPECTED_RELEASE" =~ ^[0-9a-f]{40}$ ]]
-          if ! python3 tools/ci/verify-deployment.py verify; then
-            ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "set -eu; python3 '$DEPLOY_PATH/releases/$EXPECTED_RELEASE/deploy/atomic_publisher.py' rollback --base '$DEPLOY_PATH' --release '$EXPECTED_RELEASE'"
+          if ! receipt=$(timeout 45s ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "set -eu; python3 '$DEPLOY_PATH/releases/$EXPECTED_RELEASE/deploy/atomic_publisher.py' rollback --base '$DEPLOY_PATH' --release '$EXPECTED_RELEASE' --report-previous"); then
+            echo 'Recovery pointer not confirmed; operator verification required.' >&2
             exit 1
           fi
+          receipt_pattern=$'^atomic_rollback=(restored_previous_release|previous_pointer_already_present)\nprevious_release=([0-9a-f]{40}|unsealed)$'
+          if [[ ! "$receipt" =~ $receipt_pattern ]]; then
+            echo 'Recovery receipt invalid; operator verification required.' >&2
+            exit 1
+          fi
+          previous_release="${BASH_REMATCH[2]}"
+          if ! python3 deploy/fpm_guard_cli.py activate; then
+            echo 'Previous pointer recovered, but runtime action failed; operator verification required.' >&2
+            exit 1
+          fi
+          if [[ "$previous_release" == unsealed || "$previous_release" == "$EXPECTED_RELEASE" ]]; then
+            echo 'Previous pointer recovered, but sealed identity cannot be verified; operator verification required.' >&2
+            exit 1
+          fi
+          if ! EXPECTED_RELEASE="$previous_release" python3 tools/ci/verify-deployment.py verify; then
+            echo 'Previous pointer recovered, but runtime identity or health is unconfirmed; operator verification required.' >&2
+            exit 1
+          fi
+          echo 'Previous sealed release verified. Original publication remains failed.'
 
       - name: Purge Cloudflare cache
         id: cdn
@@ -390,4 +415,5 @@ jobs:
           PHASE_SERVICES: ${{ steps.services.outcome }}
           PHASE_CDN: ${{ steps.cdn.outputs.result || steps.cdn.outcome }}
           PHASE_RELEASE: ${{ steps.release.outcome }}
+          PHASE_RECOVERY: ${{ steps.recovery.outcome }}
         run: python3 tools/ci/summarize-deployment.py

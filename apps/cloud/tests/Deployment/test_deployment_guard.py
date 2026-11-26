@@ -612,9 +612,15 @@ class WorkflowContract(unittest.TestCase):
         self.assertEqual(workflow.count(verify_anchor), 1)
         self.assertLess(workflow.index(old_verify), workflow.index(verify_anchor))
         workflow = workflow.replace(verify_anchor, '', 1)
-        insert = """      - name: Verify application health and expected active release
+        insert = r"""      - name: Verify application health and expected active release
         id: release
         timeout-minutes: 2
+        run: python3 tools/ci/verify-deployment.py verify
+
+      - name: Recover previous release after unsuccessful activation
+        id: recovery
+        if: ${{ failure() && (steps.switch.outcome == 'failure' || (steps.switch.outcome == 'success' && (steps.services.outcome == 'failure' || steps.release.outcome == 'failure'))) }}
+        timeout-minutes: 4
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
@@ -625,10 +631,29 @@ class WorkflowContract(unittest.TestCase):
           [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9_./-]+$ ]]
           [[ "$DEPLOY_PATH" != *..* ]]
           [[ "$EXPECTED_RELEASE" =~ ^[0-9a-f]{40}$ ]]
-          if ! python3 tools/ci/verify-deployment.py verify; then
-            ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "set -eu; python3 '$DEPLOY_PATH/releases/$EXPECTED_RELEASE/deploy/atomic_publisher.py' rollback --base '$DEPLOY_PATH' --release '$EXPECTED_RELEASE'"
+          if ! receipt=$(timeout 45s ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o ConnectionAttempts=1 -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "set -eu; python3 '$DEPLOY_PATH/releases/$EXPECTED_RELEASE/deploy/atomic_publisher.py' rollback --base '$DEPLOY_PATH' --release '$EXPECTED_RELEASE' --report-previous"); then
+            echo 'Recovery pointer not confirmed; operator verification required.' >&2
             exit 1
           fi
+          receipt_pattern=$'^atomic_rollback=(restored_previous_release|previous_pointer_already_present)\nprevious_release=([0-9a-f]{40}|unsealed)$'
+          if [[ ! "$receipt" =~ $receipt_pattern ]]; then
+            echo 'Recovery receipt invalid; operator verification required.' >&2
+            exit 1
+          fi
+          previous_release="${BASH_REMATCH[2]}"
+          if ! python3 deploy/fpm_guard_cli.py activate; then
+            echo 'Previous pointer recovered, but runtime action failed; operator verification required.' >&2
+            exit 1
+          fi
+          if [[ "$previous_release" == unsealed || "$previous_release" == "$EXPECTED_RELEASE" ]]; then
+            echo 'Previous pointer recovered, but sealed identity cannot be verified; operator verification required.' >&2
+            exit 1
+          fi
+          if ! EXPECTED_RELEASE="$previous_release" python3 tools/ci/verify-deployment.py verify; then
+            echo 'Previous pointer recovered, but runtime identity or health is unconfirmed; operator verification required.' >&2
+            exit 1
+          fi
+          echo 'Previous sealed release verified. Original publication remains failed.'
 
 """
         self.assertEqual(workflow.count(old_verify), 1)
@@ -689,7 +714,9 @@ class WorkflowContract(unittest.TestCase):
         collapsed = workflow.replace("done\n\n\n      - name: Report each publication phase\n",
                                      "done\n\n      - name: Report each publication phase\n", 1)
         self.assertNotEqual(collapsed, workflow)
-        return collapsed
+        marker = "          PHASE_RELEASE: ${{ steps.release.outcome }}\n"
+        self.assertEqual(collapsed.count(marker), 1)
+        return collapsed.replace(marker, marker + "          PHASE_RECOVERY: ${{ steps.recovery.outcome }}\n")
 
     def assert_workflow_preserved(self, current):
         self.assertEqual(current, self.expected_workflow(),

@@ -104,10 +104,35 @@ class AtomicPublicationTests(unittest.TestCase):
         self.assertEqual((self.legacy / 'marker.txt').read_text(), 'legacy-bytes')
         self.assertTrue(self.candidate.is_dir())
         self.assertIn('atomic_rollback=restored_previous_release', output.getvalue())
-        with self.assertRaises(PUBLISHER.PublicationError) as caught:
-            PUBLISHER.rollback(self.base, RELEASE)
-        self.assertEqual(caught.exception.reason, 'rollback_current_mismatch')
+        with redirect_stdout(output):
+            self.assertIsNone(PUBLISHER.rollback(self.base, RELEASE))
+        self.assertIn('atomic_rollback=previous_pointer_already_present', output.getvalue())
         self.assertEqual(self.current_target(), self.legacy.resolve())
+
+    def test_sealed_previous_is_bound_and_repeated_recovery_proves_same_release(self):
+        previous = bound_release(self.base / 'releases' / OTHER, OTHER)
+        (self.base / 'current').unlink()
+        (self.base / 'current').symlink_to('releases/' + OTHER)
+        PUBLISHER.switch(self.base, RELEASE, bootstrap=False, migrate=None)
+        self.assertEqual(PUBLISHER.rollback(self.base, RELEASE), OTHER)
+        self.assertEqual(os.readlink(self.base / 'current'), 'releases/' + OTHER)
+        self.assertEqual(PUBLISHER.rollback(self.base, RELEASE), OTHER)
+        (previous / '.release' / 'identity.php').write_text('not the sealed identity')
+        with self.assertRaises(PUBLISHER.PublicationError):
+            PUBLISHER.rollback(self.base, RELEASE)
+        self.assertEqual(os.readlink(self.base / 'current'), 'releases/' + OTHER)
+
+    def test_recovery_refuses_unrelated_target_and_contended_switch(self):
+        PUBLISHER.switch(self.base, RELEASE, bootstrap=True, migrate=None)
+        third = bound_release(self.base / 'releases' / OTHER, OTHER)
+        (self.base / 'current').unlink()
+        (self.base / 'current').symlink_to(third)
+        with self.assertRaisesRegex(PUBLISHER.PublicationError, 'rollback_current_mismatch'):
+            PUBLISHER.rollback(self.base, RELEASE)
+        with PUBLISHER.publication_lock(self.base):
+            with self.assertRaisesRegex(PUBLISHER.PublicationError, 'publication_busy'):
+                PUBLISHER.rollback(self.base, RELEASE)
+        self.assertEqual(self.current_target(), third)
 
     def test_in_place_destination_is_refused_and_the_active_tree_is_unchanged(self):
         (self.base / 'current').unlink()

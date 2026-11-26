@@ -19,7 +19,7 @@ SPEC.loader.exec_module(SUMMARY)
 
 class PublicationSummaryTests(unittest.TestCase):
     def successful(self):
-        return {**{"PHASE_" + key: "success" for key, _ in SUMMARY.PHASES}, "FPM_RELOAD_MODE": "reload"}
+        return {**{"PHASE_" + key: "success" for key, _ in SUMMARY.PHASES}, "FPM_RELOAD_MODE": "reload", "PHASE_RECOVERY": "skipped"}
 
     def test_success_requires_every_mandatory_phase(self):
         report, complete = SUMMARY.render(self.successful())
@@ -31,7 +31,7 @@ class PublicationSummaryTests(unittest.TestCase):
                     env = self.successful()
                     env["PHASE_" + key] = outcome
                     _, complete = SUMMARY.render(env)
-                    self.assertEqual(complete, key == "CDN" and outcome == "skipped")
+                    self.assertEqual(complete, key in {"CDN", "RECOVERY"} and outcome == "skipped")
 
     def test_missing_or_injected_outcomes_never_leak_or_pass(self):
         env = self.successful()
@@ -60,8 +60,17 @@ class PublicationSummaryTests(unittest.TestCase):
         report, complete = SUMMARY.render(env)
         self.assertFalse(complete)
         self.assertIn("Remote writes may have occurred", report)
-        self.assertIn("code pointer is rolled back when release verification fails", report)
-        self.assertIn("do not automatically roll back migrations", report)
+        self.assertIn("Recovery is not confirmed", report)
+        self.assertIn("Do not automatically roll back migrations", report)
+
+
+    def test_verified_recovery_never_turns_an_unsuccessful_publication_green(self):
+        env = self.successful()
+        env.update(PHASE_SERVICES="failure", PHASE_RELEASE="skipped", PHASE_RECOVERY="success")
+        report, complete = SUMMARY.render(env)
+        self.assertFalse(complete)
+        self.assertIn("Previous sealed release verified; original publication remains failed.", report)
+        self.assertNotIn("Automated publication checks passed.", report)
 
 
 class WorkflowBoundaryTests(unittest.TestCase):
